@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scholarmart - Campus Marketplace</title>
+    <!-- Favicon & manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00A86B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Scholarmart">
+    <link rel="apple-touch-icon" href="/uploads/products/placeholder.webp">
+
+    <!-- CSS styling -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Sticky Header -->
+        <header class="app-header">
+            <a href="#/" class="brand-logo">Scholar<span>Mart</span></a>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="header-auth-btn" class="user-status-btn" title="Dashboard">
+                    <!-- User Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 22px; height: 22px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Scrollable Content -->
+        <main class="app-content">
+            
+            <!-- 1. LANDING VIEW -->
+            <section id="landing-view" class="view-container active">
+                <div class="hero-card">
+                    <h2 class="hero-title">Buy. Sell. Connect on Campus.</h2>
+                    <p class="hero-sub">A trusted marketplace built for Nigerian students.</p>
+                    <button class="btn btn-orange" onclick="window.location.hash = '#/marketplace'">Explore Listings</button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="landing-search-input" class="search-input" placeholder="Search textbooks, hostel items...">
+                    <span class="search-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                        </svg>
+                    </span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="font-size: 16px; font-weight: 700;">Categories</h3>
+                </div>
+                <div class="categories-wrapper" id="landing-categories">
+                    <!-- Loaded dynamically -->
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 8px;">
+                    <h3 style="font-size: 16px; font-weight: 700;">Featured Listings</h3>
+                    <a href="#/marketplace" style="font-size: 12px; font-weight: 700; color: var(--primary-green); text-decoration: none;">View All</a>
+                </div>
+                <div class="products-grid" id="landing-products">
+                    <!-- Dynamic product cards -->
+                </div>
+
+                <!-- How It Works & Testimonials -->
+                <div style="margin-top: 32px; margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">How It Works</h3>
+                    <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
+                        <strong style="color: var(--primary-green); font-size: 14px;">1. Create Account</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Register and enter your campus details</p>
+                    </div>
+                    <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
+                        <strong style="color: var(--primary-green); font-size: 14px;">2. Get Student Verified</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Verify instantly via email OTP or ID upload</p>
+                    </div>
+                    <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
+                        <strong style="color: var(--primary-green); font-size: 14px;">3. Buy & Sell with Split Pay</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Platform fee auto-splits securely on Paystack</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">What Students Say</h3>
+                    <div class="card">
+                        <p style="font-size: 13px; font-style: italic; color: var(--text-secondary);">"I sold my hostel fan in less than an hour of posting on Scholarmart. The student verification makes it so safe!"</p>
+                        <small style="display: block; margin-top: 8px; font-weight: 700;">- Ngozi, COOU Igbariam</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. MARKETPLACE CATALOG VIEW -->
+            <section id="marketplace-view" class="view-container">
+                <h1 class="view-title">Marketplace</h1>
+                <p class="view-subtitle">Browse campus deals on your pilot campus.</p>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <div class="search-container" style="flex-grow: 1; margin-bottom: 0;">
+                        <input type="text" id="marketplace-search-input" class="search-input" placeholder="Search products...">
+                        <span class="search-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                            </svg>
+                        </span>
+                    </div>
+                    <!-- Filter Toggle Button -->
+                    <button id="filter-toggle-btn" class="btn btn-secondary" style="width: 48px; height: 48px; padding: 0; border-radius: 16px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 22px; height: 22px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="categories-wrapper" id="marketplace-categories">
+                    <!-- Categories -->
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">
+                    <span id="results-count">0 items found</span>
+                    <span id="active-filters-tag" style="font-weight: 700; color: var(--primary-green); cursor: pointer; display: none;">Clear filters</span>
+                </div>
+
+                <div class="products-grid" id="marketplace-products">
+                    <!-- Products -->
+                </div>
+            </section>
+
+            <!-- 3. PRODUCT DETAILS VIEW -->
+            <section id="details-view" class="view-container">
+                <div class="details-back-header" onclick="window.history.back()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    </svg>
+                    <span style="font-weight: 700; font-size: 15px;">Back to listings</span>
+                </div>
+
+                <div class="swipeable-gallery">
+                    <div class="gallery-container" id="details-gallery">
+                        <!-- Loaded Dynamically -->
+                    </div>
+                    <div class="gallery-dots" id="details-gallery-dots">
+                        <!-- Dots -->
+                    </div>
+                </div>
+
+                <div class="details-price" id="details-price">₦0.00</div>
+                <h2 class="details-name" id="details-name">Product Name</h2>
+                
+                <div>
+                    <span class="details-meta-pill" id="details-category">Category</span>
+                    <span class="details-meta-pill" id="details-campus">Campus</span>
+                </div>
+
+                <h3 class="details-desc-title">Description</h3>
+                <p class="details-desc" id="details-description">No description provided.</p>
+
+                <!-- Seller Details -->
+                <h3 class="details-desc-title" style="margin-bottom: 8px;">Seller Information</h3>
+                <div class="vendor-card">
+                    <div class="vendor-card-header">
+                        <div class="vendor-avatar" id="details-vendor-avatar">SM</div>
+                        <div style="flex-grow: 1;">
+                            <div class="vendor-info-name" id="details-vendor-name">
+                                <span>Vendor Name</span>
+                                <!-- Verified Icon -->
+                            </div>
+                            <div class="vendor-info-resp" id="details-vendor-response">Typically replies in 2 hours</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+                    <button id="details-buy-btn" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                        </svg>
+                        Buy Now (₦500 Flat Fee Split)
+                    </button>
+                    
+                    <a id="details-whatsapp-btn" href="#" target="_blank" class="btn btn-orange" style="text-decoration: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                            <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.333 4.982L2 22l5.202-1.362a9.92 9.92 0 004.81 1.233h.005c5.505 0 9.99-4.477 9.99-9.982A9.97 9.97 0 0012.012 2zm5.726 14.153c-.25.705-1.464 1.34-2.006 1.425-.49.076-1.126.136-3.277-.75-2.753-1.135-4.506-3.929-4.643-4.113-.136-.183-1.11-1.472-1.11-2.81 0-1.337.697-1.996.947-2.262.25-.267.542-.333.722-.333.18 0 .36 0 .518.008.163.008.38-.063.593.45.22.533.753 1.838.818 1.97.065.13.109.283.022.458-.088.175-.132.283-.263.437-.132.155-.276.346-.395.464-.132.13-.27.272-.116.537.155.263.687 1.132 1.472 1.83.1.089.183.136.27.136.142 0 .237-.066.333-.166.19-.203.498-.58.627-.777.13-.197.26-.164.444-.097.183.066 1.166.55 1.368.653.203.1.337.15.387.234.05.084.05.485-.2.12z"/>
+                        </svg>
+                        WhatsApp Seller
+                    </a>
+                </div>
+            </section>
+
+            <!-- 4. AUTH VIEW (LOGIN / REGISTER) -->
+            <section id="auth-view" class="view-container">
+                <!-- Login Panel -->
+                <div id="login-panel" class="auth-panel active">
+                    <h1 class="view-title">Welcome Back</h1>
+                    <p class="view-subtitle">Sign in to buy and sell on your campus.</p>
+
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label class="form-label" for="login-email">Personal Email Address</label>
+                            <input type="email" id="login-email" class="form-input" placeholder="e.g. student@gmail.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="login-password">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="login-password" class="form-input" placeholder="Min. 8 characters" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('login-password')">Show</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 13px;">
+                            <label style="display: flex; align-items: center; gap: 6px; font-weight: 500; cursor: pointer;">
+                                <input type="checkbox" id="login-remember" style="accent-color: var(--primary-green);"> Remember Me
+                            </label>
+                            <a href="#" style="color: var(--primary-green); font-weight: 700; text-decoration: none;" onclick="Toast.show('Enter your email, and we will send a password reset code.', 'info')">Forgot Password?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                    </form>
+                    
+                    <p style="text-align: center; margin-top: 24px; font-size: 14px; font-weight: 500; color: var(--text-secondary);">
+                        New to Scholarmart? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="toggleAuthPanel('register')">Register Now</span>
+                    </p>
+                </div>
+ 
+                <!-- Register Panel -->
+                <div id="register-panel" class="auth-panel">
+                    <h1 class="view-title">Join Scholarmart</h1>
+                    <p class="view-subtitle">Create a student profile to get started.</p>
+ 
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label class="form-label" for="reg-name">Full Name</label>
+                            <input type="text" id="reg-name" class="form-input" placeholder="e.g., John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reg-email">Personal Email Address</label>
+                            <input type="email" id="reg-email" class="form-input" placeholder="e.g., yourname@gmail.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reg-phone">Phone Number</label>
+                            <input type="tel" id="reg-phone" class="form-input" placeholder="08012345678" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reg-role">I want to:</label>
+                            <select id="reg-role" class="form-select" onchange="toggleVendorFields(this.value)">
+                                <option value="buyer">Buy Products only</option>
+                                <option value="vendor">Sell Products & Collect Payouts</option>
+                            </select>
+                        </div>
+
+                        <!-- Vendor Bank Fields -->
+                        <div id="vendor-bank-fields" style="display: none; background-color: #F1F5F9; padding: 14px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
+                            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">PAYOUT BANK DETAILS (Paystack Splits)</h4>
+                            <div class="form-group">
+                                <label class="form-label" for="reg-bank">Bank Name</label>
+                                <select id="reg-bank" class="form-select">
+                                    <option value="">Select settlement bank</option>
+                                    <option value="044|Access Bank">Access Bank</option>
+                                    <option value="058|Guaranty Trust Bank (GTB)">Guaranty Trust Bank (GTB)</option>
+                                    <option value="057|Zenith Bank">Zenith Bank</option>
+                                    <option value="033|United Bank for Africa (UBA)">United Bank for Africa (UBA)</option>
+                                    <option value="011|First Bank of Nigeria">First Bank</option>
+                                    <option value="032|Union Bank">Union Bank</option>
+                                    <option value="232|Sterling Bank">Sterling Bank</option>
+                                    <option value="070|Fidelity Bank">Fidelity Bank</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="reg-account-num">Account Number</label>
+                                <input type="text" id="reg-account-num" class="form-input" placeholder="10-digit number" maxlength="10">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label" for="reg-account-name">Account Holder Name</label>
+                                <input type="text" id="reg-account-name" class="form-input" placeholder="Name on bank account">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="reg-univ">University</label>
+                            <input type="text" id="reg-univ" class="form-input" value="COOU" readonly>
+                        </div>
+
+                        <!-- Searchable Autocomplete Campus Input -->
+                        <div class="form-group autocomplete-container">
+                            <label class="form-label" for="reg-campus">Campus Name (Pilot: COOU)</label>
+                            <input type="text" id="reg-campus" class="form-input" placeholder="Type to search campus..." autocomplete="off" required>
+                            <div id="reg-campus-dropdown" class="autocomplete-dropdown">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="reg-password">Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="reg-password" class="form-input" placeholder="Min. 8 characters (letters+numbers)" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('reg-password')">Show</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reg-confirm">Confirm Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="reg-confirm" class="form-input" placeholder="Re-enter password" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('reg-confirm')">Show</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </form>
+                    
+                    <p style="text-align: center; margin-top: 24px; font-size: 14px; font-weight: 500; color: var(--text-secondary);">
+                        Already have an account? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="toggleAuthPanel('login')">Sign In</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- 5. BUYER DASHBOARD VIEW -->
+            <section id="dashboard-buyer-view" class="view-container">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <h1 class="view-title">Buyer Profile</h1>
+                    <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: auto;">Logout</button>
+                </div>
+                <div class="card" style="background-color: #ECFDF5; border-color: #D1FAE5; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                    <div class="vendor-avatar" id="buyer-profile-avatar">SB</div>
+                    <div>
+                        <div style="font-weight: 700;" id="buyer-profile-name">Student Buyer</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);" id="buyer-profile-campus">COOU - Igbariam</div>
+                        <!-- Verification Status badge -->
+                        <div id="buyer-verification-badge" style="margin-top: 4px;"></div>
+                    </div>
+                </div>
+
+                <!-- Verification Wizard Section -->
+                <div id="verification-wizard-card" class="card" style="display: none;">
+                    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Complete Student Verification</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Verify your identity to build trust. Verified users carry a checkmark.</p>
+                    
+                    <div id="verification-options">
+                        <div id="verify-email-option" style="display: none; margin-bottom: 12px;">
+                            <button class="btn btn-outline btn-sm" onclick="sendVerificationOtp()">Send OTP to Email</button>
+                            <div id="otp-input-container" style="display: none; margin-top: 10px; display: flex; gap: 8px;">
+                                <input type="text" id="otp-code-input" class="form-input" placeholder="Enter 6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
+                                <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs-header">
+                    <div class="tab-btn active" onclick="switchDashboardTab('buyer-orders')">My Orders</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('buyer-saved')">Saved Items</div>
+                </div>
+
+                <!-- Tab Pane: Orders -->
+                <div id="tab-buyer-orders" class="tab-pane active">
+                    <div id="buyer-orders-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tab Pane: Bookmarks -->
+                <div id="tab-buyer-saved" class="tab-pane">
+                    <div class="products-grid" id="buyer-saved-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. VENDOR DASHBOARD VIEW -->
+            <section id="dashboard-vendor-view" class="view-container">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <h1 class="view-title">Vendor Panel</h1>
+                    <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: auto;">Logout</button>
+                </div>
+                <div class="card" style="background-color: #ECFDF5; border-color: #D1FAE5; display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div class="vendor-avatar" id="vendor-profile-avatar">SV</div>
+                    <div>
+                        <div style="font-weight: 700; display: flex; align-items: center; gap: 4px;" id="vendor-profile-name">
+                            <span>Student Vendor</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);" id="vendor-profile-campus">COOU - Uli</div>
+                        <div id="vendor-verification-badge" style="margin-top: 4px;"></div>
+                    </div>
+                </div>
+
+                <!-- Vendor Portrait Upload Section -->
+                <div id="vendor-portrait-card" class="card" style="padding: 14px; margin-bottom: 16px;">
+                    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">PROFILE PORTRAIT</h4>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="file" id="vendor-portrait-input" accept="image/*" style="font-size: 11px; flex-grow: 1;">
+                        <button class="btn btn-outline btn-sm" onclick="uploadVendorPortrait()" style="width: auto; padding: 6px 12px;">Upload</button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-total-listings">0</div>
+                        <div class="stat-lbl">Total Items</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num orange" id="stat-sales-made">₦0</div>
+                        <div class="stat-lbl">Sales Volume</div>
+                    </div>
+                </div>
+
+                <!-- Payout subaccount code banner -->
+                <div id="vendor-subaccount-banner" class="card" style="padding: 10px 12px; font-size: 11px; background-color: #F8FAFC; border-color: var(--border); font-weight: 600; display: flex; justify-content: space-between;">
+                    <span>Paystack Subaccount:</span>
+                    <span id="vendor-subaccount-code" style="color: var(--primary-green);">None</span>
+                </div>
+
+                <!-- Verification Wizard Section for Vendor -->
+                <div id="vendor-verification-wizard-card" class="card" style="display: none;">
+                    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Complete Student Verification</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Get verified to receive the green checkmark icon. Buyers trust verified vendors.</p>
+                    
+                    <div id="vendor-verification-options">
+                        <div id="vendor-verify-email-option" style="display: none; margin-bottom: 12px;">
+                            <button class="btn btn-outline btn-sm" onclick="sendVerificationOtp()">Send OTP to Email</button>
+                            <div id="vendor-otp-input-container" style="display: none; margin-top: 10px; display: flex; gap: 8px;">
+                                <input type="text" id="vendor-otp-code-input" class="form-input" placeholder="Enter 6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
+                                <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tabs-header">
+                    <div class="tab-btn active" onclick="switchDashboardTab('vendor-listings')">My Listings</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('vendor-sales')">My Sales</div>
+                </div>
+
+                <!-- Tab Pane: Listings -->
+                <div id="tab-vendor-listings" class="tab-pane active">
+                    <div id="vendor-listings-list" style="margin-bottom: 16px;">
+                        <!-- Listings -->
+                    </div>
+                </div>
+
+                <!-- Tab Pane: Sales -->
+                <div id="tab-vendor-sales" class="tab-pane">
+                    <div id="vendor-sales-list">
+                        <!-- Sales -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. ADMIN DASHBOARD VIEW -->
+            <section id="dashboard-admin-view" class="view-container">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <h1 class="view-title">Admin Console</h1>
+                    <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: auto;">Logout</button>
+                </div>
+
+                <!-- Admin Stats Cards -->
+                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
+                    <div class="stat-card" style="padding: 10px;">
+                        <div class="stat-num" id="admin-stat-users" style="font-size: 18px;">0</div>
+                        <div class="stat-lbl" style="font-size: 9px;">Users</div>
+                    </div>
+                    <div class="stat-card" style="padding: 10px;">
+                        <div class="stat-num" id="admin-stat-listings" style="font-size: 18px;">0</div>
+                        <div class="stat-lbl" style="font-size: 9px;">Listings</div>
+                    </div>
+                    <div class="stat-card" style="padding: 10px;">
+                        <div class="stat-num orange" id="admin-stat-revenue" style="font-size: 18px;">₦0</div>
+                        <div class="stat-lbl" style="font-size: 9px;">Revenue</div>
+                    </div>
+                </div>
+
+                <div class="tabs-header">
+                    <div class="tab-btn active" onclick="switchDashboardTab('admin-verifications')">Verifications</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('admin-moderation')">Moderation</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('admin-users')">Users</div>
+                </div>
+
+                <!-- Tab: Student ID Verifications -->
+                <div id="tab-admin-verifications" class="tab-pane active">
+                    <div id="admin-verifications-list">
+                        <!-- ID upload queue -->
+                    </div>
+                </div>
+
+                <!-- Tab: Listing Moderation -->
+                <div id="tab-admin-moderation" class="tab-pane">
+                    <div id="admin-moderation-list">
+                        <!-- Reported products list -->
+                    </div>
+                </div>
+
+                <!-- Tab: User Management -->
+                <div id="tab-admin-users" class="tab-pane">
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table-body">
+                                <!-- Users list -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. SANDBOX PAYMENT SIMULATOR VIEW -->
+            <section id="payment-simulate-view" class="view-container">
+                <div class="card" style="text-align: center; border-top: 6px solid var(--primary-green); padding: 32px 24px;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">PAYSTACK SANDBOX GATEWAY</div>
+                    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 4px;">Scholarmart Checkout</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 24px;">Split Group enabled transaction</p>
+                    
+                    <div class="checkout-breakdown">
+                        <div class="checkout-row">
+                            <span>Product Share (Vendor)</span>
+                            <span id="sim-product-price">₦0.00</span>
+                        </div>
+                        <div class="checkout-row">
+                            <span>Service Fee (Scholarmart)</span>
+                            <span>₦500.00</span>
+                        </div>
+                        <div class="checkout-row total">
+                            <span>Total Charge</span>
+                            <span id="sim-total-price">₦0.00</span>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 24px; padding: 10px; background-color: #FFFBEB; border: 1px solid #FEF3C7; border-radius: 12px;">
+                        ⚠️ This payment will split settlements automatically: Platform fee goes to Scholarmart, and remainder goes to the vendor's registered bank details.
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="simulatePaymentStatus('success')">Simulate Success</button>
+                        <button class="btn btn-secondary" onclick="simulatePaymentStatus('cancel')">Cancel Payment</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Sticky Bottom Navigation -->
+        <nav class="app-nav">
+            <a href="#/" class="nav-item active" data-view="landing-view">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                </svg>
+                Home
+            </a>
+            <a href="#/marketplace" class="nav-item" data-view="marketplace-view">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72M6.75 18h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .414.336.75.75.75z" />
+                </svg>
+                Market
+            </a>
+            
+            <!-- Spacing for FAB button in the center -->
+            <div style="width: 56px;"></div>
+            
+            <a href="#/saved" class="nav-item" id="nav-saved-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                </svg>
+                Saved
+            </a>
+            <a href="#/dashboard" class="nav-item" id="nav-profile-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                Profile
+            </a>
+        </nav>
+
+        <!-- FLOATING ACTION BUTTON (FAB) -->
+        <div class="fab-container">
+            <button id="fab-create-listing" class="fab-btn" title="Sell Item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Dynamic Filter Drawer Overlay -->
+        <div id="filter-drawer-overlay" class="modal-overlay" onclick="toggleFilterDrawer(false)">
+            <div class="filter-drawer" onclick="event.stopPropagation()">
+                <div class="filter-drawer-header">
+                    <h3 class="filter-drawer-title">Filters</h3>
+                    <button class="filter-drawer-close" onclick="toggleFilterDrawer(false)">Close</button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="filter-campus">Campus Location</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="filter-campus" class="form-input" placeholder="Type to search campus..." autocomplete="off">
+                        <div id="filter-campus-dropdown" class="autocomplete-dropdown">
+                            <!-- Campuses -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="filter-category">Category</label>
+                    <select id="filter-category" class="form-select">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Books">Books</option>
+                        <option value="Hostel Essentials">Hostel Essentials</option>
+                        <option value="Gadgets">Gadgets</option>
+                        <option value="Beauty Products">Beauty Products</option>
+                        <option value="Food & Snacks">Food & Snacks</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label class="form-label" for="filter-min-price">Min Price (₦)</label>
+                        <input type="number" id="filter-min-price" class="form-input" placeholder="0">
+                    </div>
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label class="form-label" for="filter-max-price">Max Price (₦)</label>
+                        <input type="number" id="filter-max-price" class="form-input" placeholder="Any">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="applyMarketplaceFilters()">Apply Filters</button>
+                    <button class="btn btn-secondary" onclick="resetMarketplaceFilters()">Reset All</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Product / Create Listing Modal -->
+        <div id="product-modal-overlay" class="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 id="product-modal-title" style="font-size: 18px; font-weight: 800;">Create Listing</h3>
+                    <button class="modal-close-btn" onclick="toggleProductModal(false)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="product-listing-form">
+                    <input type="hidden" id="edit-product-id">
+                    <div class="form-group">
+                        <label class="form-label" for="prod-name">Product Name</label>
+                        <input type="text" id="prod-name" class="form-input" placeholder="e.g., Study Desk, Rechargeable Lamp" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="prod-price">Price (₦)</label>
+                        <input type="number" id="prod-price" class="form-input" placeholder="Amount in Naira" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="prod-category">Category</label>
+                        <select id="prod-category" class="form-select" required>
+                            <option value="">Select Category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Books">Books</option>
+                            <option value="Hostel Essentials">Hostel Essentials</option>
+                            <option value="Gadgets">Gadgets</option>
+                            <option value="Beauty Products">Beauty Products</option>
+                            <option value="Food & Snacks">Food & Snacks</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group autocomplete-container">
+                        <label class="form-label" for="prod-campus">Campus Location</label>
+                        <input type="text" id="prod-campus" class="form-input" placeholder="Type to search campus..." autocomplete="off" required>
+                        <div id="prod-campus-dropdown" class="autocomplete-dropdown">
+                            <!-- Campuses -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="prod-description">Description</label>
+                        <textarea id="prod-description" class="form-textarea" placeholder="Detail condition, size, power rating, contact details..."></textarea>
+                    </div>
+
+                    <!-- Multiple Image Upload -->
+                    <div class="form-group" id="prod-image-upload-wrapper">
+                        <label class="form-label" for="prod-images">Upload Product Photos (Max 5)</label>
+                        <input type="file" id="prod-images" accept="image/*" multiple style="font-size: 12px; margin-top: 4px;">
+                        <small style="color: var(--text-secondary); display: block; margin-top: 4px;">Upload crisp images of the actual product.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Publish Listing</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PWA scripts -->
+    <script src="/js/toast.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/marketplace.js"></script>
+    <script src="/js/dashboards.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "Scholarmart Campus Marketplace",
+  "short_name": "Scholarmart",
+  "description": "A trusted student marketplace built for Nigerian university students",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8FAFC",
+  "theme_color": "#00A86B",
+  "categories": ["shopping", "social"],
+  "icons": [
+    {
+      "src": "/uploads/products/placeholder.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/uploads/products/placeholder.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
