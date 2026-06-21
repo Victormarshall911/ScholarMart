@@ -41,6 +41,7 @@ function switchDashboardTab(tabId) {
     else if (tabId === 'admin-verifications') loadAdminVerifications();
     else if (tabId === 'admin-moderation') loadAdminModeration();
     else if (tabId === 'admin-users') loadAdminUsers();
+    else if (tabId === 'admin-universities') loadAdminUniversities();
 }
 
 /* ========================================================
@@ -654,6 +655,7 @@ async function loadAdminDashboard() {
     loadAdminVerifications();
     loadAdminModeration();
     loadAdminUsers();
+    loadAdminUniversities();
 }
 
 // Load verification queue (student ID uploads)
@@ -961,4 +963,157 @@ async function uploadPortraitFile(fileInputId) {
 // Upload vendor profile portrait
 async function uploadVendorPortrait() {
     await uploadPortraitFile('vendor-portrait-input');
+}
+
+// Load universities and campuses in Admin console
+async function loadAdminUniversities() {
+    const listDiv = document.getElementById('admin-universities-list');
+    const selectUniv = document.getElementById('admin-campus-univ-select');
+    if (!listDiv) return;
+
+    listDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="toast-spinner" style="margin: 0 auto;"></div></div>';
+
+    try {
+        const univRes = await fetch('/api/auth/universities');
+        const univData = await univRes.json();
+        
+        const campRes = await fetch('/api/auth/campuses');
+        const campData = await campRes.json();
+
+        if (univData.status !== 'success' || campData.status !== 'success') {
+            listDiv.innerHTML = '<div style="color: var(--danger);">Failed to load universities and campuses.</div>';
+            return;
+        }
+
+        const universities = univData.universities;
+        const campuses = campData.campuses;
+
+        // Populate admin campus select dropdown
+        if (selectUniv) {
+            selectUniv.innerHTML = '<option value="" disabled selected>Select a University</option>';
+            universities.forEach(univ => {
+                const opt = document.createElement('option');
+                opt.value = univ.code;
+                opt.textContent = `${univ.name} (${univ.code})`;
+                selectUniv.appendChild(opt);
+            });
+        }
+
+        // Render universities with their campuses list
+        if (universities.length === 0) {
+            listDiv.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 20px;">No universities registered yet.</div>';
+            return;
+        }
+
+        let html = '';
+        universities.forEach(univ => {
+            const univCampuses = campuses.filter(c => c.university_code === univ.code);
+            
+            html += `
+                <div class="card" style="padding: 12px; margin-bottom: 10px; border-color: var(--border); background-color: var(--surface);">
+                    <div style="font-weight: 700; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px;">${univ.name}</span>
+                        <span class="badge" style="background-color: var(--border); color: var(--text-secondary); font-size: 10px;">${univ.code}</span>
+                    </div>
+                    <div style="margin-top: 8px; padding-left: 8px; border-left: 2.5px solid var(--primary-green); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px;">
+                        ${univCampuses.length > 0 
+                            ? univCampuses.map(c => `<span style="background-color:#ECFDF5; color:#065F46; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${c.name}</span>`).join('')
+                            : '<em style="color:var(--text-muted);">No campuses added yet</em>'
+                        }
+                    </div>
+                </div>
+            `;
+        });
+        listDiv.innerHTML = html;
+    } catch (err) {
+        console.error(err);
+        listDiv.innerHTML = '<div style="color: var(--danger);">Connection error loading list.</div>';
+    }
+}
+
+// Admin Add University action
+async function adminAddUniversity() {
+    const codeInput = document.getElementById('admin-univ-code');
+    const nameInput = document.getElementById('admin-univ-name');
+    const code = codeInput?.value.trim();
+    const name = nameInput?.value.trim();
+
+    if (!code || !name) {
+        Toast.show('University code and name are required', 'warning');
+        return;
+    }
+
+    const loader = Toast.show('Adding university...', 'loading');
+
+    try {
+        const response = await fetch('/api/admin/universities', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code, name })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            Toast.update(loader, 'University added successfully!', 'success');
+            if (codeInput) codeInput.value = '';
+            if (nameInput) nameInput.value = '';
+            
+            loadAdminUniversities();
+            
+            // Refresh dynamic registration details
+            if (typeof fetchRegistrationData === 'function') {
+                fetchRegistrationData();
+            }
+        } else {
+            Toast.update(loader, data.message || 'Failed to add university', 'error');
+        }
+    } catch (err) {
+        Toast.update(loader, 'Connection error.', 'error');
+    }
+}
+
+// Admin Add Campus action
+async function adminAddCampus() {
+    const univSelect = document.getElementById('admin-campus-univ-select');
+    const nameInput = document.getElementById('admin-campus-name');
+    const university_code = univSelect?.value;
+    const name = nameInput?.value.trim();
+
+    if (!university_code || !name) {
+        Toast.show('Please select a university and enter campus name', 'warning');
+        return;
+    }
+
+    const loader = Toast.show('Adding campus...', 'loading');
+
+    try {
+        const response = await fetch('/api/admin/campuses', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ university_code, name })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            Toast.update(loader, 'Campus added successfully!', 'success');
+            if (nameInput) nameInput.value = '';
+            
+            loadAdminUniversities();
+            
+            // Refresh dynamic registration details
+            if (typeof fetchRegistrationData === 'function') {
+                fetchRegistrationData();
+            }
+        } else {
+            Toast.update(loader, data.message || 'Failed to add campus', 'error');
+        }
+    } catch (err) {
+        Toast.update(loader, 'Connection error.', 'error');
+    }
 }

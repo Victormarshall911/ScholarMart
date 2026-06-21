@@ -275,12 +275,15 @@
 
                         <div class="form-group">
                             <label class="form-label" for="reg-univ">University</label>
-                            <input type="text" id="reg-univ" class="form-input" value="COOU" readonly>
+                            <select id="reg-univ" class="form-select" required>
+                                <option value="" disabled selected>Select your University</option>
+                                <!-- Loaded dynamically -->
+                            </select>
                         </div>
 
                         <!-- Searchable Autocomplete Campus Input -->
                         <div class="form-group autocomplete-container">
-                            <label class="form-label" for="reg-campus">Campus Name (Pilot: COOU)</label>
+                            <label class="form-label" for="reg-campus">Campus Name</label>
                             <input type="text" id="reg-campus" class="form-input" placeholder="Type to search campus..." autocomplete="off" required>
                             <div id="reg-campus-dropdown" class="autocomplete-dropdown">
                                 <!-- Loaded dynamically -->
@@ -471,6 +474,7 @@
                     <div class="tab-btn active" onclick="switchDashboardTab('admin-verifications')">Verifications</div>
                     <div class="tab-btn" onclick="switchDashboardTab('admin-moderation')">Moderation</div>
                     <div class="tab-btn" onclick="switchDashboardTab('admin-users')">Users</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('admin-universities')">Universities</div>
                 </div>
 
                 <!-- Tab: Student ID Verifications -->
@@ -503,6 +507,47 @@
                                 <!-- Users list -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Tab: University & Campus Management -->
+                <div id="tab-admin-universities" class="tab-pane">
+                    <!-- Form to add University -->
+                    <div class="card" style="margin-bottom: 16px;">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Add University</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="admin-univ-code">University Code (e.g. UNN, COOU)</label>
+                            <input type="text" id="admin-univ-code" class="form-input" placeholder="e.g. UNN">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="admin-univ-name">University Name</label>
+                            <input type="text" id="admin-univ-name" class="form-input" placeholder="e.g. University of Nigeria">
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="adminAddUniversity()">Add University</button>
+                    </div>
+
+                    <!-- Form to add Campus -->
+                    <div class="card" style="margin-bottom: 16px;">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Add Campus</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="admin-campus-univ-select">Select University</label>
+                            <select id="admin-campus-univ-select" class="form-select">
+                                <option value="" disabled selected>Select a University</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="admin-campus-name">Campus Name</label>
+                            <input type="text" id="admin-campus-name" class="form-input" placeholder="e.g. Nsukka Campus">
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="adminAddCampus()">Add Campus</button>
+                    </div>
+
+                    <!-- List of current universities and campuses -->
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Current Universities & Campuses</h3>
+                        <div id="admin-universities-list" style="max-height: 250px; overflow-y: auto; font-size: 13px; padding-right: 4px;">
+                            <!-- Loaded dynamically -->
+                        </div>
                     </div>
                 </div>
             </section>

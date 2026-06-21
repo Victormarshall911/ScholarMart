@@ -3,6 +3,14 @@
 -- Enable extension for UUID if needed, though we will use standard serial/auto-incrementing IDs for simplicity
 -- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Universities Table
+CREATE TABLE IF NOT EXISTS universities (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Campuses Table
 CREATE TABLE IF NOT EXISTS campuses (
     id SERIAL PRIMARY KEY,
@@ -78,6 +86,19 @@ CREATE INDEX IF NOT EXISTS idx_products_campus ON products(campus);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Seed Default Universities
+INSERT INTO universities (code, name) VALUES
+('COOU', 'Chukwuemeka Odumegwu Ojukwu University'),
+('UNIZIK', 'Nnamdi Azikiwe University'),
+('UNN', 'University of Nigeria, Nsukka'),
+('FUTO', 'Federal University of Technology, Owerri'),
+('UNILAG', 'University of Lagos'),
+('LASU', 'Lagos State University'),
+('OAU', 'Obafemi Awolowo University'),
+('ABSU', 'Abia State University'),
+('ESUT', 'Enugu State University of Science and Technology')
+ON CONFLICT (code) DO NOTHING;
 
 -- Insert Pilot Campuses
 INSERT INTO campuses (university_code, name) VALUES 

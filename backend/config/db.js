@@ -21,27 +21,43 @@ if (!fs.existsSync(dataDir)) {
 }
 
 // In-memory data store for fallback
+// Seed default Universities in store
+const defaultUniversities = [
+    { id: 1, code: 'COOU', name: 'Chukwuemeka Odumegwu Ojukwu University' },
+    { id: 2, code: 'UNIZIK', name: 'Nnamdi Azikiwe University' },
+    { id: 3, code: 'UNN', name: 'University of Nigeria' },
+    { id: 4, code: 'FUTO', name: 'Federal University of Technology, Owerri' },
+    { id: 5, code: 'UNILAG', name: 'University of Lagos' },
+    { id: 6, code: 'LASU', name: 'Lagos State University' },
+    { id: 7, code: 'OAU', name: 'Obafemi Awolowo University' },
+    { id: 8, code: 'ABSU', name: 'Abia State University' },
+    { id: 9, code: 'ESUT', name: 'Enugu State University of Science and Technology' }
+];
+
+const defaultCampuses = [
+    { id: 1, university_code: 'COOU', name: 'Igbariam Campus' },
+    { id: 2, university_code: 'COOU', name: 'Uli Campus' },
+    { id: 3, university_code: 'UNIZIK', name: 'Awka Campus' },
+    { id: 4, university_code: 'UNIZIK', name: 'Nnewi Campus' },
+    { id: 5, university_code: 'UNN', name: 'Nsukka Campus' },
+    { id: 6, university_code: 'UNN', name: 'Enugu Campus' },
+    { id: 7, university_code: 'FUTO', name: 'Owerri Campus' },
+    { id: 8, university_code: 'UNILAG', name: 'Akoka Campus' },
+    { id: 9, university_code: 'UNILAG', name: 'Yaba Campus' },
+    { id: 10, university_code: 'LASU', name: 'Ojo Campus' },
+    { id: 11, university_code: 'LASU', name: 'Ikeja Campus' },
+    { id: 12, university_code: 'OAU', name: 'Ile-Ife Campus' },
+    { id: 13, university_code: 'ABSU', name: 'Uturu Campus' },
+    { id: 14, university_code: 'ESUT', name: 'Agbani Campus' }
+];
+
 let fallbackStore = {
     users: [],
     products: [],
     orders: [],
     saved_products: [],
-    campuses: [
-        { id: 1, university_code: 'COOU', name: 'Igbariam Campus' },
-        { id: 2, university_code: 'COOU', name: 'Uli Campus' },
-        { id: 3, university_code: 'UNIZIK', name: 'Awka Campus' },
-        { id: 4, university_code: 'UNIZIK', name: 'Nnewi Campus' },
-        { id: 5, university_code: 'UNN', name: 'Nsukka Campus' },
-        { id: 6, university_code: 'UNN', name: 'Enugu Campus' },
-        { id: 7, university_code: 'FUTO', name: 'Owerri Campus' },
-        { id: 8, university_code: 'UNILAG', name: 'Akoka Campus' },
-        { id: 9, university_code: 'UNILAG', name: 'Yaba Campus' },
-        { id: 10, university_code: 'LASU', name: 'Ojo Campus' },
-        { id: 11, university_code: 'LASU', name: 'Ikeja Campus' },
-        { id: 12, university_code: 'OAU', name: 'Ile-Ife Campus' },
-        { id: 13, university_code: 'ABSU', name: 'Uturu Campus' },
-        { id: 14, university_code: 'ESUT', name: 'Agbani Campus' }
-    ]
+    universities: [...defaultUniversities],
+    campuses: [...defaultCampuses]
 };
 
 // Seed default Admin in store
@@ -81,6 +97,14 @@ if (fs.existsSync(fallbackFilePath)) {
     try {
         const fileContent = fs.readFileSync(fallbackFilePath, 'utf8');
         fallbackStore = JSON.parse(fileContent);
+        
+        // Ensure universities are seeded inside loaded store
+        if (!fallbackStore.universities || fallbackStore.universities.length === 0) {
+            fallbackStore.universities = [...defaultUniversities];
+        }
+        if (!fallbackStore.campuses || fallbackStore.campuses.length === 0) {
+            fallbackStore.campuses = [...defaultCampuses];
+        }
     } catch (err) {
         console.error('Failed to parse fallback database JSON. Initializing clean store.', err);
     }
@@ -135,7 +159,52 @@ function queryFallback(text, params = []) {
     
     // 1. SELECT * FROM campuses
     if (cleanText.toLowerCase().startsWith('select * from campuses')) {
-        return { rows: fallbackStore.campuses, rowCount: fallbackStore.campuses.length };
+        let campuses = fallbackStore.campuses || [];
+        if (cleanText.includes('university_code = $1')) {
+            const code = params[0];
+            campuses = campuses.filter(c => c.university_code === code);
+        }
+        campuses = [...campuses].sort((a, b) => a.name.localeCompare(b.name));
+        return { rows: campuses, rowCount: campuses.length };
+    }
+
+    // 1.1 SELECT * FROM universities
+    if (cleanText.toLowerCase().startsWith('select * from universities') || cleanText.toLowerCase().includes('from universities')) {
+        let universities = fallbackStore.universities || [];
+        if (cleanText.includes('code = $1')) {
+            const code = params[0]?.toLowerCase();
+            universities = universities.filter(u => u.code?.toLowerCase() === code);
+        }
+        universities = [...universities].sort((a, b) => a.name.localeCompare(b.name));
+        return { rows: universities, rowCount: universities.length };
+    }
+
+    // 1.2 INSERT INTO universities (code, name) VALUES ($1, $2) RETURNING *
+    if (cleanText.toLowerCase().includes('insert into universities')) {
+        const newUniv = {
+            id: (fallbackStore.universities || []).length + 1,
+            code: params[0],
+            name: params[1],
+            created_at: new Date().toISOString()
+        };
+        if (!fallbackStore.universities) fallbackStore.universities = [];
+        fallbackStore.universities.push(newUniv);
+        saveFallbackStore();
+        return { rows: [newUniv], rowCount: 1 };
+    }
+
+    // 1.3 INSERT INTO campuses (university_code, name) VALUES ($1, $2) RETURNING *
+    if (cleanText.toLowerCase().includes('insert into campuses')) {
+        const newCampus = {
+            id: (fallbackStore.campuses || []).length + 1,
+            university_code: params[0],
+            name: params[1],
+            created_at: new Date().toISOString()
+        };
+        if (!fallbackStore.campuses) fallbackStore.campuses = [];
+        fallbackStore.campuses.push(newCampus);
+        saveFallbackStore();
+        return { rows: [newCampus], rowCount: 1 };
     }
 
     // 2. SELECT * FROM users WHERE email = $1

@@ -6,23 +6,9 @@
 let currentUser = null;
 let currentToken = null;
 
-// Available campuses for pilot and expansion (used in autocomplete searchable inputs)
-const CAMPUS_LIST = [
-    "Igbariam Campus",
-    "Uli Campus",
-    "Awka Campus",
-    "Nnewi Campus",
-    "Nsukka Campus",
-    "Enugu Campus",
-    "Owerri Campus",
-    "Akoka Campus",
-    "Yaba Campus",
-    "Ojo Campus",
-    "Ikeja Campus",
-    "Ile-Ife Campus",
-    "Uturu Campus",
-    "Agbani Campus"
-];
+// Dynamic lists of universities and campuses fetched from backend
+let ALL_UNIVERSITIES = [];
+let ALL_CAMPUSES = [];
 
 // 1. Toggle Auth View panels
 function toggleAuthPanel(panelName) {
@@ -69,44 +55,68 @@ function toggleVendorFields(role) {
     }
 }
 
-// 4. Shared Autocomplete Autocomplete setup
+// 4. Shared Autocomplete setup
 function setupCampusAutocomplete(inputId, dropdownId) {
     const input = document.getElementById(inputId);
     const dropdown = document.getElementById(dropdownId);
     if (!input || !dropdown) return;
 
-    // Search event
-    input.addEventListener('input', () => {
-        const query = input.value.toLowerCase().trim();
-        dropdown.innerHTML = '';
-        
-        if (!query) {
-            dropdown.style.display = 'none';
-            return;
+    // Helper to get campuses to suggest based on input context
+    function getCampusesForContext() {
+        if (inputId === 'reg-campus') {
+            const regUnivSelect = document.getElementById('reg-univ');
+            if (regUnivSelect && regUnivSelect.value) {
+                return ALL_CAMPUSES.filter(c => c.university_code === regUnivSelect.value);
+            }
+            return []; // Force user to select university first
         }
+        if (inputId === 'prod-campus' && currentUser) {
+            const userUniv = currentUser.university;
+            const matchedUniv = ALL_UNIVERSITIES.find(u => u.code === userUniv || u.name === userUniv);
+            if (matchedUniv) {
+                return ALL_CAMPUSES.filter(c => c.university_code === matchedUniv.code);
+            }
+        }
+        return ALL_CAMPUSES;
+    }
 
-        const filtered = CAMPUS_LIST.filter(c => c.toLowerCase().includes(query));
-        
-        if (filtered.length === 0) {
+    // Render dropdown list
+    function renderDropdown(campusesList) {
+        dropdown.innerHTML = '';
+        if (campusesList.length === 0) {
             const noRes = document.createElement('div');
             noRes.className = 'autocomplete-item';
             noRes.style.color = 'var(--text-secondary)';
-            noRes.textContent = 'No campuses found';
+            noRes.textContent = inputId === 'reg-campus' && !document.getElementById('reg-univ')?.value
+                ? 'Please select a University first'
+                : 'No campuses found';
             dropdown.appendChild(noRes);
         } else {
-            filtered.forEach(campus => {
+            campusesList.forEach(campus => {
                 const item = document.createElement('div');
                 item.className = 'autocomplete-item';
-                item.textContent = campus;
+                item.textContent = campus.name;
                 item.addEventListener('click', () => {
-                    input.value = campus;
+                    input.value = campus.name;
                     dropdown.style.display = 'none';
                 });
                 dropdown.appendChild(item);
             });
         }
-        
         dropdown.style.display = 'block';
+    }
+
+    // Search event
+    input.addEventListener('input', () => {
+        const query = input.value.toLowerCase().trim();
+        if (!query) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        const campuses = getCampusesForContext();
+        const filtered = campuses.filter(c => c.name.toLowerCase().includes(query));
+        renderDropdown(filtered);
     });
 
     // Close dropdown on outside click
@@ -119,28 +129,63 @@ function setupCampusAutocomplete(inputId, dropdownId) {
     // Show options on focus if empty
     input.addEventListener('focus', () => {
         if (!input.value) {
-            dropdown.innerHTML = '';
-            CAMPUS_LIST.forEach(campus => {
-                const item = document.createElement('div');
-                item.className = 'autocomplete-item';
-                item.textContent = campus;
-                item.addEventListener('click', () => {
-                    input.value = campus;
-                    dropdown.style.display = 'none';
-                });
-                dropdown.appendChild(item);
-            });
-            dropdown.style.display = 'block';
+            const campuses = getCampusesForContext();
+            renderDropdown(campuses);
         }
     });
 }
 
-// Initialize autocomplete inputs
+// Initialize autocomplete inputs and fetch dynamic lists
 document.addEventListener('DOMContentLoaded', () => {
+    fetchRegistrationData();
     setupCampusAutocomplete('reg-campus', 'reg-campus-dropdown');
     setupCampusAutocomplete('filter-campus', 'filter-campus-dropdown');
     setupCampusAutocomplete('prod-campus', 'prod-campus-dropdown');
 });
+
+// Fetch universities and campuses dynamically
+async function fetchRegistrationData() {
+    try {
+        const univRes = await fetch('/api/auth/universities');
+        const univData = await univRes.json();
+        if (univData.status === 'success') {
+            ALL_UNIVERSITIES = univData.universities;
+        }
+        
+        const campRes = await fetch('/api/auth/campuses');
+        const campData = await campRes.json();
+        if (campData.status === 'success') {
+            ALL_CAMPUSES = campData.campuses;
+        }
+        
+        populateUniversityDropdown();
+    } catch (err) {
+        console.error('Error fetching university/campus data:', err);
+    }
+}
+
+// Populate university dropdown on registration page
+function populateUniversityDropdown() {
+    const regUnivSelect = document.getElementById('reg-univ');
+    if (!regUnivSelect) return;
+    
+    regUnivSelect.innerHTML = '<option value="" disabled selected>Select your University</option>';
+    
+    ALL_UNIVERSITIES.forEach(univ => {
+        const opt = document.createElement('option');
+        opt.value = univ.code;
+        opt.textContent = `${univ.name} (${univ.code})`;
+        regUnivSelect.appendChild(opt);
+    });
+    
+    // Reset campus choice if university changes
+    regUnivSelect.addEventListener('change', () => {
+        const campusInput = document.getElementById('reg-campus');
+        if (campusInput) {
+            campusInput.value = '';
+        }
+    });
+}
 
 // 5. Submit Login Form
 async function handleLoginSubmit(event) {

@@ -274,3 +274,66 @@ exports.getReports = async (req, res) => {
         return res.status(500).json({ status: 'error', message: 'Server error compiling reports and analytics' });
     }
 };
+
+// Add University
+exports.addUniversity = async (req, res) => {
+    try {
+        const { code, name } = req.body;
+        if (!code || !name) {
+            return res.status(400).json({ status: 'error', message: 'University code and name are required' });
+        }
+        
+        const cleanCode = code.trim().toUpperCase();
+        const cleanName = name.trim();
+
+        // Check if university code already exists
+        const checkSql = 'SELECT id FROM universities WHERE code = $1';
+        const checkRes = await db.query(checkSql, [cleanCode]);
+        if (checkRes.rowCount > 0) {
+            return res.status(400).json({ status: 'error', message: `University with code ${cleanCode} already exists` });
+        }
+
+        const sql = 'INSERT INTO universities (code, name) VALUES ($1, $2) RETURNING *';
+        const result = await db.query(sql, [cleanCode, cleanName]);
+        
+        return res.status(201).json({
+            status: 'success',
+            message: 'University added successfully',
+            university: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Add university error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error adding university' });
+    }
+};
+
+// Add Campus
+exports.addCampus = async (req, res) => {
+    try {
+        const { university_code, name } = req.body;
+        if (!university_code || !name) {
+            return res.status(400).json({ status: 'error', message: 'University code and campus name are required' });
+        }
+
+        const cleanUnivCode = university_code.trim().toUpperCase();
+        const cleanName = name.trim();
+
+        // Verify university exists
+        const checkUniv = await db.query('SELECT id FROM universities WHERE code = $1', [cleanUnivCode]);
+        if (checkUniv.rowCount === 0) {
+            return res.status(400).json({ status: 'error', message: `University code ${cleanUnivCode} does not exist. Add the university first.` });
+        }
+
+        const sql = 'INSERT INTO campuses (university_code, name) VALUES ($1, $2) RETURNING *';
+        const result = await db.query(sql, [cleanUnivCode, cleanName]);
+
+        return res.status(201).json({
+            status: 'success',
+            message: 'Campus added successfully',
+            campus: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Add campus error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error adding campus' });
+    }
+};

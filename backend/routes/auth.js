@@ -7,6 +7,8 @@ const { uploadIdCard, uploadPortrait } = require('../middleware/upload');
 // Public routes
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.get('/universities', authController.getUniversities);
+router.get('/campuses', authController.getCampuses);
 
 // Authenticated routes
 router.post('/send-otp', authenticate, authController.sendOtp);

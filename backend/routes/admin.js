@@ -25,4 +25,8 @@ router.post('/users/:id/reset-password', adminController.resetUserPassword);
 // Reports & Revenue Analytics
 router.get('/reports', adminController.getReports);
 
+// University & Campus Management
+router.post('/universities', adminController.addUniversity);
+router.post('/campuses', adminController.addCampus);
+
 module.exports = router;

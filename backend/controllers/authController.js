@@ -334,3 +334,43 @@ exports.uploadPortrait = async (req, res) => {
         return res.status(500).json({ status: 'error', message: 'Server error during portrait upload' });
     }
 };
+
+// Get all universities
+exports.getUniversities = async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM universities ORDER BY name ASC');
+        return res.json({
+            status: 'success',
+            count: result.rowCount,
+            universities: result.rows
+        });
+    } catch (error) {
+        console.error('Get universities error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error retrieving universities' });
+    }
+};
+
+// Get campuses (optionally filtered by university_code)
+exports.getCampuses = async (req, res) => {
+    try {
+        const { university_code } = req.query;
+        let sql = 'SELECT * FROM campuses';
+        let params = [];
+        
+        if (university_code) {
+            sql += ' WHERE university_code = $1';
+            params.push(university_code);
+        }
+        
+        sql += ' ORDER BY name ASC';
+        const result = await db.query(sql, params);
+        return res.json({
+            status: 'success',
+            count: result.rowCount,
+            campuses: result.rows
+        });
+    } catch (error) {
+        console.error('Get campuses error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error retrieving campuses' });
+    }
+};
