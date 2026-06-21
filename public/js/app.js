@@ -246,4 +246,12 @@ document.addEventListener('DOMContentLoaded', () => {
         Toast.show('Connection lost. Working in offline cache mode.', 'warning', 6000);
         document.body.classList.add('offline-mode');
     });
+
+    // 5. Fade out splash screen overlay after 2 seconds
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        setTimeout(() => {
+            splash.classList.add('fade-out');
+        }, 2000);
+    }
 });
