@@ -1,8 +1,6 @@
 # Scholarmart Campus Marketplace MVP
 
-A trusted, mobile-first campus marketplace platform designed for Nigerian university students, starting with COOU as the pilot. 
-
-Scholarmart enables students to buy and sell hostel gear, gadgets, and textbooks securely. It verifies student status via university email OTP or manual student ID uploads, features smooth vanilla CSS transitions and installable PWA components, and integrates Paystack split transactions (allocating listing prices directly to vendor bank subaccounts and a flat ₦500 fee to Scholarmart).
+A trusted, mobile-first campus marketplace platform designed for Nigerian university students, where students can, buy,sell and connect.
 
 ---
 
