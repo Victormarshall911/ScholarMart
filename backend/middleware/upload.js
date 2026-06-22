@@ -4,12 +4,11 @@ const fs = require('fs');
 
 // Target directory paths in the public static folder
 const uploadBaseDir = path.join(__dirname, '..', '..', 'public', 'uploads');
-const idCardsDir = path.join(uploadBaseDir, 'id-cards');
 const productsDir = path.join(uploadBaseDir, 'products');
 const portraitsDir = path.join(uploadBaseDir, 'portraits');
 
 // Create upload folders if they don't exist
-[uploadBaseDir, idCardsDir, productsDir, portraitsDir].forEach(dir => {
+[uploadBaseDir, productsDir, portraitsDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -28,18 +27,6 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Storage for Student IDs
-const idCardStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, idCardsDir);
-    },
-    filename: (req, file, cb) => {
-        const userId = req.user ? req.user.id : 'anon';
-        const ext = path.extname(file.originalname).toLowerCase();
-        cb(null, `id-${userId}-${Date.now()}${ext}`);
-    }
-});
-
 // Storage for Product Images
 const productStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -52,13 +39,6 @@ const productStorage = multer.diskStorage({
         cb(null, `product-${userId}-${Date.now()}-${uniqueSuffix}${ext}`);
     }
 });
-
-// Multer Upload Handlers
-const uploadIdCard = multer({
-    storage: idCardStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: fileFilter
-}).single('id_card');
 
 const uploadProductImages = multer({
     storage: productStorage,
@@ -85,7 +65,6 @@ const uploadPortrait = multer({
 }).single('portrait');
 
 module.exports = {
-    uploadIdCard,
     uploadProductImages,
     uploadPortrait
 };

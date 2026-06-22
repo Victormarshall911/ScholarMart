@@ -15,10 +15,9 @@ app.use(express.urlencoded({ extended: true }));
 // Create public directories if they do not exist
 const publicDir = path.join(__dirname, '..', 'public');
 const uploadsDir = path.join(publicDir, 'uploads');
-const idCardsDir = path.join(uploadsDir, 'id-cards');
 const productsDir = path.join(uploadsDir, 'products');
 
-[publicDir, uploadsDir, idCardsDir, productsDir].forEach(dir => {
+[publicDir, uploadsDir, productsDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -45,11 +44,13 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const categoryRoutes = require('./routes/categories');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

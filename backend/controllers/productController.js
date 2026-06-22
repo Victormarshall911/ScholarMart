@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { getBadgeInfo } = require('./authController');
 
 // 1. Get All Products (With Filters)
 exports.listProducts = async (req, res) => {
@@ -8,7 +9,9 @@ exports.listProducts = async (req, res) => {
         // Fetch all active products
         // Note: Joining user to get vendor details
         const sql = `
-            SELECT p.*, u.name as vendor_name, u.verification_status as vendor_verification, u.role as vendor_role, u.portrait as vendor_portrait
+            SELECT p.*, u.name as vendor_name, u.role as vendor_role, u.portrait as vendor_portrait,
+                   u.deals_completed as vendor_deals_completed, u.average_rating as vendor_average_rating,
+                   u.email_verified as vendor_email_verified
             FROM products p
             JOIN users u ON p.vendor_id = u.id
             WHERE p.status = 'active'
@@ -49,16 +52,23 @@ exports.listProducts = async (req, res) => {
         }
 
         // Add trust signals
-        const enrichedProducts = products.map(p => ({
-            ...p,
-            vendor: {
-                name: p.vendor_name,
-                verified: p.vendor_verification === 'approved',
-                verification_status: p.vendor_verification,
-                portrait: p.vendor_portrait || null,
-                responseTime: 'Typically replies in 2 hours' // Core requirement trust signal
-            }
-        }));
+        const enrichedProducts = products.map(p => {
+            const dealsCompleted = parseInt(p.vendor_deals_completed, 10) || 0;
+            const avgRating = parseFloat(p.vendor_average_rating) || 0;
+            const badge = getBadgeInfo(dealsCompleted, avgRating);
+            return {
+                ...p,
+                vendor: {
+                    name: p.vendor_name,
+                    portrait: p.vendor_portrait || null,
+                    email_verified: p.vendor_email_verified || false,
+                    deals_completed: dealsCompleted,
+                    average_rating: avgRating,
+                    badge,
+                    responseTime: 'Typically replies in 2 hours' // Core requirement trust signal
+                }
+            };
+        });
 
         return res.json({
             status: 'success',
@@ -77,8 +87,9 @@ exports.getProductDetails = async (req, res) => {
         const productId = parseInt(req.params.id, 10);
         
         const sql = `
-            SELECT p.*, u.name as vendor_name, u.email as vendor_email, u.phone as vendor_phone, 
-                   u.verification_status as vendor_verification, u.paystack_subaccount_code as subaccount, u.portrait as vendor_portrait
+            SELECT p.*, u.name as vendor_name, u.email as vendor_email, u.whatsapp_number as vendor_whatsapp, 
+                   u.portrait as vendor_portrait, u.deals_completed as vendor_deals_completed,
+                   u.average_rating as vendor_average_rating, u.email_verified as vendor_email_verified
             FROM products p
             JOIN users u ON p.vendor_id = u.id
             WHERE p.id = $1 AND p.status != 'deleted'
@@ -102,18 +113,22 @@ exports.getProductDetails = async (req, res) => {
         }
 
         // WhatsApp Direct Link generation
-        // "Hello, I am interested in your product: [Product Name] from Scholarmart"
-        const prefilledText = encodeURIComponent(`Hello, I am interested in your product: "${product.name}" from Scholarmart`);
-        // Ensure phone doesn't have leading zero or has country code (e.g. +234)
-        let formattedPhone = product.vendor_phone;
-        if (formattedPhone.startsWith('0')) {
-            formattedPhone = '234' + formattedPhone.substring(1);
-        } else if (!formattedPhone.startsWith('+') && !formattedPhone.startsWith('234')) {
-            formattedPhone = '234' + formattedPhone;
+        const prefilledText = encodeURIComponent(`Hello, I am interested in your product: "${product.name}" from ScholarMart`);
+        let formattedPhone = product.vendor_whatsapp || '';
+        if (formattedPhone) {
+            formattedPhone = formattedPhone.trim();
+            if (formattedPhone.startsWith('0')) {
+                formattedPhone = '234' + formattedPhone.substring(1);
+            } else if (!formattedPhone.startsWith('+') && !formattedPhone.startsWith('234')) {
+                formattedPhone = '234' + formattedPhone;
+            }
+            formattedPhone = formattedPhone.replace(/\+/g, '').replace(/\s/g, '');
         }
-        formattedPhone = formattedPhone.replace('+', '');
+        const whatsappLink = formattedPhone ? `https://wa.me/${formattedPhone}?text=${prefilledText}` : null;
 
-        const whatsappLink = `https://wa.me/${formattedPhone}?text=${prefilledText}`;
+        const dealsCompleted = parseInt(product.vendor_deals_completed, 10) || 0;
+        const avgRating = parseFloat(product.vendor_average_rating) || 0;
+        const badge = getBadgeInfo(dealsCompleted, avgRating);
 
         return res.json({
             status: 'success',
@@ -132,9 +147,11 @@ exports.getProductDetails = async (req, res) => {
                     id: product.vendor_id,
                     name: product.vendor_name,
                     email: product.vendor_email,
-                    phone: product.vendor_phone,
-                    verified: product.vendor_verification === 'approved',
-                    verification_status: product.vendor_verification,
+                    whatsapp: product.vendor_whatsapp || null,
+                    email_verified: product.vendor_email_verified || false,
+                    deals_completed: dealsCompleted,
+                    average_rating: avgRating,
+                    badge,
                     portrait: product.vendor_portrait || null,
                     responseTime: 'Typically replies in 2 hours',
                     whatsappLink
@@ -158,10 +175,9 @@ exports.createProduct = async (req, res) => {
             return res.status(400).json({ status: 'error', message: 'Product name, price, category, and campus are required' });
         }
 
-        // Ensure user is verified (trust signal policy: warn if vendor is not approved, but let them list in sandbox)
-        // For MVP, vendors can list but will display pending/unverified badge until approved
-        const userCheck = await db.query('SELECT verification_status FROM users WHERE id = $1', [vendorId]);
-        const verificationStatus = userCheck.rows[0]?.verification_status;
+        // Check vendor email verification status
+        const userCheck = await db.query('SELECT email_verified FROM users WHERE id = $1', [vendorId]);
+        const emailVerified = userCheck.rows[0]?.email_verified || false;
 
         // Process upload images
         const imageUrls = [];
@@ -295,7 +311,7 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
-// 6. Save (Bookmark) Product
+// 6. Add Product to Cart
 exports.saveProduct = async (req, res) => {
     try {
         const productId = parseInt(req.body.productId, 10);
@@ -305,44 +321,44 @@ exports.saveProduct = async (req, res) => {
             return res.status(400).json({ status: 'error', message: 'productId is required' });
         }
 
-        // Insert into saved_products
+        // Insert into cart_items
         await db.query(
-            'INSERT INTO saved_products (user_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            'INSERT INTO cart_items (user_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
             [userId, productId]
         );
 
-        return res.json({ status: 'success', message: 'Product saved to bookmarks' });
+        return res.json({ status: 'success', message: 'Product added to cart' });
     } catch (error) {
-        console.error('Save product error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error saving product' });
+        console.error('Add cart product error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error adding product to cart' });
     }
 };
 
-// 7. Unsave Product
+// 7. Remove Product from Cart
 exports.unsaveProduct = async (req, res) => {
     try {
         const productId = parseInt(req.params.productId, 10);
         const userId = req.user.id;
 
         await db.query(
-            'DELETE FROM saved_products WHERE user_id = $1 AND product_id = $2',
+            'DELETE FROM cart_items WHERE user_id = $1 AND product_id = $2',
             [userId, productId]
         );
 
-        return res.json({ status: 'success', message: 'Product removed from bookmarks' });
+        return res.json({ status: 'success', message: 'Product removed from cart' });
     } catch (error) {
-        console.error('Unsave product error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error removing product' });
+        console.error('Remove cart product error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error removing product from cart' });
     }
 };
 
-// 8. Get Saved Products
+// 8. Get Cart Products
 exports.getSavedProducts = async (req, res) => {
     try {
         const userId = req.user.id;
         const result = await db.query(
             `SELECT p.*, u.name as vendor_name, u.verification_status as vendor_verification, u.portrait as vendor_portrait
-             FROM saved_products sp
+             FROM cart_items sp
              JOIN products p ON sp.product_id = p.id
              JOIN users u ON p.vendor_id = u.id
              WHERE sp.user_id = $1 AND p.status = 'active'`,
@@ -361,7 +377,7 @@ exports.getSavedProducts = async (req, res) => {
             }))
         });
     } catch (error) {
-        console.error('Get saved products error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error retrieving saved products' });
+        console.error('Get cart products error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error retrieving cart products' });
     }
 };

@@ -1,333 +1,266 @@
 const db = require('../config/db');
+const { getBadgeInfo } = require('./authController');
 
-// Helper to create Paystack Split Group
-const createPaystackSplitGroup = async (vendorSubaccount, productPrice, productId) => {
-    const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
-    if (!paystackSecret) {
-        return `SPL_mock_${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-    }
-
+// 1. Mark Product as Sold (Vendor marks an item as sold after WhatsApp deal)
+exports.markAsSold = async (req, res) => {
     try {
-        const response = await fetch('https://api.paystack.co/split', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${paystackSecret}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: `Split_Prod_${productId}_${Date.now()}`,
-                type: 'flat',
-                currency: 'NGN',
-                subaccounts: [
-                    {
-                        subaccount: vendorSubaccount,
-                        share: Math.round(productPrice * 100) // In Kobo
-                    }
-                ],
-                bearer_type: 'account' // Platform account pays transaction fee
-            })
-        });
-
-        const data = await response.json();
-        if (data.status && data.data) {
-            return data.data.split_code;
-        } else {
-            console.warn('Paystack split group creation failed:', data.message);
-            return `SPL_mock_${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-        }
-    } catch (error) {
-        console.error('Error creating split group in Paystack:', error.message);
-        return `SPL_mock_${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-    }
-};
-
-// Helper to initialize Paystack Transaction
-const initializePaystackPayment = async (buyerEmail, totalAmount, reference, splitCode) => {
-    const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
-    if (!paystackSecret) {
-        // Return a mock checkout page link
-        return {
-            status: true,
-            data: {
-                authorization_url: `/#/payment-simulate/${reference}`,
-                reference
-            }
-        };
-    }
-
-    try {
-        const response = await fetch('https://api.paystack.co/transaction/initialize', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${paystackSecret}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: buyerEmail,
-                amount: Math.round(totalAmount * 100), // In Kobo
-                reference,
-                split_code: splitCode,
-                callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/#/payment-callback`
-            })
-        });
-
-        return await response.json();
-    } catch (error) {
-        console.error('Paystack initialize payment error:', error.message);
-        return { status: false, message: error.message };
-    }
-};
-
-// 1. Initialize Order and Payment
-exports.initializeOrder = async (req, res) => {
-    try {
-        const { productId } = req.body;
-        const buyerId = req.user.id;
-        const buyerEmail = req.user.email;
+        const { productId, buyerId } = req.body;
+        const vendorId = req.user.id;
 
         if (!productId) {
             return res.status(400).json({ status: 'error', message: 'productId is required' });
         }
 
-        // Fetch product and vendor details
+        // Fetch product
         const prodResult = await db.query(
-            `SELECT p.*, u.paystack_subaccount_code, u.verification_status 
-             FROM products p 
-             JOIN users u ON p.vendor_id = u.id 
-             WHERE p.id = $1 AND p.status = 'active'`,
+            `SELECT * FROM products WHERE id = $1 AND status = 'active'`,
             [productId]
         );
 
         if (prodResult.rowCount === 0) {
-            return res.status(404).json({ status: 'error', message: 'Product not found or unavailable' });
+            return res.status(404).json({ status: 'error', message: 'Product not found or already sold' });
         }
 
         const product = prodResult.rows[0];
 
-        if (product.vendor_id === buyerId) {
-            return res.status(400).json({ status: 'error', message: 'You cannot buy your own product' });
+        if (product.vendor_id !== vendorId) {
+            return res.status(403).json({ status: 'error', message: 'Only the product vendor can mark items as sold' });
         }
 
-        // Split calculation
         const productPrice = parseFloat(product.price);
-        const serviceFee = 500.00; // Platform flat fee
-        const totalAmount = productPrice + serviceFee;
 
-        // Subaccount verification
-        let subaccount = product.paystack_subaccount_code;
-        if (!subaccount) {
-            // Vendor has no subaccount, we fallback by generating a mock subaccount code
-            // (or in a real system we would prompt the vendor to complete banking setup)
-            console.warn(`Vendor ${product.vendor_id} is missing Paystack subaccount. Generating sandbox code.`);
-            subaccount = `ACCT_mock_auto_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-            await db.query('UPDATE users SET paystack_subaccount_code = $1 WHERE id = $2', [subaccount, product.vendor_id]);
-        }
-
-        // Generate temporary order reference
-        const reference = `SM_ref_${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-
-        // Create Split Group on Paystack
-        const splitCode = await createPaystackSplitGroup(subaccount, productPrice, product.id);
-
-        // Initialize transaction on Paystack
-        const paymentResult = await initializePaystackPayment(buyerEmail, totalAmount, reference, splitCode);
-
-        if (!paymentResult.status) {
-            return res.status(500).json({ status: 'error', message: paymentResult.message || 'Payment initialization failed' });
-        }
-
-        // Insert Order in DB with status pending
-        await db.query(
-            `INSERT INTO orders (buyer_id, product_id, vendor_id, amount, service_fee, total_amount, status, paystack_reference, paystack_split_code)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [buyerId, product.id, product.vendor_id, productPrice, serviceFee, totalAmount, 'pending', reference, splitCode]
+        // Create deal record
+        const dealResult = await db.query(
+            `INSERT INTO deals (buyer_id, product_id, vendor_id, amount, status)
+             VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+            [buyerId || null, productId, vendorId, productPrice, 'pending_confirmation']
         );
+
+        const dealId = dealResult.rows[0].id;
+
+        // Mark product status as sold
+        await db.query(`UPDATE products SET status = 'sold' WHERE id = $1`, [productId]);
+
+        return res.status(201).json({
+            status: 'success',
+            message: 'Product marked as sold! Waiting for buyer confirmation.',
+            dealId
+        });
+
+    } catch (error) {
+        console.error('Mark as sold error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error marking product as sold' });
+    }
+};
+
+// 2. Confirm Deal (Buyer confirms they received the product)
+exports.confirmDeal = async (req, res) => {
+    try {
+        const dealId = parseInt(req.params.id, 10);
+        const buyerId = req.user.id;
+
+        // Fetch deal
+        const dealResult = await db.query('SELECT * FROM deals WHERE id = $1', [dealId]);
+        if (dealResult.rowCount === 0) {
+            return res.status(404).json({ status: 'error', message: 'Deal not found' });
+        }
+
+        const deal = dealResult.rows[0];
+
+        // Buyer can confirm (or vendor if buyer_id is null — cash deals)
+        if (deal.buyer_id && deal.buyer_id !== buyerId && req.user.role !== 'admin') {
+            return res.status(403).json({ status: 'error', message: 'Only the buyer can confirm this deal' });
+        }
+
+        // Mark deal as completed
+        await db.query(
+            `UPDATE deals SET confirmed_by_buyer = true, status = 'completed' WHERE id = $1`,
+            [dealId]
+        );
+
+        // Increment vendor's deals_completed count
+        const vendorResult = await db.query('SELECT deals_completed FROM users WHERE id = $1', [deal.vendor_id]);
+        if (vendorResult.rowCount > 0) {
+            const newCount = (vendorResult.rows[0].deals_completed || 0) + 1;
+            await db.query('UPDATE users SET deals_completed = $1 WHERE id = $2', [newCount, deal.vendor_id]);
+        }
 
         return res.json({
             status: 'success',
-            message: 'Order initiated. Redirecting to payment gateway.',
-            paymentUrl: paymentResult.data.authorization_url,
-            reference,
-            amount: productPrice,
-            serviceFee,
-            totalAmount,
-            splitCode
+            message: 'Deal confirmed! Thank you for using ScholarMart. 🎉'
         });
 
     } catch (error) {
-        console.error('Initialize order error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error initiating order' });
+        console.error('Confirm deal error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error confirming deal' });
     }
 };
 
-// 2. Verify Payment (Callback/Poll)
-exports.verifyPayment = async (req, res) => {
+// 3. Rate Seller (After deal confirmation)
+exports.rateDeal = async (req, res) => {
     try {
-        const { reference } = req.params;
-        const paystackSecret = process.env.PAYSTACK_SECRET_KEY;
+        const dealId = parseInt(req.params.id, 10);
+        const { rating, review } = req.body;
 
-        // Fetch order
-        const orderResult = await db.query('SELECT * FROM orders WHERE paystack_reference = $1', [reference]);
-        if (orderResult.rowCount === 0) {
-            return res.status(404).json({ status: 'error', message: 'Order not found' });
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ status: 'error', message: 'Rating must be between 1 and 5' });
         }
 
-        const order = orderResult.rows[0];
-
-        if (order.status !== 'pending') {
-            return res.json({
-                status: 'success',
-                message: 'Order has already been updated',
-                orderStatus: order.status
-            });
+        // Fetch deal
+        const dealResult = await db.query('SELECT * FROM deals WHERE id = $1', [dealId]);
+        if (dealResult.rowCount === 0) {
+            return res.status(404).json({ status: 'error', message: 'Deal not found' });
         }
 
-        let isSuccess = false;
+        const deal = dealResult.rows[0];
 
-        if (!paystackSecret || reference.startsWith('SM_ref_')) {
-            // Mock transaction verification (Sandbox mode success)
-            isSuccess = true;
-        } else {
-            // Real Paystack verification
-            try {
-                const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${paystackSecret}`
-                    }
-                });
-                const data = await response.json();
-                if (data.status && data.data.status === 'success') {
-                    isSuccess = true;
-                }
-            } catch (err) {
-                console.error('Error verifying transaction on Paystack:', err.message);
-            }
+        if (deal.status !== 'completed') {
+            return res.status(400).json({ status: 'error', message: 'Deal must be completed before rating' });
         }
 
-        if (isSuccess) {
-            // Update order status to paid
-            await db.query("UPDATE orders SET status = 'paid' WHERE id = $1", [order.id]);
-            return res.json({
-                status: 'success',
-                payment_status: 'success',
-                orderStatus: 'paid'
-            });
-        } else {
-            return res.json({
-                status: 'success',
-                payment_status: 'failed or pending',
-                orderStatus: 'pending'
-            });
+        if (deal.rating) {
+            return res.status(400).json({ status: 'error', message: 'This deal has already been rated' });
         }
+
+        // Save rating on deal
+        await db.query(
+            `UPDATE deals SET rating = $1, review = $2 WHERE id = $3`,
+            [rating, review || null, dealId]
+        );
+
+        // Recalculate vendor's average rating
+        const vendorResult = await db.query('SELECT average_rating, total_ratings FROM users WHERE id = $1', [deal.vendor_id]);
+        if (vendorResult.rowCount > 0) {
+            const vendor = vendorResult.rows[0];
+            const oldTotal = vendor.total_ratings || 0;
+            const oldAvg = parseFloat(vendor.average_rating) || 0;
+            const newTotal = oldTotal + 1;
+            const newAvg = ((oldAvg * oldTotal) + rating) / newTotal;
+
+            await db.query(
+                `UPDATE users SET average_rating = $1, total_ratings = $2 WHERE id = $3`,
+                [Math.round(newAvg * 100) / 100, newTotal, deal.vendor_id]
+            );
+        }
+
+        return res.json({
+            status: 'success',
+            message: 'Thank you for rating this seller! ⭐'
+        });
+
     } catch (error) {
-        console.error('Verify payment error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error verifying payment' });
+        console.error('Rate deal error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error rating deal' });
     }
 };
 
-// 3. Get Buyer Orders
-exports.getBuyerOrders = async (req, res) => {
+// 4. Get Buyer Deals
+exports.getBuyerDeals = async (req, res) => {
     try {
         const buyerId = req.user.id;
-        const sql = `
-            SELECT o.*, p.name as product_name, p.images, u.name as vendor_name, u.phone as vendor_phone
-            FROM orders o
-            JOIN products p ON o.product_id = p.id
-            JOIN users u ON o.vendor_id = u.id
-            WHERE o.buyer_id = $1
-            ORDER BY o.created_at DESC
-        `;
-        const result = await db.query(sql, [buyerId]);
+        const result = await db.query(
+            `SELECT d.*, p.name as product_name, p.images, u.name as vendor_name, u.whatsapp_number as vendor_whatsapp
+             FROM deals d
+             JOIN products p ON d.product_id = p.id
+             JOIN users u ON d.vendor_id = u.id
+             WHERE d.buyer_id = $1
+             ORDER BY d.created_at DESC`,
+            [buyerId]
+        );
 
-        const formattedOrders = result.rows.map(o => {
-            let images = o.images;
+        const formattedDeals = result.rows.map(d => {
+            let images = d.images;
             if (typeof images === 'string') {
                 try { images = JSON.parse(images); } catch (e) { images = []; }
             }
+            const vendorBadge = getBadgeInfo(d.vendor_deals_completed || 0, parseFloat(d.vendor_average_rating) || 0);
             return {
-                ...o,
+                ...d,
                 images: images || [],
-                product_name: o.product_name,
-                vendor: { name: o.vendor_name, phone: o.vendor_phone }
+                product_name: d.product_name,
+                vendor: {
+                    name: d.vendor_name,
+                    whatsapp: d.vendor_whatsapp,
+                    badge: vendorBadge
+                }
             };
         });
 
-        return res.json({ status: 'success', orders: formattedOrders });
+        return res.json({ status: 'success', deals: formattedDeals });
     } catch (error) {
-        console.error('Get buyer orders error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error fetching purchases' });
+        console.error('Get buyer deals error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error fetching deals' });
     }
 };
 
-// 4. Get Vendor Sales
-exports.getVendorSales = async (req, res) => {
+// 5. Get Vendor Deals
+exports.getVendorDeals = async (req, res) => {
     try {
         const vendorId = req.user.id;
-        const sql = `
-            SELECT o.*, p.name as product_name, p.images, u.name as buyer_name, u.phone as buyer_phone
-            FROM orders o
-            JOIN products p ON o.product_id = p.id
-            JOIN users u ON o.buyer_id = u.id
-            WHERE o.vendor_id = $1
-            ORDER BY o.created_at DESC
-        `;
-        const result = await db.query(sql, [vendorId]);
+        const result = await db.query(
+            `SELECT d.*, p.name as product_name, p.images, u.name as buyer_name, u.whatsapp_number as buyer_whatsapp
+             FROM deals d
+             JOIN products p ON d.product_id = p.id
+             LEFT JOIN users u ON d.buyer_id = u.id
+             WHERE d.vendor_id = $1
+             ORDER BY d.created_at DESC`,
+            [vendorId]
+        );
 
-        const formattedSales = result.rows.map(o => {
-            let images = o.images;
+        const formattedDeals = result.rows.map(d => {
+            let images = d.images;
             if (typeof images === 'string') {
                 try { images = JSON.parse(images); } catch (e) { images = []; }
             }
             return {
-                ...o,
+                ...d,
                 images: images || [],
-                product_name: o.product_name,
-                buyer: { name: o.buyer_name, phone: o.buyer_phone }
+                product_name: d.product_name,
+                buyer: {
+                    name: d.buyer_name || 'Walk-in Buyer',
+                    whatsapp: d.buyer_whatsapp || ''
+                }
             };
         });
 
-        return res.json({ status: 'success', sales: formattedSales });
+        return res.json({ status: 'success', deals: formattedDeals });
     } catch (error) {
-        console.error('Get vendor sales error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error fetching sales' });
+        console.error('Get vendor deals error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error fetching deals' });
     }
 };
 
-// 5. Update Order Status (For Vendors/Admins)
-exports.updateOrderStatus = async (req, res) => {
+// 6. Update Deal Status (Vendor or Admin)
+exports.updateDealStatus = async (req, res) => {
     try {
-        const orderId = parseInt(req.params.id, 10);
+        const dealId = parseInt(req.params.id, 10);
         const userId = req.user.id;
         const userRole = req.user.role;
-        const { status } = req.body; // 'shipped', 'completed', 'cancelled'
+        const { status } = req.body;
 
         if (!status) {
             return res.status(400).json({ status: 'error', message: 'Status is required' });
         }
 
-        // Check order
-        const orderResult = await db.query('SELECT * FROM orders WHERE id = $1', [orderId]);
-        if (orderResult.rowCount === 0) {
-            return res.status(404).json({ status: 'error', message: 'Order not found' });
+        const dealResult = await db.query('SELECT * FROM deals WHERE id = $1', [dealId]);
+        if (dealResult.rowCount === 0) {
+            return res.status(404).json({ status: 'error', message: 'Deal not found' });
         }
 
-        const order = orderResult.rows[0];
+        const deal = dealResult.rows[0];
 
-        // Authorization check: only vendor or admin can change status
-        if (order.vendor_id !== userId && userRole !== 'admin') {
-            return res.status(403).json({ status: 'error', message: 'Unauthorized: You are not the vendor for this order' });
+        if (deal.vendor_id !== userId && userRole !== 'admin') {
+            return res.status(403).json({ status: 'error', message: 'Unauthorized' });
         }
 
-        await db.query('UPDATE orders SET status = $1 WHERE id = $2', [status, orderId]);
+        await db.query('UPDATE deals SET status = $1 WHERE id = $2', [status, dealId]);
 
         return res.json({
             status: 'success',
-            message: `Order status updated to: ${status}`,
-            orderStatus: status
+            message: `Deal status updated to: ${status}`
         });
     } catch (error) {
-        console.error('Update order status error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error updating order status' });
+        console.error('Update deal status error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error updating deal status' });
     }
 };

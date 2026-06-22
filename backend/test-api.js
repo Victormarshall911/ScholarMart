@@ -15,8 +15,8 @@ let serverProcess = null;
 let testToken = null;
 let testUserId = null;
 let adminToken = null;
-let testProductReference = null;
 let testProductId = null;
+let testDealId = null;
 
 // Helper to delay execution
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -44,6 +44,7 @@ function startServer() {
 
         serverProcess.stdout.on('data', (data) => {
             const output = data.toString();
+            console.log(output.trim());
             // Resolve once server outputs startup confirm
             if (output.includes('Scholarmart MVP Server started')) {
                 resolve();
@@ -79,7 +80,7 @@ async function runTests() {
         await startServer();
         console.log('Test server active. Beginning API tests...\n');
 
-        // Test 1: User Registration (Vendor)
+        // Test 1: User Registration (Vendor with WhatsApp Number)
         console.log('Test 1: User Registration...');
         const regRes = await fetch(`${BASE_URL}/api/auth/register`, {
             method: 'POST',
@@ -87,23 +88,20 @@ async function runTests() {
             body: JSON.stringify({
                 name: 'Test Student Vendor',
                 email: 'vendor@coou.edu.ng',
-                phone: '08099887766',
+                whatsappNumber: '08099887766',
                 university: 'COOU',
                 campus: 'Uli Campus',
                 password: 'Password123',
                 confirmPassword: 'Password123',
-                role: 'vendor',
-                bankName: 'GTBank',
-                bankCode: '058',
-                accountNumber: '0123456789',
-                accountHolderName: 'Test Student Vendor'
+                role: 'vendor'
             })
         });
         const regData = await regRes.json();
-        assertEqual(regRes.status, 210, 'Registration returns status 201 Created'); // wait, HTTP status is 201 (Created)
+        assertEqual(regRes.status, 201, 'Registration returns status 201 Created');
         assertEqual(regData.status, 'success', 'Registration response body returns status: success');
         assertEqual(regData.user.role, 'vendor', 'Registered user has correct vendor role');
-        assertEqual(regData.user.verification_status, 'pending', 'User starts as pending verification');
+        assertEqual(regData.user.whatsapp_number, '08099887766', 'WhatsApp number registered successfully');
+        assertEqual(regData.user.email_verified, false, 'User starts with unverified email');
         
         testToken = regData.token;
         testUserId = regData.user.id;
@@ -119,8 +117,9 @@ async function runTests() {
         assertEqual(loginRes.status, 200, 'Login returns status 200 OK');
         assertEqual(loginData.status, 'success', 'Login returns status: success');
         assertEqual(!!loginData.token, true, 'Login response contains JWT token');
+        assertEqual(loginData.user.whatsapp_number, '08099887766', 'Login returns whatsapp number');
 
-        // Test 3: Request Student Email Verification OTP
+        // Test 3: Request Email Verification OTP
         console.log('\nTest 3: Send Verification OTP...');
         const otpReqRes = await fetch(`${BASE_URL}/api/auth/send-otp`, {
             method: 'POST',
@@ -136,13 +135,13 @@ async function runTests() {
         if (fs.existsSync(dbStorePath)) {
             const dbData = JSON.parse(fs.readFileSync(dbStorePath, 'utf8'));
             const userInDb = dbData.users.find(u => u.id === testUserId);
-            if (userInDb && userInDb.verification_otp) {
-                otpCode = userInDb.verification_otp;
+            if (userInDb && userInDb.email_otp) {
+                otpCode = userInDb.email_otp;
                 console.log(`   (Successfully extracted verification OTP code: "${otpCode}")`);
             }
         }
 
-        // Test 4: Submit & Verify Student OTP
+        // Test 4: Submit & Verify Email OTP
         console.log('\nTest 4: Verify OTP...');
         const verifyRes = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
             method: 'POST',
@@ -154,8 +153,8 @@ async function runTests() {
         });
         const verifyData = await verifyRes.json();
         assertEqual(verifyRes.status, 200, 'OTP verify returns status 200 OK');
-        assertEqual(verifyData.status, 'success', 'Student status successfully approved');
-        assertEqual(verifyData.verification_status, 'approved', 'Verification status badge reads approved');
+        assertEqual(verifyData.status, 'success', 'Email verification status successfully approved');
+        assertEqual(verifyData.email_verified, true, 'Email verified is set to true');
 
         // Test 5: Add Product Listing
         console.log('\nTest 5: Create Product Listing...');
@@ -174,7 +173,7 @@ async function runTests() {
             })
         });
         const prodData = await prodRes.json();
-        assertEqual(prodRes.status, 210, 'Create product returns status 201 Created');
+        assertEqual(prodRes.status, 201, 'Create product returns status 201 Created');
         assertEqual(prodData.status, 'success', 'Product listed successfully');
         
         testProductId = prodData.productId;
@@ -185,11 +184,9 @@ async function runTests() {
         const catData = await catRes.json();
         assertEqual(catRes.status, 200, 'Retrieve products returns status 200 OK');
         assertEqual(catData.products.length > 0, true, 'Mattress is visible in filtered listings');
-        assertEqual(catData.products[0].vendor.responseTime, 'Typically replies in 2 hours', 'Verified vendor trust signal response time visible');
+        assertEqual(catData.products[0].vendor.name, 'Test Student Vendor', 'Vendor is associated with product');
 
-        // Test 7: Checkout & Payout splits initialization
-        console.log('\nTest 7: Initialize Payment splits...');
-        // Let's login as admin to simulate a buyer or just buy it as the admin (since admin role can act as buyer)
+        // Login as admin to perform deal confirmation / ratings and admin reports
         const adminLoginRes = await fetch(`${BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -198,39 +195,164 @@ async function runTests() {
         const adminLoginData = await adminLoginRes.json();
         adminToken = adminLoginData.token;
 
-        const orderRes = await fetch(`${BASE_URL}/api/orders/initialize`, {
+        // Test 7: Vendor marks product as sold (Creates Deal)
+        console.log('\nTest 7: Mark Product as Sold (Create Deal)...');
+        const markSoldRes = await fetch(`${BASE_URL}/api/orders/mark-sold`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${testToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                productId: testProductId,
+                buyerId: adminLoginData.user.id
+            })
+        });
+        const markSoldData = await markSoldRes.json();
+        assertEqual(markSoldRes.status, 201, 'Mark sold returns status 201 Created');
+        assertEqual(markSoldData.status, 'success', 'Deal successfully created');
+        
+        testDealId = markSoldData.dealId;
+
+        // Test 8: Buyer confirms Deal Completion
+        console.log('\nTest 8: Confirm Deal...');
+        const confirmRes = await fetch(`${BASE_URL}/api/orders/${testDealId}/confirm`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const confirmData = await confirmRes.json();
+        assertEqual(confirmRes.status, 200, 'Confirm deal returns status 200 OK');
+        assertEqual(confirmData.status, 'success', 'Deal successfully confirmed');
+
+        // Test 9: Buyer Rates Seller after Deal Completion
+        console.log('\nTest 9: Rate Seller...');
+        const rateRes = await fetch(`${BASE_URL}/api/orders/${testDealId}/rate`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${adminToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ productId: testProductId })
+            body: JSON.stringify({
+                rating: 5,
+                review: 'Excellent seller, very prompt!'
+            })
         });
-        const orderData = await orderRes.json();
-        assertEqual(orderRes.status, 200, 'Checkout returns status 200 OK');
-        assertEqual(orderData.status, 'success', 'Order splits initialized');
-        assertEqual(orderData.amount, 15000, 'Product share matches price');
-        assertEqual(orderData.serviceFee, 500, 'Service fee adds flat ₦500');
-        assertEqual(orderData.totalAmount, 15500, 'Total buyer charges calculate to ₦15,500');
+        const rateData = await rateRes.json();
+        assertEqual(rateRes.status, 200, 'Rate seller returns status 200 OK');
+        assertEqual(rateData.status, 'success', 'Seller rated successfully');
 
-        testProductReference = orderData.reference;
+        // Test 10: Report Seller
+        console.log('\nTest 10: Report Seller...');
+        const reportRes = await fetch(`${BASE_URL}/api/admin/users/${testUserId}/report`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reason: 'Offline demand: Demanded extra delivery fee outside WhatsApp deal'
+            })
+        });
+        const reportData = await reportRes.json();
+        assertEqual(reportRes.status, 200, 'Report seller returns status 200 OK');
+        assertEqual(reportData.status, 'success', 'Report submitted successfully');
 
-        // Test 8: Sandbox payment status check
-        console.log('\nTest 8: Confirm payment & update reference...');
-        const verifyPayRes = await fetch(`${BASE_URL}/api/orders/verify/${testProductReference}`);
-        const verifyPayData = await verifyPayRes.json();
-        assertEqual(verifyPayRes.status, 200, 'Payment verification returns 200 OK');
-        assertEqual(verifyPayData.orderStatus, 'paid', 'Order status updated to paid after sandbox callback');
-
-        // Test 9: Admin Analytics and revenue collection report
-        console.log('\nTest 9: Admin Analytics reports...');
+        // Test 11: Admin Analytics reports
+        console.log('\nTest 11: Admin Analytics reports...');
         const adminRepRes = await fetch(`${BASE_URL}/api/admin/reports`, {
             headers: { 'Authorization': `Bearer ${adminToken}` }
         });
         const adminRepData = await adminRepRes.json();
         assertEqual(adminRepRes.status, 200, 'Admin reports return status 200 OK');
-        assertEqual(adminRepData.analytics.revenue, 500, 'Platform collected fee matches ₦500 flat fee');
-        assertEqual(adminRepData.analytics.totalTransactions, 1, 'Transaction count matches 1 completed checkout');
+        assertEqual(adminRepData.analytics.totalDeals, 1, 'Total completed/active deals count matches');
+        assertEqual(adminRepData.analytics.totalUsers >= 1, true, 'User count includes vendor');
+
+        // Test 12: Admin View All Reports
+        console.log('\nTest 12: Admin View All Reports...');
+        const allRepRes = await fetch(`${BASE_URL}/api/admin/all-reports`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const allRepData = await allRepRes.json();
+        assertEqual(allRepRes.status, 200, 'Admin retrieve all-reports returns status 200 OK');
+        assertEqual(allRepData.reports.length > 0, true, 'Report queue contains our test report');
+        assertEqual(allRepData.reports[0].reason.includes('Offline demand'), true, 'Report reason matches input');
+
+        // Test 13: Admin View All Deals
+        console.log('\nTest 13: Admin View All Deals...');
+        const getDealsRes = await fetch(`${BASE_URL}/api/admin/deals`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const getDealsData = await getDealsRes.json();
+        assertEqual(getDealsRes.status, 200, 'Admin retrieve deals returns status 200 OK');
+        assertEqual(getDealsData.deals.length > 0, true, 'Deals are returned');
+        assertEqual(getDealsData.deals[0].id, testDealId, 'Returned deal matches created deal ID');
+
+        // Test 14: Category Management
+        console.log('\nTest 14: Category Management...');
+        const catListRes = await fetch(`${BASE_URL}/api/categories`);
+        const catListData = await catListRes.json();
+        assertEqual(catListRes.status, 200, 'Retrieve categories returns status 200 OK');
+        assertEqual(catListData.categories.length > 0, true, 'Default categories are returned');
+
+        const addCatRes = await fetch(`${BASE_URL}/api/categories`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: 'Fresh Fruits' })
+        });
+        const addCatData = await addCatRes.json();
+        assertEqual(addCatRes.status, 201, 'Create category returns status 201 Created');
+        assertEqual(addCatData.status, 'success', 'Category added successfully');
+
+        // Test 15: Shopping Cart System
+        console.log('\nTest 15: Shopping Cart System...');
+        
+        // Create an active product for cart testing
+        const cartProdRes = await fetch(`${BASE_URL}/api/products`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${testToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: 'Cart Test Lamp',
+                price: 3000,
+                category: 'Gadgets',
+                campus: 'Uli Campus',
+                description: 'Rechargeable LED reading lamp.'
+            })
+        });
+        const cartProdData = await cartProdRes.json();
+        assertEqual(cartProdRes.status, 201, 'Create cart test product returns 201');
+        const cartProductId = cartProdData.productId;
+
+        const cartEmptyRes = await fetch(`${BASE_URL}/api/products/cart`, {
+            headers: { 'Authorization': `Bearer ${testToken}` }
+        });
+        const cartEmptyData = await cartEmptyRes.json();
+        assertEqual(cartEmptyData.products.length, 0, 'Cart is empty initially');
+
+        const cartAddRes = await fetch(`${BASE_URL}/api/products/cart`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${testToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId: cartProductId })
+        });
+        const cartAddData = await cartAddRes.json();
+        assertEqual(cartAddData.status, 'success', 'Product added to cart');
+
+        const cartFilledRes = await fetch(`${BASE_URL}/api/products/cart`, {
+            headers: { 'Authorization': `Bearer ${testToken}` }
+        });
+        const cartFilledData = await cartFilledRes.json();
+        assertEqual(cartFilledData.products.length, 1, 'Cart has 1 item');
 
         console.log('\n✨ ALL E2E API VERIFICATION TESTS PASSED SUCCESSFULLY! ✨');
     } catch(err) {
@@ -246,13 +368,6 @@ async function runTests() {
 
 // Modify status checks to allow standard HTTP codes
 assertEqual = (actual, expected, message) => {
-    // If testing 201 Created
-    if (expected === 210) {
-        if (actual === 201 || actual === 200) {
-            console.log(`✅ [PASS] ${message} (${actual})`);
-            return;
-        }
-    }
     if (actual === expected) {
         console.log(`✅ [PASS] ${message}`);
     } else {

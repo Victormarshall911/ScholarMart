@@ -25,7 +25,7 @@ function logoutUser() {
     localStorage.removeItem('scholarmart_user');
     currentToken = null;
     currentUser = null;
-    savedProductIds = [];
+    cartProductIds = [];
     
     syncAuthUI();
     Toast.show('Logged out successfully', 'info');
@@ -72,16 +72,19 @@ function routeApp() {
         document.getElementById('auth-view').classList.add('active');
         toggleAuthPanel(hash === '#/register' ? 'register' : 'login');
     } 
-    else if (hash === '#/saved') {
+    else if (hash === '#/cart') {
         if (!currentToken) {
             window.location.hash = '#/login';
             return;
         }
         document.getElementById('dashboard-buyer-view').classList.add('active');
-        document.getElementById('nav-saved-btn').classList.add('active');
-        switchDashboardTab('buyer-saved');
+        document.getElementById('nav-cart-btn').classList.add('active');
+        switchDashboardTab('buyer-cart');
     } 
-    else if (hash === '#/dashboard') {
+    else if (hash === '#/saved') {
+        window.location.hash = '#/cart';
+        return;
+    }    else if (hash === '#/dashboard') {
         if (!currentToken) {
             window.location.hash = '#/login';
             return;
@@ -106,15 +109,6 @@ function routeApp() {
         document.getElementById('dashboard-admin-view').classList.add('active');
         loadAdminDashboard();
     } 
-    else if (hash.startsWith('#/payment-simulate/')) {
-        if (!currentToken) {
-            window.location.hash = '#/login';
-            return;
-        }
-        const ref = hash.split('/').pop();
-        document.getElementById('payment-simulate-view').classList.add('active');
-        loadPaymentSimulation(ref);
-    } 
     else {
         // Not Found fallback
         window.location.hash = '#/';
@@ -122,15 +116,46 @@ function routeApp() {
 }
 
 // Populate Category horizontal carousels
-const BRAND_CATEGORIES = [
-    'Electronics',
-    'Fashion',
-    'Books',
-    'Hostel Essentials',
-    'Gadgets',
-    'Beauty Products',
-    'Food & Snacks'
-];
+let BRAND_CATEGORIES = [];
+
+async function fetchCategories() {
+    try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (data.status === 'success') {
+            BRAND_CATEGORIES = data.categories.map(c => c.name);
+            buildCategoryChips();
+            populateCategoryDropdowns();
+        }
+    } catch (err) {
+        console.error('Failed to fetch categories:', err);
+    }
+}
+
+function populateCategoryDropdowns() {
+    const filterSelect = document.getElementById('filter-category');
+    const prodSelect = document.getElementById('prod-category');
+    
+    if (filterSelect) {
+        filterSelect.innerHTML = '<option value="">All Categories</option>';
+        BRAND_CATEGORIES.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            filterSelect.appendChild(opt);
+        });
+    }
+    
+    if (prodSelect) {
+        prodSelect.innerHTML = '<option value="">Select Category</option>';
+        BRAND_CATEGORIES.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            prodSelect.appendChild(opt);
+        });
+    }
+}
 
 function buildCategoryChips() {
     const landingContainer = document.getElementById('landing-categories');
@@ -213,9 +238,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     syncAuthUI();
-    loadSavedProductIds();
+    loadCartProductIds();
     buildCategoryChips();
     bindSearchInputs();
+    fetchCategories();
 
     // 2. Initialize Routing
     window.addEventListener('hashchange', routeApp);

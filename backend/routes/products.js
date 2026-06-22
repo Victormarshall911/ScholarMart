@@ -8,10 +8,10 @@ const { uploadProductImages } = require('../middleware/upload');
 router.get('/', productController.listProducts);
 router.get('/:id(\\d+)', productController.getProductDetails);
 
-// Authenticated bookmarks routes
-router.get('/saved', authenticate, productController.getSavedProducts);
-router.post('/save', authenticate, productController.saveProduct);
-router.delete('/save/:productId', authenticate, productController.unsaveProduct);
+// Authenticated cart routes
+router.get('/cart', authenticate, productController.getSavedProducts);
+router.post('/cart', authenticate, productController.saveProduct);
+router.delete('/cart/:productId', authenticate, productController.unsaveProduct);
 
 // Vendor/Admin routes
 router.post('/', authenticate, isVendor, uploadProductImages, productController.createProduct);

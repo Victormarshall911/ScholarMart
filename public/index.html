@@ -26,6 +26,9 @@
         <!-- Sticky Header -->
         <header class="app-header">
             <a href="#/" class="brand-logo">Scholar<span>Mart</span></a>
+            <button class="btn btn-outline btn-sm" id="header-support-btn" style="width: auto; padding: 6px 12px; font-size: 11px; border-radius: var(--radius-sm); border-color: var(--primary-green); color: var(--primary-green);" onclick="openSupportModal()">
+                Support
+            </button>
         </header>
 
         <!-- Main Scrollable Content -->
@@ -36,7 +39,10 @@
                 <div class="hero-card">
                     <h2 class="hero-title">Buy. Sell. Connect on Campus.</h2>
                     <p class="hero-sub">A trusted marketplace built for Nigerian students.</p>
-                    <button class="btn btn-orange" onclick="window.location.hash = '#/marketplace'">Explore Listings</button>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+                        <button class="btn btn-orange" style="flex: 1; min-width: 140px;" onclick="window.location.hash = '#/marketplace'">Explore Listings</button>
+                        <button class="btn" style="flex: 1; min-width: 140px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; border: 1.5px solid rgba(255, 255, 255, 0.6);" onclick="window.location.hash = '#/register'">Join Now</button>
+                    </div>
                 </div>
 
                 <div class="search-container">
@@ -67,17 +73,29 @@
                 <div style="margin-top: 32px; margin-bottom: 16px;">
                     <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">How It Works</h3>
                     <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
-                        <strong style="color: var(--primary-green); font-size: 14px;">1. Create Account</strong>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Register and enter your campus details</p>
+                        <strong style="color: var(--primary-green); font-size: 14px;">1. Register & Verify</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Create your student profile and verify your email address</p>
                     </div>
                     <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
-                        <strong style="color: var(--primary-green); font-size: 14px;">2. Get Student Verified</strong>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Verify instantly via email OTP or ID upload</p>
+                        <strong style="color: var(--primary-green); font-size: 14px;">2. Connect on WhatsApp</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Chat directly with campus sellers to arrange inspection & deal</p>
                     </div>
                     <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
-                        <strong style="color: var(--primary-green); font-size: 14px;">3. Buy & Sell with Split Pay</strong>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Platform fee auto-splits securely on Paystack</p>
+                        <strong style="color: var(--primary-green); font-size: 14px;">3. Earn Reputation Badges</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Confirm deals, get reviews, and rise from New to Top Seller</p>
                     </div>
+                </div>
+
+                <!-- Registration CTA Banner -->
+                <div class="card" style="background: linear-gradient(135deg, #FF6B00 0%, #FF8F3D 100%); border: none; color: white; padding: 24px 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; margin-top: 24px; box-shadow: var(--shadow-lg);">
+                    <div style="position: relative; z-index: 2;">
+                        <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">Ready to start trading?</h3>
+                        <p style="font-size: 13px; opacity: 0.9; margin-bottom: 16px; line-height: 1.4;">Join thousands of students buying and selling safely on campus today.</p>
+                        <button class="btn" style="background-color: white; color: var(--primary-orange); width: auto; padding: 10px 24px; font-size: 13px; border-radius: var(--radius-md);" onclick="window.location.hash = '#/register'">Create Free Account</button>
+                    </div>
+                    <!-- Decorative abstract circles inside the card -->
+                    <div style="position: absolute; right: -30px; bottom: -30px; width: 120px; height: 120px; background: rgba(255, 255, 255, 0.15); border-radius: 50%; z-index: 1;"></div>
+                    <div style="position: absolute; right: 40px; top: -20px; width: 60px; height: 60px; background: rgba(255, 255, 255, 0.08); border-radius: 50%; z-index: 1;"></div>
                 </div>
 
                 <div style="margin-top: 24px;">
@@ -171,19 +189,33 @@
 
                 <!-- Action buttons -->
                 <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
-                    <button id="details-buy-btn" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                        </svg>
-                        Buy Now (₦500 Flat Fee Split)
-                    </button>
-                    
-                    <a id="details-whatsapp-btn" href="#" target="_blank" class="btn btn-orange" style="text-decoration: none;">
+                    <a id="details-whatsapp-btn" href="#" target="_blank" class="btn btn-primary" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                             <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.333 4.982L2 22l5.202-1.362a9.92 9.92 0 004.81 1.233h.005c5.505 0 9.99-4.477 9.99-9.982A9.97 9.97 0 0012.012 2zm5.726 14.153c-.25.705-1.464 1.34-2.006 1.425-.49.076-1.126.136-3.277-.75-2.753-1.135-4.506-3.929-4.643-4.113-.136-.183-1.11-1.472-1.11-2.81 0-1.337.697-1.996.947-2.262.25-.267.542-.333.722-.333.18 0 .36 0 .518.008.163.008.38-.063.593.45.22.533.753 1.838.818 1.97.065.13.109.283.022.458-.088.175-.132.283-.263.437-.132.155-.276.346-.395.464-.132.13-.27.272-.116.537.155.263.687 1.132 1.472 1.83.1.089.183.136.27.136.142 0 .237-.066.333-.166.19-.203.498-.58.627-.777.13-.197.26-.164.444-.097.183.066 1.166.55 1.368.653.203.1.337.15.387.234.05.084.05.485-.2.12z"/>
                         </svg>
-                        WhatsApp Seller
+                        Chat on WhatsApp
                     </a>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button id="details-save-btn" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            Save to Cart
+                        </button>
+                        <button id="details-report-btn" class="btn btn-outline" style="flex: 1; border-color: #EF4444; color: #EF4444;" onclick="openReportModal()">
+                            Report Listing
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Safety Tips Section -->
+                <div class="card safety-tips-card" style="margin-top: 24px; padding: 14px; border-left: 4px solid var(--primary-orange);">
+                    <h4 style="font-size: 13px; font-weight: 700; color: var(--primary-orange); margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+                        ⚠️ Safety Tips for Campus Deals
+                    </h4>
+                    <ul style="font-size: 12px; color: var(--text-secondary); padding-left: 18px; margin: 0; line-height: 1.5;">
+                        <li>Meet only in bright, public campus locations (e.g. library, campus gate).</li>
+                        <li>Never send money before inspecting the product.</li>
+                        <li>Verify the seller's trust badges before making deals.</li>
+                    </ul>
                 </div>
             </section>
 
@@ -216,7 +248,7 @@
                     </form>
                     
                     <p style="text-align: center; margin-top: 24px; font-size: 14px; font-weight: 500; color: var(--text-secondary);">
-                        New to Scholarmart? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="toggleAuthPanel('register')">Register Now</span>
+                        New to Scholarmart? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="window.location.hash = '#/register'">Register Now</span>
                     </p>
                 </div>
  
@@ -242,34 +274,17 @@
                             <label class="form-label" for="reg-role">I want to:</label>
                             <select id="reg-role" class="form-select" onchange="toggleVendorFields(this.value)">
                                 <option value="buyer">Buy Products only</option>
-                                <option value="vendor">Sell Products & Collect Payouts</option>
+                                <option value="vendor">Sell Products on Campus</option>
                             </select>
                         </div>
 
-                        <!-- Vendor Bank Fields -->
-                        <div id="vendor-bank-fields" style="display: none; background-color: #F1F5F9; padding: 14px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
-                            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">PAYOUT BANK DETAILS (Paystack Splits)</h4>
-                            <div class="form-group">
-                                <label class="form-label" for="reg-bank">Bank Name</label>
-                                <select id="reg-bank" class="form-select">
-                                    <option value="">Select settlement bank</option>
-                                    <option value="044|Access Bank">Access Bank</option>
-                                    <option value="058|Guaranty Trust Bank (GTB)">Guaranty Trust Bank (GTB)</option>
-                                    <option value="057|Zenith Bank">Zenith Bank</option>
-                                    <option value="033|United Bank for Africa (UBA)">United Bank for Africa (UBA)</option>
-                                    <option value="011|First Bank of Nigeria">First Bank</option>
-                                    <option value="032|Union Bank">Union Bank</option>
-                                    <option value="232|Sterling Bank">Sterling Bank</option>
-                                    <option value="070|Fidelity Bank">Fidelity Bank</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="reg-account-num">Account Number</label>
-                                <input type="text" id="reg-account-num" class="form-input" placeholder="10-digit number" maxlength="10">
-                            </div>
+                        <!-- Vendor WhatsApp Field -->
+                        <div id="vendor-whatsapp-fields" style="display: none; background-color: #F1F5F9; padding: 14px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
+                            <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);">WHATSAPP INFO</h4>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label" for="reg-account-name">Account Holder Name</label>
-                                <input type="text" id="reg-account-name" class="form-input" placeholder="Name on bank account">
+                                <label class="form-label" for="reg-whatsapp">WhatsApp Number</label>
+                                <input type="tel" id="reg-whatsapp" class="form-input" placeholder="e.g. 08012345678">
+                                <small style="color: var(--text-secondary); display: block; margin-top: 4px;">This number is required so buyers can contact you on WhatsApp to request your listings.</small>
                             </div>
                         </div>
 
@@ -308,7 +323,7 @@
                     </form>
                     
                     <p style="text-align: center; margin-top: 24px; font-size: 14px; font-weight: 500; color: var(--text-secondary);">
-                        Already have an account? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="toggleAuthPanel('login')">Sign In</span>
+                        Already have an account? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="window.location.hash = '#/login'">Sign In</span>
                     </p>
                 </div>
             </section>
@@ -331,16 +346,16 @@
                 <!-- Hidden file input for buyer portrait -->
                 <input type="file" id="buyer-portrait-input" accept="image/*" style="display: none;">
 
-                <!-- Verification Wizard Section -->
+                <!-- Email Verification Card -->
                 <div id="verification-wizard-card" class="card" style="display: none;">
-                    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Complete Student Verification</h3>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Verify your identity to build trust. Verified users carry a checkmark.</p>
+                    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">Verify Your Email</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Verify your email address to enable deal confirmation and badge tracking.</p>
                     
                     <div id="verification-options">
-                        <div id="verify-email-option" style="display: none; margin-bottom: 12px;">
-                            <button class="btn btn-outline btn-sm" onclick="sendVerificationOtp()">Send OTP to Email</button>
+                        <div id="verify-email-option" style="margin-bottom: 4px;">
+                            <button class="btn btn-outline btn-sm" id="send-otp-btn" onclick="sendVerificationOtp()">Send OTP Code</button>
                             <div id="otp-input-container" style="display: none; margin-top: 10px; display: flex; gap: 8px;">
-                                <input type="text" id="otp-code-input" class="form-input" placeholder="Enter 6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
+                                <input type="text" id="otp-code-input" class="form-input" placeholder="6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
                                 <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
                             </div>
                         </div>
@@ -348,8 +363,8 @@
                 </div>
 
                 <div class="tabs-header">
-                    <div class="tab-btn active" onclick="switchDashboardTab('buyer-orders')">My Orders</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('buyer-saved')">Saved Items</div>
+                    <div class="tab-btn active" onclick="switchDashboardTab('buyer-orders')">My Deals</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('buyer-cart')">My Cart</div>
                 </div>
 
                 <!-- Tab Pane: Orders -->
@@ -359,9 +374,9 @@
                     </div>
                 </div>
 
-                <!-- Tab Pane: Bookmarks -->
-                <div id="tab-buyer-saved" class="tab-pane">
-                    <div class="products-grid" id="buyer-saved-list">
+                <!-- Tab Pane: Cart -->
+                <div id="tab-buyer-cart" class="tab-pane">
+                    <div class="products-grid" id="buyer-cart-list">
                         <!-- Loaded dynamically -->
                     </div>
                 </div>
@@ -397,30 +412,28 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-num" id="stat-total-listings">0</div>
-                        <div class="stat-lbl">Total Items</div>
+                        <div class="stat-lbl">Active Items</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-num orange" id="stat-sales-made">₦0</div>
-                        <div class="stat-lbl">Sales Volume</div>
+                        <div class="stat-num orange" id="stat-deals-completed">0</div>
+                        <div class="stat-lbl">Deals Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-average-rating">0.0</div>
+                        <div class="stat-lbl">Seller Rating</div>
                     </div>
                 </div>
 
-                <!-- Payout subaccount code banner -->
-                <div id="vendor-subaccount-banner" class="card" style="padding: 10px 12px; font-size: 11px; background-color: #F8FAFC; border-color: var(--border); font-weight: 600; display: flex; justify-content: space-between;">
-                    <span>Paystack Subaccount:</span>
-                    <span id="vendor-subaccount-code" style="color: var(--primary-green);">None</span>
-                </div>
-
-                <!-- Verification Wizard Section for Vendor -->
+                <!-- Email Verification Card for Vendor -->
                 <div id="vendor-verification-wizard-card" class="card" style="display: none;">
-                    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Complete Student Verification</h3>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Get verified to receive the green checkmark icon. Buyers trust verified vendors.</p>
+                    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">Verify Your Email</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Verify your email address to unlock seller trust badges and reviews.</p>
                     
                     <div id="vendor-verification-options">
-                        <div id="vendor-verify-email-option" style="display: none; margin-bottom: 12px;">
-                            <button class="btn btn-outline btn-sm" onclick="sendVerificationOtp()">Send OTP to Email</button>
+                        <div id="vendor-verify-email-option" style="margin-bottom: 4px;">
+                            <button class="btn btn-outline btn-sm" id="vendor-send-otp-btn" onclick="sendVerificationOtp()">Send OTP Code</button>
                             <div id="vendor-otp-input-container" style="display: none; margin-top: 10px; display: flex; gap: 8px;">
-                                <input type="text" id="vendor-otp-code-input" class="form-input" placeholder="Enter 6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
+                                <input type="text" id="vendor-otp-code-input" class="form-input" placeholder="6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
                                 <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
                             </div>
                         </div>
@@ -429,7 +442,7 @@
 
                 <div class="tabs-header">
                     <div class="tab-btn active" onclick="switchDashboardTab('vendor-listings')">My Listings</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('vendor-sales')">My Sales</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('vendor-sales')">My Deals</div>
                 </div>
 
                 <!-- Tab Pane: Listings -->
@@ -465,22 +478,24 @@
                         <div class="stat-lbl" style="font-size: 9px;">Listings</div>
                     </div>
                     <div class="stat-card" style="padding: 10px;">
-                        <div class="stat-num orange" id="admin-stat-revenue" style="font-size: 18px;">₦0</div>
-                        <div class="stat-lbl" style="font-size: 9px;">Revenue</div>
+                        <div class="stat-num orange" id="admin-stat-deals" style="font-size: 18px;">0</div>
+                        <div class="stat-lbl" style="font-size: 9px;">Deals</div>
                     </div>
                 </div>
 
                 <div class="tabs-header">
-                    <div class="tab-btn active" onclick="switchDashboardTab('admin-verifications')">Verifications</div>
+                    <div class="tab-btn active" onclick="switchDashboardTab('admin-reports')">Reports</div>
                     <div class="tab-btn" onclick="switchDashboardTab('admin-moderation')">Moderation</div>
                     <div class="tab-btn" onclick="switchDashboardTab('admin-users')">Users</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('admin-universities')">Universities</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('admin-universities')">Campuses</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('admin-categories')">Categories</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('admin-orders')">Deals</div>
                 </div>
 
-                <!-- Tab: Student ID Verifications -->
-                <div id="tab-admin-verifications" class="tab-pane active">
-                    <div id="admin-verifications-list">
-                        <!-- ID upload queue -->
+                <!-- Tab: Community Reports -->
+                <div id="tab-admin-reports" class="tab-pane active">
+                    <div id="admin-reports-list">
+                        <!-- Community reports list -->
                     </div>
                 </div>
 
@@ -550,41 +565,88 @@
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- 8. SANDBOX PAYMENT SIMULATOR VIEW -->
-            <section id="payment-simulate-view" class="view-container">
-                <div class="card" style="text-align: center; border-top: 6px solid var(--primary-green); padding: 32px 24px;">
-                    <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">PAYSTACK SANDBOX GATEWAY</div>
-                    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 4px;">Scholarmart Checkout</h2>
-                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 24px;">Split Group enabled transaction</p>
-                    
-                    <div class="checkout-breakdown">
-                        <div class="checkout-row">
-                            <span>Product Share (Vendor)</span>
-                            <span id="sim-product-price">₦0.00</span>
+                <!-- Tab: Category Management -->
+                <div id="tab-admin-categories" class="tab-pane">
+                    <!-- Form to add Category -->
+                    <div class="card" style="margin-bottom: 16px;">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Add Product Category</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="admin-category-name">Category Name</label>
+                            <input type="text" id="admin-category-name" class="form-input" placeholder="e.g. Services, Tickets">
                         </div>
-                        <div class="checkout-row">
-                            <span>Service Fee (Scholarmart)</span>
-                            <span>₦500.00</span>
-                        </div>
-                        <div class="checkout-row total">
-                            <span>Total Charge</span>
-                            <span id="sim-total-price">₦0.00</span>
-                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="adminAddCategory()">Add Category</button>
                     </div>
 
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 24px; padding: 10px; background-color: #FFFBEB; border: 1px solid #FEF3C7; border-radius: 12px;">
-                        ⚠️ This payment will split settlements automatically: Platform fee goes to Scholarmart, and remainder goes to the vendor's registered bank details.
+                    <!-- List of current categories -->
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Current Categories</h3>
+                        <div id="admin-categories-list" style="max-height: 250px; overflow-y: auto; font-size: 13px; padding-right: 4px;">
+                            <!-- Loaded dynamically -->
+                        </div>
                     </div>
+                </div>
 
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-primary" onclick="simulatePaymentStatus('success')">Simulate Success</button>
-                        <button class="btn btn-secondary" onclick="simulatePaymentStatus('cancel')">Cancel Payment</button>
+                <!-- Tab: Deals List -->
+                <div id="tab-admin-orders" class="tab-pane">
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">All Student Deals</h3>
+                        <div id="admin-orders-list">
+                            <!-- Loaded dynamically -->
+                        </div>
                     </div>
                 </div>
             </section>
+
         </main>
+
+        <!-- Welcome Modal -->
+        <div id="welcome-modal-overlay" class="modal-overlay active" style="display: none;">
+            <div class="modal-card welcome-card" style="text-align: center; padding: 32px 24px; border: none; max-width: 400px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                <div style="font-size: 48px; margin-bottom: 16px;">🎓</div>
+                <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Welcome to Scholar<span>Mart</span></h2>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px;">
+                    The trust-based campus marketplace. Connect directly with student buyers and sellers on WhatsApp, check community trust badges, and trade safely.
+                </p>
+                <button class="btn btn-primary" onclick="closeWelcomeModal()" style="border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0, 168, 107, 0.25);">
+                    Start Exploring
+                </button>
+            </div>
+        </div>
+
+        <!-- Report Modal -->
+        <div id="report-modal-overlay" class="modal-overlay" onclick="toggleReportModal(false)">
+            <div class="modal-card" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3 style="font-size: 18px; font-weight: 800;">Report Listing or Seller</h3>
+                    <button class="modal-close-btn" onclick="toggleReportModal(false)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="report-form" onsubmit="submitReport(event)">
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Help keep our campus community safe. Please select a reason for reporting.</p>
+                    <div class="form-group">
+                        <label class="form-label" for="report-reason-select">Reason</label>
+                        <select id="report-reason-select" class="form-select" required>
+                            <option value="">Select a reason</option>
+                            <option value="fake_product">Fake / Counterfeit Product</option>
+                            <option value="unreasonable_price">Suspiciously Low or High Price</option>
+                            <option value="scam_behavior">Suspicious or Scam behavior</option>
+                            <option value="inappropriate_content">Inappropriate description/images</option>
+                            <option value="offline_demands">Seller demanding upfront payment</option>
+                            <option value="other">Other (explain below)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="report-details">Additional Details</label>
+                        <textarea id="report-details" class="form-textarea" placeholder="Explain details of your concern..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="background-color: #EF4444; border-color: #EF4444;">Submit Report</button>
+                </form>
+            </div>
+        </div>
 
         <!-- Sticky Bottom Navigation -->
         <nav class="app-nav">
@@ -604,11 +666,11 @@
             <!-- Spacing for FAB button in the center -->
             <div style="width: 56px;"></div>
             
-            <a href="#/saved" class="nav-item" id="nav-saved-btn">
+            <a href="#/cart" class="nav-item" id="nav-cart-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                 </svg>
-                Saved
+                Cart
             </a>
             <a href="#/dashboard" class="nav-item" id="nav-profile-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -649,13 +711,7 @@
                     <label class="form-label" for="filter-category">Category</label>
                     <select id="filter-category" class="form-select">
                         <option value="">All Categories</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Books">Books</option>
-                        <option value="Hostel Essentials">Hostel Essentials</option>
-                        <option value="Gadgets">Gadgets</option>
-                        <option value="Beauty Products">Beauty Products</option>
-                        <option value="Food & Snacks">Food & Snacks</option>
+                        <!-- Loaded dynamically -->
                     </select>
                 </div>
 
@@ -703,13 +759,7 @@
                         <label class="form-label" for="prod-category">Category</label>
                         <select id="prod-category" class="form-select" required>
                             <option value="">Select Category</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Fashion">Fashion</option>
-                            <option value="Books">Books</option>
-                            <option value="Hostel Essentials">Hostel Essentials</option>
-                            <option value="Gadgets">Gadgets</option>
-                            <option value="Beauty Products">Beauty Products</option>
-                            <option value="Food & Snacks">Food & Snacks</option>
+                            <!-- Loaded dynamically -->
                         </select>
                     </div>
 
@@ -735,6 +785,39 @@
 
                     <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Publish Listing</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- Support Modal Overlay -->
+        <div id="support-modal-overlay" class="modal-overlay" onclick="toggleSupportModal(false)">
+            <div class="modal-card" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3 style="font-size: 18px; font-weight: 800;">Campus Support</h3>
+                    <button class="modal-close-btn" onclick="toggleSupportModal(false)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Need help with verification, splits, payouts, or listings? Contact our campus helpdesk.</p>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="https://wa.me/2348000000000?text=Hi%20Scholarmart%20Support%2C%20I%20need%20help%20with..." target="_blank" class="btn btn-primary" style="text-decoration: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px; margin-right: 4px; display: inline-block; vertical-align: middle;">
+                            <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.333 4.982L2 22l5.202-1.362a9.92 9.92 0 004.81 1.233h.005c5.505 0 9.99-4.477 9.99-9.982A9.97 9.97 0 0012.012 2zm5.726 14.153c-.25.705-1.464 1.34-2.006 1.425-.49.076-1.126.136-3.277-.75-2.753-1.135-4.506-3.929-4.643-4.113-.136-.183-1.11-1.472-1.11-2.81 0-1.337.697-1.996.947-2.262.25-.267.542-.333.722-.333.18 0 .36 0 .518.008.163.008.38-.063.593.45.22.533.753 1.838.818 1.97.065.13.109.283.022.458-.088.175-.132.283-.263.437-.132.155-.276.346-.395.464-.132.13-.27.272-.116.537.155.263.687 1.132 1.472 1.83.1.089.183.136.27.136.142 0 .237-.066.333-.166.19-.203.498-.58.627-.777.13-.197.26-.164.444-.097.183.066 1.166.55 1.368.653.203.1.337.15.387.234.05.084.05.485-.2.12z"/>
+                        </svg>
+                        WhatsApp Support Chat
+                    </a>
+                    
+                    <a href="mailto:support@scholarmart.com" class="btn btn-secondary" style="text-decoration: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px; margin-right: 4px; display: inline-block; vertical-align: middle;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                        </svg>
+                        Email Helpdesk
+                    </a>
+                </div>
             </div>
         </div>
 

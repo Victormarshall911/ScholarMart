@@ -1,83 +1,29 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { getBadgeInfo } = require('./authController');
 
-// 1. Get Pending Student Verifications
-exports.getPendingVerifications = async (req, res) => {
-    try {
-        const { status } = req.query; // optional filter by status
-        const targetStatus = status || 'pending';
-
-        const sql = `
-            SELECT id, name, email, phone, university, campus, role, 
-                   verification_status, verification_method, verification_file, created_at 
-            FROM users 
-            WHERE verification_status = $1 AND role != 'admin'
-            ORDER BY created_at DESC
-        `;
-
-        const result = await db.query(sql, [targetStatus]);
-        return res.json({
-            status: 'success',
-            count: result.rowCount,
-            verifications: result.rows
-        });
-    } catch (error) {
-        console.error('Get pending verifications error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error retrieving verification items' });
-    }
-};
-
-// 2. Update Student Verification Status
-exports.updateVerificationStatus = async (req, res) => {
-    try {
-        const userId = parseInt(req.params.userId, 10);
-        const { status, reason } = req.body; // 'approved' or 'rejected'
-
-        if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
-            return res.status(400).json({ status: 'error', message: 'Valid status is required (approved/rejected)' });
-        }
-
-        // Verify user exists and is not admin
-        const check = await db.query('SELECT role, verification_status FROM users WHERE id = $1', [userId]);
-        if (check.rowCount === 0) {
-            return res.status(404).json({ status: 'error', message: 'User not found' });
-        }
-
-        if (check.rows[0].role === 'admin') {
-            return res.status(400).json({ status: 'error', message: 'Cannot modify admin verification status' });
-        }
-
-        const sql = 'UPDATE users SET verification_status = $1 WHERE id = $2 RETURNING id, name, email, verification_status';
-        const result = await db.query(sql, [status, userId]);
-
-        // In a real system, we'd email the student about their approval/rejection (using the provided reason)
-        console.log(`[STUDENT VERIFICATION UPDATE] User #${userId} status set to ${status}. Reason: ${reason || 'N/A'}`);
-
-        return res.json({
-            status: 'success',
-            message: `User verification status updated to: ${status}`,
-            user: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Update verification status error:', error);
-        return res.status(500).json({ status: 'error', message: 'Server error updating student verification' });
-    }
-};
-
-// 3. Report/Flag a Product (Callable by Buyers)
+// 1. Report/Flag a Product (Callable by Buyers)
 exports.reportProduct = async (req, res) => {
     try {
         const productId = parseInt(req.params.id, 10);
-        
-        // Update product status to 'reported'
-        const result = await db.query(
-            "UPDATE products SET status = 'reported' WHERE id = $1 AND status = 'active' RETURNING id, name",
-            [productId]
+        const reporterId = req.user.id;
+        const { reason } = req.body;
+
+        if (!reason) {
+            return res.status(400).json({ status: 'error', message: 'A reason is required when reporting a product' });
+        }
+
+        // Create report record
+        await db.query(
+            'INSERT INTO reports (reporter_id, reported_product_id, reason) VALUES ($1, $2, $3)',
+            [reporterId, productId, reason]
         );
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ status: 'error', message: 'Product not found or not active' });
-        }
+        // Update product status to 'reported'
+        await db.query(
+            "UPDATE products SET status = 'reported' WHERE id = $1 AND status = 'active'",
+            [productId]
+        );
 
         return res.json({
             status: 'success',
@@ -89,7 +35,51 @@ exports.reportProduct = async (req, res) => {
     }
 };
 
-// 4. List Flagged/Reported Products for Moderation
+// 2. Report a Seller (Community-based reporting)
+exports.reportSeller = async (req, res) => {
+    try {
+        const sellerId = parseInt(req.params.id, 10);
+        const reporterId = req.user.id;
+        const { reason } = req.body;
+
+        if (!reason) {
+            return res.status(400).json({ status: 'error', message: 'A reason is required when reporting a seller' });
+        }
+
+        if (sellerId === reporterId) {
+            return res.status(400).json({ status: 'error', message: 'You cannot report yourself' });
+        }
+
+        // Create report record
+        await db.query(
+            'INSERT INTO reports (reporter_id, reported_user_id, reason) VALUES ($1, $2, $3)',
+            [reporterId, sellerId, reason]
+        );
+
+        // Increment user's report count
+        const userResult = await db.query('SELECT report_count FROM users WHERE id = $1', [sellerId]);
+        if (userResult.rowCount > 0) {
+            const newCount = (userResult.rows[0].report_count || 0) + 1;
+            await db.query('UPDATE users SET report_count = $1 WHERE id = $2', [newCount, sellerId]);
+
+            // Auto-ban if report_count exceeds threshold (3+)
+            if (newCount >= 3) {
+                await db.query("UPDATE users SET status = 'banned' WHERE id = $1", [sellerId]);
+                console.log(`[AUTO-BAN] User #${sellerId} has been auto-banned after ${newCount} reports.`);
+            }
+        }
+
+        return res.json({
+            status: 'success',
+            message: 'Seller reported. Admin will review the report.'
+        });
+    } catch (error) {
+        console.error('Report seller error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error reporting seller' });
+    }
+};
+
+// 3. List Flagged/Reported Products for Moderation
 exports.getReportedProducts = async (req, res) => {
     try {
         const sql = `
@@ -125,11 +115,11 @@ exports.getReportedProducts = async (req, res) => {
     }
 };
 
-// 5. Moderate Listing (Approve or Ban)
+// 4. Moderate Listing (Approve or Ban)
 exports.moderateProduct = async (req, res) => {
     try {
         const productId = parseInt(req.params.id, 10);
-        const { action } = req.body; // 'approve' (resets status to active) or 'reject' (flags status as moderated/deleted)
+        const { action } = req.body;
 
         if (!action || !['approve', 'reject'].includes(action)) {
             return res.status(400).json({ status: 'error', message: 'Action is required (approve/reject)' });
@@ -157,20 +147,31 @@ exports.moderateProduct = async (req, res) => {
     }
 };
 
-// 6. User Management: View All Users
+// 5. User Management: View All Users
 exports.getAllUsers = async (req, res) => {
     try {
-        const sql = `
-            SELECT id, name, email, phone, university, campus, role, verification_status, status, created_at
-            FROM users
-            ORDER BY created_at DESC
-        `;
-        const result = await db.query(sql);
+        const result = await db.query('SELECT * FROM users ORDER BY created_at DESC');
+        const users = result.rows.map(u => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            whatsapp_number: u.whatsapp_number,
+            university: u.university,
+            campus: u.campus,
+            role: u.role,
+            email_verified: u.email_verified || false,
+            deals_completed: u.deals_completed || 0,
+            average_rating: parseFloat(u.average_rating) || 0,
+            report_count: u.report_count || 0,
+            status: u.status,
+            badge: getBadgeInfo(u.deals_completed || 0, parseFloat(u.average_rating) || 0),
+            created_at: u.created_at
+        }));
 
         return res.json({
             status: 'success',
-            count: result.rowCount,
-            users: result.rows
+            count: users.length,
+            users
         });
     } catch (error) {
         console.error('Get all users error:', error);
@@ -178,19 +179,18 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
-// 7. User Management: Update Account Status (Ban/Suspend or Reactivate)
+// 6. User Management: Update Account Status (Suspend/Ban or Reactivate)
 exports.updateUserAccountStatus = async (req, res) => {
     try {
         const userId = parseInt(req.params.id, 10);
-        const { status } = req.body; // 'active' or 'suspended'
+        const { status } = req.body;
 
-        if (!status || !['active', 'suspended'].includes(status)) {
-            return res.status(400).json({ status: 'error', message: 'Status is required (active/suspended)' });
+        if (!status || !['active', 'suspended', 'banned'].includes(status)) {
+            return res.status(400).json({ status: 'error', message: 'Status is required (active/suspended/banned)' });
         }
 
-        // Prevent self-suspension
         if (userId === req.user.id) {
-            return res.status(400).json({ status: 'error', message: 'You cannot suspend your own admin account' });
+            return res.status(400).json({ status: 'error', message: 'You cannot modify your own admin account' });
         }
 
         const result = await db.query(
@@ -213,7 +213,7 @@ exports.updateUserAccountStatus = async (req, res) => {
     }
 };
 
-// 8. User Management: Reset User Password
+// 7. User Management: Reset User Password
 exports.resetUserPassword = async (req, res) => {
     try {
         const userId = parseInt(req.params.id, 10);
@@ -243,35 +243,99 @@ exports.resetUserPassword = async (req, res) => {
     }
 };
 
-// 9. Reports & Analytics
+// 8. Reports & Analytics (Community-based, no revenue)
 exports.getReports = async (req, res) => {
     try {
-        // Query counts
-        const userCountRes = await db.query('SELECT COUNT(*) as count FROM users WHERE role != \'admin\'');
-        const listingCountRes = await db.query('SELECT COUNT(*) as count FROM products WHERE status != \'deleted\'');
-        
-        // Paid orders for revenue calculations
-        const ordersRes = await db.query('SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total_sales, COALESCE(SUM(service_fee), 0) as total_fees FROM orders WHERE status IN (\'paid\', \'shipped\', \'completed\')');
+        const userCountRes = await db.query("SELECT COUNT(*) as count FROM users WHERE role != 'admin'");
+        const listingCountRes = await db.query("SELECT COUNT(*) as count FROM products WHERE status != 'deleted'");
+
+        // Deals analytics (completed deals)
+        let totalDeals = 0;
+        let totalVolume = 0;
+        try {
+            const dealsRes = await db.query("SELECT COUNT(*) as count, COALESCE(SUM(amount), 0) as total_volume FROM deals WHERE status = 'completed'");
+            totalDeals = parseInt(dealsRes.rows[0].count, 10) || 0;
+            totalVolume = parseFloat(dealsRes.rows[0].total_volume) || 0;
+        } catch(e) {
+            // deals table might not exist yet
+        }
+
+        // Reports count
+        let totalReports = 0;
+        try {
+            const reportsRes = await db.query("SELECT COUNT(*) as count FROM reports WHERE status = 'pending'");
+            totalReports = parseInt(reportsRes.rows[0].count, 10) || 0;
+        } catch(e) {}
 
         const totalUsers = parseInt(userCountRes.rows[0].count, 10);
         const totalListings = parseInt(listingCountRes.rows[0].count, 10);
-        const totalTransactions = parseInt(ordersRes.rows[0].count, 10);
-        const totalSalesVolume = parseFloat(ordersRes.rows[0].total_sales);
-        const revenue = parseFloat(ordersRes.rows[0].total_fees); // ₦500 flat fee sum
 
         return res.json({
             status: 'success',
             analytics: {
                 totalUsers,
                 totalListings,
-                totalTransactions,
-                totalSalesVolume,
-                revenue
+                totalDeals,
+                totalVolume,
+                totalReports
             }
         });
     } catch (error) {
         console.error('Get reports error:', error);
         return res.status(500).json({ status: 'error', message: 'Server error compiling reports and analytics' });
+    }
+};
+
+// 9. Get All Community Reports
+exports.getAllReports = async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM reports ORDER BY created_at DESC');
+        return res.json({
+            status: 'success',
+            count: result.rowCount,
+            reports: result.rows
+        });
+    } catch (error) {
+        console.error('Get all reports error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error fetching reports' });
+    }
+};
+
+// 10. Get All Deals (Admin view)
+exports.getAllDeals = async (req, res) => {
+    try {
+        const result = await db.query(
+            `SELECT d.*, p.name as product_name, p.images, 
+                   b.name as buyer_name, b.email as buyer_email, b.whatsapp_number as buyer_whatsapp,
+                   v.name as vendor_name, v.email as vendor_email, v.whatsapp_number as vendor_whatsapp
+             FROM deals d
+             JOIN products p ON d.product_id = p.id
+             LEFT JOIN users b ON d.buyer_id = b.id
+             JOIN users v ON d.vendor_id = v.id
+             ORDER BY d.created_at DESC`
+        );
+
+        const formattedDeals = result.rows.map(d => {
+            let images = d.images;
+            if (typeof images === 'string') {
+                try { images = JSON.parse(images); } catch (e) { images = [images]; }
+            }
+            return {
+                ...d,
+                images: images || [],
+                buyer: { name: d.buyer_name || 'Walk-in', email: d.buyer_email || '', whatsapp: d.buyer_whatsapp || '' },
+                vendor: { name: d.vendor_name, email: d.vendor_email, whatsapp: d.vendor_whatsapp || '' }
+            };
+        });
+
+        return res.json({
+            status: 'success',
+            count: formattedDeals.length,
+            deals: formattedDeals
+        });
+    } catch (error) {
+        console.error('Get all deals admin error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error fetching deals' });
     }
 };
 
@@ -286,15 +350,12 @@ exports.addUniversity = async (req, res) => {
         const cleanCode = code.trim().toUpperCase();
         const cleanName = name.trim();
 
-        // Check if university code already exists
-        const checkSql = 'SELECT id FROM universities WHERE code = $1';
-        const checkRes = await db.query(checkSql, [cleanCode]);
+        const checkRes = await db.query('SELECT id FROM universities WHERE code = $1', [cleanCode]);
         if (checkRes.rowCount > 0) {
             return res.status(400).json({ status: 'error', message: `University with code ${cleanCode} already exists` });
         }
 
-        const sql = 'INSERT INTO universities (code, name) VALUES ($1, $2) RETURNING *';
-        const result = await db.query(sql, [cleanCode, cleanName]);
+        const result = await db.query('INSERT INTO universities (code, name) VALUES ($1, $2) RETURNING *', [cleanCode, cleanName]);
         
         return res.status(201).json({
             status: 'success',
@@ -318,14 +379,12 @@ exports.addCampus = async (req, res) => {
         const cleanUnivCode = university_code.trim().toUpperCase();
         const cleanName = name.trim();
 
-        // Verify university exists
         const checkUniv = await db.query('SELECT id FROM universities WHERE code = $1', [cleanUnivCode]);
         if (checkUniv.rowCount === 0) {
             return res.status(400).json({ status: 'error', message: `University code ${cleanUnivCode} does not exist. Add the university first.` });
         }
 
-        const sql = 'INSERT INTO campuses (university_code, name) VALUES ($1, $2) RETURNING *';
-        const result = await db.query(sql, [cleanUnivCode, cleanName]);
+        const result = await db.query('INSERT INTO campuses (university_code, name) VALUES ($1, $2) RETURNING *', [cleanUnivCode, cleanName]);
 
         return res.status(201).json({
             status: 'success',

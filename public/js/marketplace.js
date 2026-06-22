@@ -11,8 +11,20 @@ let activeFilters = {
     maxPrice: ''
 };
 
-// Bookmarked list of product IDs
-let savedProductIds = [];
+// Cart list of product IDs
+let cartProductIds = [];
+
+// Reputation badge helper
+function getClientBadgeInfo(dealsCompleted, averageRating) {
+    if (dealsCompleted >= 50 && averageRating >= 4.5) {
+        return { emoji: '🏆', label: 'Top Seller', cssClass: 'badge-top' };
+    } else if (dealsCompleted >= 10 && averageRating >= 4.0) {
+        return { emoji: '⭐', label: 'Trusted', cssClass: 'badge-trusted' };
+    } else if (dealsCompleted >= 3) {
+        return { emoji: '🟡', label: 'Active', cssClass: 'badge-active' };
+    }
+    return { emoji: '🟢', label: 'New', cssClass: 'badge-new' };
+}
 
 // 1. Fetch products from API and render cards
 async function loadMarketplaceProducts() {
@@ -65,7 +77,7 @@ async function loadMarketplaceProducts() {
 
             // Render cards
             grid.innerHTML = products.map(product => {
-                const isBookmarked = savedProductIds.includes(product.id);
+                const isBookmarked = cartProductIds.includes(product.id);
                 
                 // Get first image
                 let imagePath = '/uploads/products/placeholder.webp';
@@ -76,22 +88,19 @@ async function loadMarketplaceProducts() {
                     } catch(e) {}
                 }
 
-                // Subaccount / vendor checkmark trust signal
-                const isVerified = product.vendor && product.vendor.verified;
-                const verifiedIcon = isVerified ? `
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 2px;">
-                        <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="#22C55E"/>
-                    </svg>
-                ` : '';
+                const dealsCompleted = product.vendor ? (product.vendor.deals_completed || 0) : 0;
+                const averageRating = product.vendor ? (parseFloat(product.vendor.average_rating) || 0) : 0;
+                const badge = getClientBadgeInfo(dealsCompleted, averageRating);
+                const badgeHtml = `<span class="reputation-badge ${badge.cssClass}" title="${badge.label} (${dealsCompleted} deals, ${averageRating}★)">${badge.emoji} ${badge.label}</span>`;
 
                 return `
                     <div class="product-card" onclick="openProductDetails(${product.id})">
                         <div class="product-image-container">
                             <img src="${imagePath}" class="product-image" alt="${product.name}" loading="lazy">
-                            <button class="bookmark-icon-btn ${isBookmarked ? 'active' : ''}" 
-                                    onclick="handleBookmarkToggle(event, ${product.id}, ${isBookmarked})">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="${isBookmarked ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                            <button class="cart-icon-btn ${isBookmarked ? 'active' : ''}" 
+                                     onclick="handleCartToggle(event, ${product.id}, ${isBookmarked})">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                                 </svg>
                             </button>
                         </div>
@@ -103,7 +112,7 @@ async function loadMarketplaceProducts() {
                             <div class="product-card-footer">
                                 <div class="product-vendor-badge">
                                     <span style="max-width: 60px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${product.vendor_name}</span>
-                                    ${verifiedIcon}
+                                    ${badgeHtml}
                                 </div>
                                 <span class="product-card-campus">${product.campus}</span>
                             </div>
@@ -133,9 +142,8 @@ async function loadHomeFeatured() {
                 list.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">No campus deals listed yet.</div>`;
                 return;
             }
-
             list.innerHTML = products.map(product => {
-                const isBookmarked = savedProductIds.includes(product.id);
+                const isBookmarked = cartProductIds.includes(product.id);
                 let imagePath = '/uploads/products/placeholder.webp';
                 if (product.images) {
                     try {
@@ -144,21 +152,19 @@ async function loadHomeFeatured() {
                     } catch(e) {}
                 }
 
-                const isVerified = product.vendor && product.vendor.verified;
-                const verifiedIcon = isVerified ? `
-                    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 2px;">
-                        <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="#22C55E"/>
-                    </svg>
-                ` : '';
+                const dealsCompleted = product.vendor ? (product.vendor.deals_completed || 0) : 0;
+                const averageRating = product.vendor ? (parseFloat(product.vendor.average_rating) || 0) : 0;
+                const badge = getClientBadgeInfo(dealsCompleted, averageRating);
+                const badgeHtml = `<span class="reputation-badge ${badge.cssClass}" title="${badge.label} (${dealsCompleted} deals, ${averageRating}★)">${badge.emoji} ${badge.label}</span>`;
 
                 return `
                     <div class="product-card" onclick="openProductDetails(${product.id})">
                         <div class="product-image-container">
                             <img src="${imagePath}" class="product-image" alt="${product.name}">
-                            <button class="bookmark-icon-btn ${isBookmarked ? 'active' : ''}" 
-                                    onclick="handleBookmarkToggle(event, ${product.id}, ${isBookmarked})">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="${isBookmarked ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                            <button class="cart-icon-btn ${isBookmarked ? 'active' : ''}" 
+                                     onclick="handleCartToggle(event, ${product.id}, ${isBookmarked})">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                                 </svg>
                             </button>
                         </div>
@@ -170,7 +176,7 @@ async function loadHomeFeatured() {
                             <div class="product-card-footer">
                                 <div class="product-vendor-badge">
                                     <span style="max-width: 60px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${product.vendor_name}</span>
-                                    ${verifiedIcon}
+                                    ${badgeHtml}
                                 </div>
                                 <span class="product-card-campus">${product.campus}</span>
                             </div>
@@ -184,42 +190,42 @@ async function loadHomeFeatured() {
     }
 }
 
-// 3. Load Saved listings list from DB
-async function loadSavedProductIds() {
+// 3. Load Cart listings list from DB
+async function loadCartProductIds() {
     if (!currentToken) {
-        savedProductIds = [];
+        cartProductIds = [];
         return;
     }
 
     try {
-        const response = await fetch('/api/products/saved', {
+        const response = await fetch('/api/products/cart', {
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
         const data = await response.json();
         if (data.status === 'success') {
-            savedProductIds = data.products.map(p => p.id);
+            cartProductIds = data.products.map(p => p.id);
         }
     } catch(e) {
-        console.warn('Could not retrieve bookmarks list from server.');
+        console.warn('Could not retrieve cart products list from server.');
     }
 }
 
-// 4. Bookmark Clicking Toggles
-async function handleBookmarkToggle(event, productId, isCurrentlyBookmarked) {
+// 4. Cart Clicking Toggles
+async function handleCartToggle(event, productId, isCurrentlyInCart) {
     event.stopPropagation(); // Avoid card click details transition
     
     if (!currentToken) {
-        Toast.show('Please login to save bookmarks!', 'warning');
+        Toast.show('Please login to add products to your cart!', 'warning');
         window.location.hash = '#/login';
         return;
     }
 
-    const loader = Toast.show(isCurrentlyBookmarked ? 'Removing bookmark...' : 'Saving bookmark...', 'loading', 1500);
+    const loader = Toast.show(isCurrentlyInCart ? 'Removing from cart...' : 'Adding to cart...', 'loading', 1500);
 
     try {
-        const url = isCurrentlyBookmarked ? `/api/products/save/${productId}` : `/api/products/save`;
-        const method = isCurrentlyBookmarked ? 'DELETE' : 'POST';
-        const body = isCurrentlyBookmarked ? null : JSON.stringify({ productId });
+        const url = isCurrentlyInCart ? `/api/products/cart/${productId}` : `/api/products/cart`;
+        const method = isCurrentlyInCart ? 'DELETE' : 'POST';
+        const body = isCurrentlyInCart ? null : JSON.stringify({ productId });
         
         const response = await fetch(url, {
             method,
@@ -232,19 +238,19 @@ async function handleBookmarkToggle(event, productId, isCurrentlyBookmarked) {
         const data = await response.json();
 
         if (data.status === 'success') {
-            if (isCurrentlyBookmarked) {
-                savedProductIds = savedProductIds.filter(id => id !== productId);
-                Toast.update(loader, 'Bookmark removed!', 'success');
+            if (isCurrentlyInCart) {
+                cartProductIds = cartProductIds.filter(id => id !== productId);
+                Toast.update(loader, 'Removed from cart!', 'success');
             } else {
-                savedProductIds.push(productId);
-                Toast.update(loader, 'Listing bookmarked!', 'success');
+                cartProductIds.push(productId);
+                Toast.update(loader, 'Added to cart!', 'success');
             }
             
             // Refresh active listings grids
             loadMarketplaceProducts();
             loadHomeFeatured();
         } else {
-            Toast.update(loader, data.message || 'Bookmark update failed', 'error');
+            Toast.update(loader, data.message || 'Cart update failed', 'error');
         }
     } catch (err) {
         Toast.update(loader, 'Connection error.', 'error');
@@ -284,19 +290,27 @@ async function renderProductDetails(productId) {
             }
             
             const vNameTag = document.getElementById('details-vendor-name');
-            const verifiedIcon = p.vendor.verified ? `
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="#22C55E"/>
-                </svg>
-            ` : '';
-            vNameTag.innerHTML = `<span>${p.vendor.name}</span> ${verifiedIcon}`;
+            const dealsCompleted = p.vendor ? (p.vendor.deals_completed || 0) : 0;
+            const averageRating = p.vendor ? (parseFloat(p.vendor.average_rating) || 0) : 0;
+            const badge = getClientBadgeInfo(dealsCompleted, averageRating);
+            const badgeHtml = `<span class="reputation-badge ${badge.cssClass}" style="margin-left: 6px;">${badge.emoji} ${badge.label}</span>`;
+            
+            vNameTag.innerHTML = `<span style="font-weight: 700;">${p.vendor.name}</span> ${badgeHtml}`;
             
             // Set WhatsApp link
-            document.getElementById('details-whatsapp-btn').href = p.vendor.whatsappLink;
+            if (p.vendor.whatsappLink) {
+                document.getElementById('details-whatsapp-btn').href = p.vendor.whatsappLink;
+                document.getElementById('details-whatsapp-btn').style.display = 'flex';
+            } else {
+                document.getElementById('details-whatsapp-btn').style.display = 'none';
+            }
 
-            // Configure Checkout Button Action
-            const buyBtn = document.getElementById('details-buy-btn');
-            buyBtn.onclick = () => initiateCheckout(p.id);
+            const respTag = document.getElementById('details-vendor-response');
+            if (respTag) {
+                respTag.innerHTML = `Typically replies in 2 hours • <b>${dealsCompleted}</b> deals completed • <b>${averageRating ? averageRating.toFixed(1) + '★' : 'No ratings yet'}</b>`;
+            }
+
+
 
             // Populate Gallery Slider images
             const gallery = document.getElementById('details-gallery');
@@ -350,120 +364,7 @@ async function renderProductDetails(productId) {
     }
 }
 
-// 6. Initiate Checkout Order
-async function initiateCheckout(productId) {
-    if (!currentToken) {
-        Toast.show('Please log in to purchase listings!', 'warning');
-        window.location.hash = '#/login';
-        return;
-    }
-
-    const loader = Toast.show('Opening checkout...', 'loading');
-
-    try {
-        const response = await fetch('/api/orders/initialize', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${currentToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ productId })
-        });
-        const data = await response.json();
-
-        if (data.status === 'success') {
-            Toast.dismiss(loader);
-            
-            // If sandbox mock checkout URL, redirect to simulator
-            if (data.paymentUrl.startsWith('/')) {
-                window.location.hash = data.paymentUrl;
-            } else {
-                // Open real Paystack Checkout window
-                window.location.href = data.paymentUrl;
-            }
-        } else {
-            Toast.update(loader, data.message || 'Checkout failed', 'error');
-        }
-    } catch (err) {
-        Toast.update(loader, 'Checkout request failed.', 'error');
-    }
-}
-
-// 7. Load Sandbox Payment simulation view
-async function loadPaymentSimulation(reference) {
-    const simProdPrice = document.getElementById('sim-product-price');
-    const simTotalVal = document.getElementById('sim-total-price');
-    if (!simProdPrice || !simTotalVal) return;
-
-    // Fetch order details
-    const loader = Toast.show('Resolving checkout gateway...', 'loading');
-
-    try {
-        // Query database via verification check to find the order amount
-        const response = await fetch(`/api/orders/verify/${reference}`);
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            // In our verification endpoint we don't return price by default, but let's query orders from buyer list
-            const buyerOrdersRes = await fetch('/api/orders/buyer', {
-                headers: { 'Authorization': `Bearer ${currentToken}` }
-            });
-            const ordersData = await buyerOrdersRes.json();
-            const order = ordersData.orders.find(o => o.paystack_reference === reference);
-            
-            if (order) {
-                simProdPrice.textContent = `₦${parseFloat(order.amount).toLocaleString()}`;
-                simTotalVal.textContent = `₦${parseFloat(order.total_amount).toLocaleString()}`;
-            } else {
-                simProdPrice.textContent = '₦5,000.00';
-                simTotalVal.textContent = '₦5,500.00';
-            }
-            Toast.dismiss(loader);
-        } else {
-            Toast.update(loader, 'Failed to resolve payment details', 'error');
-            window.location.hash = '#/';
-        }
-    } catch(e) {
-        Toast.update(loader, 'Failed to connect to gateway simulator', 'error');
-    }
-}
-
-// 8. Trigger Sandbox verification callback redirect
-async function simulatePaymentStatus(status) {
-    const reference = window.location.hash.split('/').pop();
-    if (!reference) return;
-
-    const loader = Toast.show('Confirming transaction splits...', 'loading');
-
-    if (status === 'cancel') {
-        Toast.update(loader, 'Transaction cancelled by buyer.', 'info');
-        setTimeout(() => {
-            window.location.hash = '#/marketplace';
-        }, 1200);
-        return;
-    }
-
-    try {
-        const response = await fetch(`/api/orders/verify/${reference}`);
-        const data = await response.json();
-
-        if (data.status === 'success' && data.payment_status === 'success') {
-            Toast.update(loader, 'Payment completed! Payout shares split successfully.', 'success');
-            
-            setTimeout(() => {
-                window.location.hash = '#/dashboard';
-                // Switch buyer dashboard tab to orders
-                setTimeout(() => {
-                    switchDashboardTab('buyer-orders');
-                }, 100);
-            }, 1200);
-        } else {
-            Toast.update(loader, 'Simulated payment processing failed.', 'error');
-        }
-    } catch(e) {
-        Toast.update(loader, 'Simulation request failure.', 'error');
-    }
-}
+// 6. Removed Paystack checkout and gateway simulator handlers
 
 // 9. Apply Filter drawer selections
 function toggleFilterDrawer(show) {

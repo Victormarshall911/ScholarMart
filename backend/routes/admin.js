@@ -6,12 +6,11 @@ const { authenticate, isAdmin } = require('../middleware/auth');
 // Flag/Report product - Authenticated (Buyer role is sufficient)
 router.post('/products/:id/report', authenticate, adminController.reportProduct);
 
+// Report seller - Authenticated (Buyer role is sufficient)
+router.post('/users/:id/report', authenticate, adminController.reportSeller);
+
 // Admin Specific Routes - Enforces JWT + Admin role
 router.use(authenticate, isAdmin);
-
-// Student Verifications
-router.get('/verifications', adminController.getPendingVerifications);
-router.post('/verifications/:userId', adminController.updateVerificationStatus);
 
 // Product Moderation
 router.get('/moderation', adminController.getReportedProducts);
@@ -22,8 +21,10 @@ router.get('/users', adminController.getAllUsers);
 router.post('/users/:id/status', adminController.updateUserAccountStatus);
 router.post('/users/:id/reset-password', adminController.resetUserPassword);
 
-// Reports & Revenue Analytics
+// Reports & Analytics
 router.get('/reports', adminController.getReports);
+router.get('/all-reports', adminController.getAllReports);
+router.get('/deals', adminController.getAllDeals);
 
 // University & Campus Management
 router.post('/universities', adminController.addUniversity);

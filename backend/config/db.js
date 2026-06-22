@@ -20,49 +20,32 @@ if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// In-memory data store for fallback
-// Seed default Universities in store
-const defaultUniversities = [
-    { id: 1, code: 'COOU', name: 'Chukwuemeka Odumegwu Ojukwu University' },
-    { id: 2, code: 'UNIZIK', name: 'Nnamdi Azikiwe University' },
-    { id: 3, code: 'UNN', name: 'University of Nigeria' },
-    { id: 4, code: 'FUTO', name: 'Federal University of Technology, Owerri' },
-    { id: 5, code: 'UNILAG', name: 'University of Lagos' },
-    { id: 6, code: 'LASU', name: 'Lagos State University' },
-    { id: 7, code: 'OAU', name: 'Obafemi Awolowo University' },
-    { id: 8, code: 'ABSU', name: 'Abia State University' },
-    { id: 9, code: 'ESUT', name: 'Enugu State University of Science and Technology' }
-];
-
-const defaultCampuses = [
-    { id: 1, university_code: 'COOU', name: 'Igbariam Campus' },
-    { id: 2, university_code: 'COOU', name: 'Uli Campus' },
-    { id: 3, university_code: 'UNIZIK', name: 'Awka Campus' },
-    { id: 4, university_code: 'UNIZIK', name: 'Nnewi Campus' },
-    { id: 5, university_code: 'UNN', name: 'Nsukka Campus' },
-    { id: 6, university_code: 'UNN', name: 'Enugu Campus' },
-    { id: 7, university_code: 'FUTO', name: 'Owerri Campus' },
-    { id: 8, university_code: 'UNILAG', name: 'Akoka Campus' },
-    { id: 9, university_code: 'UNILAG', name: 'Yaba Campus' },
-    { id: 10, university_code: 'LASU', name: 'Ojo Campus' },
-    { id: 11, university_code: 'LASU', name: 'Ikeja Campus' },
-    { id: 12, university_code: 'OAU', name: 'Ile-Ife Campus' },
-    { id: 13, university_code: 'ABSU', name: 'Uturu Campus' },
-    { id: 14, university_code: 'ESUT', name: 'Agbani Campus' }
+// Default seed data
+const defaultUniversities = [];
+const defaultCampuses = [];
+const defaultCategories = [
+    { id: 1, name: 'Electronics', created_at: new Date().toISOString() },
+    { id: 2, name: 'Fashion', created_at: new Date().toISOString() },
+    { id: 3, name: 'Books', created_at: new Date().toISOString() },
+    { id: 4, name: 'Hostel Essentials', created_at: new Date().toISOString() },
+    { id: 5, name: 'Gadgets', created_at: new Date().toISOString() },
+    { id: 6, name: 'Beauty Products', created_at: new Date().toISOString() },
+    { id: 7, name: 'Food & Snacks', created_at: new Date().toISOString() }
 ];
 
 let fallbackStore = {
     users: [],
     products: [],
-    orders: [],
-    saved_products: [],
+    deals: [],
+    cart_items: [],
+    reports: [],
     universities: [...defaultUniversities],
-    campuses: [...defaultCampuses]
+    campuses: [...defaultCampuses],
+    categories: [...defaultCategories]
 };
 
 // Seed default Admin in store
 const seedAdminInStore = async (store) => {
-    // Remove old admin if exists
     store.users = store.users.filter(u => u.email !== 'admin@scholarmart.com');
 
     const adminEmail = 'admin@scholarmats.com';
@@ -73,19 +56,19 @@ const seedAdminInStore = async (store) => {
             id: store.users.length + 1,
             name: 'Scholarmart Admin',
             email: adminEmail,
-            phone: '08000000000',
+            whatsapp_number: '08000000000',
             university: 'COOU',
             campus: 'Igbariam Campus',
             password_hash: hashedPassword,
             role: 'admin',
-            verification_status: 'approved',
-            verification_method: 'email',
-            verification_file: null,
-            verification_otp: null,
-            bank_name: null,
-            bank_account_number: null,
-            bank_account_name: null,
-            paystack_subaccount_code: null,
+            email_verified: true,
+            email_otp: null,
+            email_otp_expires: null,
+            portrait: null,
+            deals_completed: 0,
+            average_rating: 0,
+            total_ratings: 0,
+            report_count: 0,
             status: 'active',
             created_at: new Date().toISOString()
         });
@@ -96,15 +79,29 @@ const seedAdminInStore = async (store) => {
 if (fs.existsSync(fallbackFilePath)) {
     try {
         const fileContent = fs.readFileSync(fallbackFilePath, 'utf8');
-        fallbackStore = JSON.parse(fileContent);
+        const loaded = JSON.parse(fileContent);
         
-        // Ensure universities are seeded inside loaded store
-        if (!fallbackStore.universities || fallbackStore.universities.length === 0) {
-            fallbackStore.universities = [...defaultUniversities];
-        }
-        if (!fallbackStore.campuses || fallbackStore.campuses.length === 0) {
-            fallbackStore.campuses = [...defaultCampuses];
-        }
+        // Migrate old store format to new format
+        fallbackStore = {
+            users: (loaded.users || []).map(u => ({
+                ...u,
+                whatsapp_number: u.whatsapp_number || u.phone || null,
+                email_verified: u.email_verified !== undefined ? u.email_verified : (u.verification_status === 'approved'),
+                email_otp: u.email_otp || u.verification_otp || null,
+                email_otp_expires: u.email_otp_expires || u.verification_otp_expires || null,
+                deals_completed: u.deals_completed || 0,
+                average_rating: u.average_rating || 0,
+                total_ratings: u.total_ratings || 0,
+                report_count: u.report_count || 0
+            })),
+            products: loaded.products || [],
+            deals: loaded.deals || loaded.orders || [],
+            cart_items: loaded.cart_items || [],
+            reports: loaded.reports || [],
+            universities: loaded.universities && loaded.universities.length > 0 ? loaded.universities : [...defaultUniversities],
+            campuses: loaded.campuses && loaded.campuses.length > 0 ? loaded.campuses : [...defaultCampuses],
+            categories: loaded.categories && loaded.categories.length > 0 ? loaded.categories : [...defaultCategories]
+        };
     } catch (err) {
         console.error('Failed to parse fallback database JSON. Initializing clean store.', err);
     }
@@ -131,7 +128,7 @@ try {
         password: DB_PASSWORD,
         database: DB_NAME,
         port: DB_PORT,
-        connectionTimeoutMillis: 2000 // Short timeout for fallback checking
+        connectionTimeoutMillis: 2000
     });
 } catch (e) {
     console.warn('PostgreSQL Pool initialization failed. Falling back to JSON Database.');
@@ -144,20 +141,79 @@ const testConnection = async () => {
     try {
         const res = await pool.query('SELECT NOW()');
         console.log('PostgreSQL Database Connected Successfully on port', DB_PORT);
+        
+        // Ensure categories table exists in Postgres
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS categories (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) UNIQUE NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        
+        // Seed categories if empty
+        const catCheck = await pool.query('SELECT COUNT(*) FROM categories');
+        if (parseInt(catCheck.rows[0].count, 10) === 0) {
+            await pool.query(`
+                INSERT INTO categories (name) VALUES 
+                ('Electronics'), ('Fashion'), ('Books'), ('Hostel Essentials'), ('Gadgets'), ('Beauty Products'), ('Food & Snacks');
+            `);
+        }
+
+        // Ensure cart_items table exists in Postgres
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS cart_items (
+                user_id INTEGER NOT NULL,
+                product_id INTEGER NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, product_id)
+            );
+        `);
+
+        // Ensure deals table exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS deals (
+                id SERIAL PRIMARY KEY,
+                buyer_id INTEGER,
+                product_id INTEGER NOT NULL,
+                vendor_id INTEGER NOT NULL,
+                amount DECIMAL(12, 2) NOT NULL,
+                status VARCHAR(30) DEFAULT 'pending_confirmation',
+                confirmed_by_buyer BOOLEAN DEFAULT FALSE,
+                rating INTEGER,
+                review TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Ensure reports table exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS reports (
+                id SERIAL PRIMARY KEY,
+                reporter_id INTEGER NOT NULL,
+                reported_user_id INTEGER,
+                reported_product_id INTEGER,
+                reason TEXT NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
     } catch (err) {
-        console.warn('PostgreSQL Connection Failed. Falling back to local JSON database.');
+        console.warn('PostgreSQL Database Connection/Init Failed. Falling back to local JSON database.', err);
         useFallback = true;
     }
 };
 
 testConnection();
 
-// Fallback Query Engine Simulation
-// This maps specific SQL strings used by the controllers to local JSON array manipulations
+// ============================================================
+// FALLBACK QUERY ENGINE
+// Maps SQL patterns used by controllers to local JSON operations
+// ============================================================
 function queryFallback(text, params = []) {
     const cleanText = text.replace(/\s+/g, ' ').trim();
     
-    // 1. SELECT * FROM campuses
+    // --- CAMPUSES ---
     if (cleanText.toLowerCase().startsWith('select * from campuses')) {
         let campuses = fallbackStore.campuses || [];
         if (cleanText.includes('university_code = $1')) {
@@ -168,7 +224,7 @@ function queryFallback(text, params = []) {
         return { rows: campuses, rowCount: campuses.length };
     }
 
-    // 1.1 SELECT * FROM universities
+    // --- UNIVERSITIES ---
     if (cleanText.toLowerCase().startsWith('select * from universities') || cleanText.toLowerCase().includes('from universities')) {
         let universities = fallbackStore.universities || [];
         if (cleanText.includes('code = $1')) {
@@ -179,7 +235,6 @@ function queryFallback(text, params = []) {
         return { rows: universities, rowCount: universities.length };
     }
 
-    // 1.2 INSERT INTO universities (code, name) VALUES ($1, $2) RETURNING *
     if (cleanText.toLowerCase().includes('insert into universities')) {
         const newUniv = {
             id: (fallbackStore.universities || []).length + 1,
@@ -193,7 +248,6 @@ function queryFallback(text, params = []) {
         return { rows: [newUniv], rowCount: 1 };
     }
 
-    // 1.3 INSERT INTO campuses (university_code, name) VALUES ($1, $2) RETURNING *
     if (cleanText.toLowerCase().includes('insert into campuses')) {
         const newCampus = {
             id: (fallbackStore.campuses || []).length + 1,
@@ -207,42 +261,39 @@ function queryFallback(text, params = []) {
         return { rows: [newCampus], rowCount: 1 };
     }
 
-    // 2. SELECT * FROM users WHERE email = $1
+    // --- USERS: SELECT BY EMAIL ---
     if (cleanText.includes('FROM users') && cleanText.includes('email = $1')) {
         const email = params[0]?.toLowerCase();
         const user = fallbackStore.users.find(u => u.email?.toLowerCase() === email);
         return { rows: user ? [user] : [], rowCount: user ? 1 : 0 };
     }
 
-    // 3. SELECT * FROM users WHERE id = $1
+    // --- USERS: SELECT BY ID ---
     if (cleanText.includes('FROM users') && cleanText.includes('id = $1')) {
         const id = parseInt(params[0], 10);
         const user = fallbackStore.users.find(u => u.id === id);
         return { rows: user ? [user] : [], rowCount: user ? 1 : 0 };
     }
 
-    // 4. INSERT INTO users ... RETURNING id/RETURNING *
+    // --- USERS: INSERT ---
     if (cleanText.toLowerCase().startsWith('insert into users')) {
-        // [name, email, phone, university, campus, password_hash, role, bank_name, bank_account_number, bank_account_name, paystack_subaccount_code, verification_status, verification_method, verification_file]
         const newUser = {
             id: fallbackStore.users.length + 1,
             name: params[0],
             email: params[1],
-            phone: params[2],
+            whatsapp_number: params[2] || null,
             university: params[3] || 'COOU',
             campus: params[4],
             password_hash: params[5],
             role: params[6] || 'buyer',
-            bank_name: params[7] || null,
-            bank_account_number: params[8] || null,
-            bank_account_name: params[9] || null,
-            paystack_subaccount_code: params[10] || null,
-            verification_status: params[11] || 'pending',
-            verification_method: params[12] || null,
-            verification_file: params[13] || null,
-            verification_otp: null,
-            verification_otp_expires: null,
+            email_verified: false,
+            email_otp: null,
+            email_otp_expires: null,
             portrait: null,
+            deals_completed: 0,
+            average_rating: 0,
+            total_ratings: 0,
+            report_count: 0,
             status: 'active',
             created_at: new Date().toISOString()
         };
@@ -251,38 +302,55 @@ function queryFallback(text, params = []) {
         return { rows: [newUser], rowCount: 1 };
     }
 
-    // 5. UPDATE users SET verification_otp = $1, verification_otp_expires = $2 WHERE id = $3
-    if (cleanText.includes('UPDATE users') && cleanText.includes('verification_otp = $1')) {
+    // --- USERS: UPDATE email_otp ---
+    if (cleanText.includes('UPDATE users') && cleanText.includes('email_otp = $1')) {
         const otp = params[0];
         const expires = params[1];
         const id = parseInt(params[2], 10);
         const userIdx = fallbackStore.users.findIndex(u => u.id === id);
         if (userIdx !== -1) {
-            fallbackStore.users[userIdx].verification_otp = otp;
-            fallbackStore.users[userIdx].verification_otp_expires = expires;
+            fallbackStore.users[userIdx].email_otp = otp;
+            fallbackStore.users[userIdx].email_otp_expires = expires;
             saveFallbackStore();
             return { rows: [fallbackStore.users[userIdx]], rowCount: 1 };
         }
         return { rows: [], rowCount: 0 };
     }
 
-    // 6. UPDATE users
+    // --- USERS: UPDATE email_verified ---
+    if (cleanText.includes('UPDATE users') && cleanText.includes('email_verified')) {
+        const id = parseInt(params[params.length - 1], 10);
+        const userIdx = fallbackStore.users.findIndex(u => u.id === id);
+        if (userIdx !== -1) {
+            fallbackStore.users[userIdx].email_verified = true;
+            fallbackStore.users[userIdx].email_otp = null;
+            fallbackStore.users[userIdx].email_otp_expires = null;
+            saveFallbackStore();
+            return { rows: [fallbackStore.users[userIdx]], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
+    }
+
+    // --- USERS: Generic UPDATE ---
     if (cleanText.toLowerCase().startsWith('update users')) {
         const idIdx = params.length - 1;
         const id = parseInt(params[idIdx], 10);
         const userIdx = fallbackStore.users.findIndex(u => u.id === id);
         if (userIdx !== -1) {
-            if (cleanText.includes('verification_status = $1') && params.length === 2) {
-                fallbackStore.users[userIdx].verification_status = params[0];
-            } else if (cleanText.includes('verification_status = $1') && cleanText.includes('verification_method = $2')) {
-                fallbackStore.users[userIdx].verification_status = params[0];
-                fallbackStore.users[userIdx].verification_method = params[1];
-            } else if (cleanText.includes('paystack_subaccount_code = $1') || cleanText.includes('paystack_subaccount_code =')) {
-                fallbackStore.users[userIdx].paystack_subaccount_code = params[0];
-            } else if (cleanText.includes('status = $1')) {
+            if (cleanText.includes('status = $1') && params.length === 2) {
                 fallbackStore.users[userIdx].status = params[0];
             } else if (cleanText.includes('portrait = $1')) {
                 fallbackStore.users[userIdx].portrait = params[0];
+            } else if (cleanText.includes('deals_completed')) {
+                fallbackStore.users[userIdx].deals_completed = parseInt(params[0], 10);
+                if (cleanText.includes('average_rating')) {
+                    fallbackStore.users[userIdx].average_rating = parseFloat(params[1]);
+                    fallbackStore.users[userIdx].total_ratings = parseInt(params[2], 10);
+                }
+            } else if (cleanText.includes('report_count')) {
+                fallbackStore.users[userIdx].report_count = parseInt(params[0], 10);
+            } else if (cleanText.includes('password_hash = $1')) {
+                fallbackStore.users[userIdx].password_hash = params[0];
             }
             saveFallbackStore();
             return { rows: [fallbackStore.users[userIdx]], rowCount: 1 };
@@ -290,16 +358,38 @@ function queryFallback(text, params = []) {
         return { rows: [], rowCount: 0 };
     }
 
-    // 7. SELECT * FROM users (For Admin View)
+    // --- USERS: SELECT ALL (Admin) ---
     if (cleanText.toLowerCase().startsWith('select * from users') && !cleanText.includes('where')) {
         return { rows: fallbackStore.users, rowCount: fallbackStore.users.length };
     }
 
-    // 8. SELECT * FROM products
+    // --- PRODUCTS: SELECT with vendor join (cart query) ---
     if (cleanText.toLowerCase().startsWith('select p.*, u.name as vendor_name')) {
-        // Includes joins
-        // Filter options are resolved at the controller level or here
-        // We will return all active products joined with vendor name
+        // Check if this is a cart query
+        if (cleanText.toLowerCase().includes('from cart_items')) {
+            const userId = parseInt(params[0], 10);
+            const cartItems = (fallbackStore.cart_items || [])
+                .filter(sp => sp.user_id === userId)
+                .map(sp => {
+                    const product = fallbackStore.products.find(p => p.id === sp.product_id);
+                    if (product && product.status === 'active') {
+                        const vendor = fallbackStore.users.find(u => u.id === product.vendor_id);
+                        return {
+                            ...product,
+                            vendor_name: vendor ? vendor.name : 'Unknown Vendor',
+                            vendor_email_verified: vendor ? vendor.email_verified : false,
+                            vendor_deals_completed: vendor ? (vendor.deals_completed || 0) : 0,
+                            vendor_average_rating: vendor ? (vendor.average_rating || 0) : 0,
+                            vendor_portrait: vendor ? (vendor.portrait || null) : null
+                        };
+                    }
+                    return null;
+                })
+                .filter(p => p !== null);
+            return { rows: cartItems, rowCount: cartItems.length };
+        }
+
+        // Regular products listing with vendor join
         const productsWithVendors = fallbackStore.products
             .filter(p => p.status !== 'deleted')
             .map(p => {
@@ -307,7 +397,10 @@ function queryFallback(text, params = []) {
                 return {
                     ...p,
                     vendor_name: vendor ? vendor.name : 'Unknown Vendor',
-                    vendor_verification: vendor ? vendor.verification_status : 'pending',
+                    vendor_email_verified: vendor ? vendor.email_verified : false,
+                    vendor_deals_completed: vendor ? (vendor.deals_completed || 0) : 0,
+                    vendor_average_rating: vendor ? (vendor.average_rating || 0) : 0,
+                    vendor_total_ratings: vendor ? (vendor.total_ratings || 0) : 0,
                     vendor_role: vendor ? vendor.role : 'vendor',
                     vendor_portrait: vendor ? (vendor.portrait || null) : null
                 };
@@ -315,7 +408,7 @@ function queryFallback(text, params = []) {
         return { rows: productsWithVendors, rowCount: productsWithVendors.length };
     }
 
-    // 9. SELECT * FROM products WHERE id = $1
+    // --- PRODUCTS: SELECT BY ID ---
     if (cleanText.includes('FROM products') && cleanText.includes('id = $1')) {
         const id = parseInt(params[0], 10);
         const product = fallbackStore.products.find(p => p.id === id);
@@ -325,19 +418,20 @@ function queryFallback(text, params = []) {
                 ...product,
                 vendor_name: vendor ? vendor.name : 'Unknown Vendor',
                 vendor_email: vendor ? vendor.email : '',
-                vendor_phone: vendor ? vendor.phone : '',
-                vendor_verification: vendor ? vendor.verification_status : 'pending',
-                vendor_portrait: vendor ? (vendor.portrait || null) : null,
-                subaccount: vendor ? vendor.paystack_subaccount_code : null
+                vendor_whatsapp: vendor ? (vendor.whatsapp_number || '') : '',
+                vendor_email_verified: vendor ? vendor.email_verified : false,
+                vendor_deals_completed: vendor ? (vendor.deals_completed || 0) : 0,
+                vendor_average_rating: vendor ? (vendor.average_rating || 0) : 0,
+                vendor_total_ratings: vendor ? (vendor.total_ratings || 0) : 0,
+                vendor_portrait: vendor ? (vendor.portrait || null) : null
             };
             return { rows: [joinedProduct], rowCount: 1 };
         }
         return { rows: [], rowCount: 0 };
     }
 
-    // 10. INSERT INTO products
+    // --- PRODUCTS: INSERT ---
     if (cleanText.toLowerCase().startsWith('insert into products')) {
-        // [name, description, price, category, university, campus, vendor_id, images]
         const newProduct = {
             id: fallbackStore.products.length + 1,
             name: params[0],
@@ -356,7 +450,7 @@ function queryFallback(text, params = []) {
         return { rows: [newProduct], rowCount: 1 };
     }
 
-    // 11. UPDATE products SET status = $1 WHERE id = $2
+    // --- PRODUCTS: UPDATE STATUS ---
     if (cleanText.includes('UPDATE products') && cleanText.includes('status = $1')) {
         const status = params[0];
         const id = parseInt(params[1], 10);
@@ -369,12 +463,22 @@ function queryFallback(text, params = []) {
         return { rows: [], rowCount: 0 };
     }
 
-    // 12. DELETE FROM products WHERE id = $1
+    if (cleanText.includes('UPDATE products') && cleanText.includes("status = 'sold'")) {
+        const id = parseInt(params[0], 10);
+        const idx = fallbackStore.products.findIndex(p => p.id === id);
+        if (idx !== -1) {
+            fallbackStore.products[idx].status = 'sold';
+            saveFallbackStore();
+            return { rows: [fallbackStore.products[idx]], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
+    }
+
+    // --- PRODUCTS: DELETE ---
     if (cleanText.includes('DELETE FROM products') && cleanText.includes('id = $1')) {
         const id = parseInt(params[0], 10);
         const idx = fallbackStore.products.findIndex(p => p.id === id);
         if (idx !== -1) {
-            // Logical or physical delete, let's do physical delete or status = deleted
             fallbackStore.products[idx].status = 'deleted';
             saveFallbackStore();
             return { rows: [], rowCount: 1 };
@@ -382,76 +486,197 @@ function queryFallback(text, params = []) {
         return { rows: [], rowCount: 0 };
     }
 
-    // 13. SELECT * FROM orders
-    if (cleanText.toLowerCase().startsWith('select o.*, p.name as product_name')) {
-        // Joins orders, buyers, products, vendors
-        const ordersWithJoins = fallbackStore.orders.map(o => {
-            const product = fallbackStore.products.find(p => p.id === o.product_id);
-            const buyer = fallbackStore.users.find(u => u.id === o.buyer_id);
-            const vendor = fallbackStore.users.find(u => u.id === o.vendor_id);
-            return {
-                ...o,
-                product_name: product ? product.name : 'Unknown Product',
-                product_image: product && product.images ? product.images[0] : null,
-                buyer_name: buyer ? buyer.name : 'Unknown Buyer',
-                vendor_name: vendor ? vendor.name : 'Unknown Vendor'
-            };
-        });
-        return { rows: ordersWithJoins, rowCount: ordersWithJoins.length };
-    }
-
-    // 14. INSERT INTO orders
-    if (cleanText.toLowerCase().startsWith('insert into orders')) {
-        // [buyer_id, product_id, vendor_id, amount, service_fee, total_amount, status, paystack_reference, paystack_split_code]
-        const newOrder = {
-            id: fallbackStore.orders.length + 1,
-            buyer_id: parseInt(params[0], 10),
-            product_id: parseInt(params[1], 10),
-            vendor_id: parseInt(params[2], 10),
-            amount: parseFloat(params[3]),
-            service_fee: parseFloat(params[4]),
-            total_amount: parseFloat(params[5]),
-            status: params[6] || 'pending',
-            paystack_reference: params[7],
-            paystack_split_code: params[8],
-            created_at: new Date().toISOString()
-        };
-        fallbackStore.orders.push(newOrder);
-        saveFallbackStore();
-        return { rows: [newOrder], rowCount: 1 };
-    }
-
-    // 15. SELECT * FROM orders WHERE paystack_reference = $1
-    if (cleanText.includes('FROM orders') && cleanText.includes('paystack_reference = $1')) {
-        const ref = params[0];
-        const order = fallbackStore.orders.find(o => o.paystack_reference === ref);
-        return { rows: order ? [order] : [], rowCount: order ? 1 : 0 };
-    }
-
-    // 16. UPDATE orders
-    if (cleanText.toLowerCase().startsWith('update orders')) {
-        let id, statusVal;
-        if (cleanText.includes("status = 'paid'") && cleanText.includes("id = $1")) {
-            id = parseInt(params[0], 10);
-            statusVal = 'paid';
-        } else {
-            statusVal = params[0];
-            id = parseInt(params[1], 10);
-        }
-
-        const idx = fallbackStore.orders.findIndex(o => o.id === id);
+    // --- DEALS: UPDATE ---
+    if (cleanText.toLowerCase().includes('update deals')) {
+        const id = parseInt(params[params.length - 1], 10);
+        if (!fallbackStore.deals) fallbackStore.deals = [];
+        const idx = fallbackStore.deals.findIndex(d => d.id === id);
         if (idx !== -1) {
-            fallbackStore.orders[idx].status = statusVal;
+            if (cleanText.includes('confirmed_by_buyer')) {
+                fallbackStore.deals[idx].confirmed_by_buyer = true;
+                fallbackStore.deals[idx].status = 'completed';
+            } else if (cleanText.includes('rating = $1')) {
+                fallbackStore.deals[idx].rating = parseInt(params[0], 10);
+                fallbackStore.deals[idx].review = params[1] || null;
+            } else if (cleanText.includes('status = $1')) {
+                fallbackStore.deals[idx].status = params[0];
+            }
             saveFallbackStore();
-            return { rows: [fallbackStore.orders[idx]], rowCount: 1 };
+            return { rows: [fallbackStore.deals[idx]], rowCount: 1 };
         }
         return { rows: [], rowCount: 0 };
     }
 
-    // 17. Saved products queries
-    if (cleanText.includes('FROM saved_products WHERE user_id = $1')) {
+    // --- DEALS: SELECT with joins ---
+    if (cleanText.toLowerCase().includes('from deals')) {
+        // Count/volume analytics query
+        if (cleanText.toLowerCase().includes('coalesce(sum(amount)')) {
+            if (!fallbackStore.deals) fallbackStore.deals = [];
+            const completedDeals = fallbackStore.deals.filter(d => d.status === 'completed');
+            const totalDeals = completedDeals.length;
+            const totalVolume = completedDeals.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+            return {
+                rows: [{
+                    count: totalDeals.toString(),
+                    total_volume: totalVolume.toString()
+                }],
+                rowCount: 1
+            };
+        }
+
+        if (cleanText.toLowerCase().includes('insert into deals')) {
+            const newDeal = {
+                id: (fallbackStore.deals || []).length + 1,
+                buyer_id: params[0] ? parseInt(params[0], 10) : null,
+                product_id: parseInt(params[1], 10),
+                vendor_id: parseInt(params[2], 10),
+                amount: parseFloat(params[3]),
+                status: params[4] || 'pending_confirmation',
+                confirmed_by_buyer: false,
+                rating: null,
+                review: null,
+                created_at: new Date().toISOString()
+            };
+            if (!fallbackStore.deals) fallbackStore.deals = [];
+            fallbackStore.deals.push(newDeal);
+            saveFallbackStore();
+            return { rows: [newDeal], rowCount: 1 };
+        }
+
+        // Select deals with joins
+        if (!fallbackStore.deals) fallbackStore.deals = [];
+        let deals = fallbackStore.deals;
+
+        // Filter by vendor_id or buyer_id
+        if (cleanText.includes('vendor_id = $1')) {
+            const vendorId = parseInt(params[0], 10);
+            deals = deals.filter(d => d.vendor_id === vendorId);
+        } else if (cleanText.includes('buyer_id = $1')) {
+            const buyerId = parseInt(params[0], 10);
+            deals = deals.filter(d => d.buyer_id === buyerId);
+        } else if (cleanText.includes('id = $1')) {
+            const dealId = parseInt(params[0], 10);
+            deals = deals.filter(d => d.id === dealId);
+        }
+
+        const dealsWithJoins = deals.map(d => {
+            const product = fallbackStore.products.find(p => p.id === d.product_id);
+            const buyer = fallbackStore.users.find(u => u.id === d.buyer_id);
+            const vendor = fallbackStore.users.find(u => u.id === d.vendor_id);
+
+            let imgList = [];
+            if (product) {
+                try {
+                    imgList = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+                } catch(e) {
+                    imgList = [product.images];
+                }
+            }
+
+            return {
+                ...d,
+                product_name: product ? product.name : 'Unknown Product',
+                product_image: imgList && imgList.length > 0 ? imgList[0] : null,
+                images: imgList || [],
+                buyer_name: buyer ? buyer.name : 'Unknown Buyer',
+                buyer_email: buyer ? buyer.email : '',
+                buyer_whatsapp: buyer ? (buyer.whatsapp_number || '') : '',
+                vendor_name: vendor ? vendor.name : 'Unknown Vendor',
+                vendor_email: vendor ? vendor.email : '',
+                vendor_whatsapp: vendor ? (vendor.whatsapp_number || '') : ''
+            };
+        });
+        return { rows: dealsWithJoins, rowCount: dealsWithJoins.length };
+    }
+
+    // --- DEALS: INSERT (alternative pattern) ---
+    if (cleanText.toLowerCase().startsWith('insert into deals')) {
+        const newDeal = {
+            id: (fallbackStore.deals || []).length + 1,
+            buyer_id: params[0] ? parseInt(params[0], 10) : null,
+            product_id: parseInt(params[1], 10),
+            vendor_id: parseInt(params[2], 10),
+            amount: parseFloat(params[3]),
+            status: params[4] || 'pending_confirmation',
+            confirmed_by_buyer: false,
+            rating: null,
+            review: null,
+            created_at: new Date().toISOString()
+        };
+        if (!fallbackStore.deals) fallbackStore.deals = [];
+        fallbackStore.deals.push(newDeal);
+        saveFallbackStore();
+        return { rows: [newDeal], rowCount: 1 };
+    }
+
+    // --- REPORTS: INSERT ---
+    if (cleanText.toLowerCase().startsWith('insert into reports')) {
+        const hasProduct = cleanText.includes('reported_product_id');
+        const hasUser = cleanText.includes('reported_user_id');
+        
+        let reported_user_id = null;
+        let reported_product_id = null;
+        let reason = '';
+
+        if (hasUser && hasProduct) {
+            reported_user_id = params[1] ? parseInt(params[1], 10) : null;
+            reported_product_id = params[2] ? parseInt(params[2], 10) : null;
+            reason = params[3];
+        } else if (hasUser) {
+            reported_user_id = params[1] ? parseInt(params[1], 10) : null;
+            reason = params[2];
+        } else if (hasProduct) {
+            reported_product_id = params[1] ? parseInt(params[1], 10) : null;
+            reason = params[2];
+        } else {
+            reason = params[1];
+        }
+
+        const newReport = {
+            id: (fallbackStore.reports || []).length + 1,
+            reporter_id: parseInt(params[0], 10),
+            reported_user_id,
+            reported_product_id,
+            reason,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        };
+        if (!fallbackStore.reports) fallbackStore.reports = [];
+        fallbackStore.reports.push(newReport);
+        saveFallbackStore();
+        return { rows: [newReport], rowCount: 1 };
+    }
+
+    // --- REPORTS: SELECT ---
+    if (cleanText.toLowerCase().includes('from reports')) {
+        if (!fallbackStore.reports) fallbackStore.reports = [];
+        let reports = fallbackStore.reports;
+
+        if (cleanText.includes('reported_user_id = $1')) {
+            const userId = parseInt(params[0], 10);
+            reports = reports.filter(r => r.reported_user_id === userId);
+        }
+
+        const reportsWithJoins = reports.map(r => {
+            const reporter = fallbackStore.users.find(u => u.id === r.reporter_id);
+            const reportedUser = fallbackStore.users.find(u => u.id === r.reported_user_id);
+            const reportedProduct = fallbackStore.products.find(p => p.id === r.reported_product_id);
+            return {
+                ...r,
+                reporter_name: reporter ? reporter.name : 'Unknown',
+                reporter_email: reporter ? reporter.email : '',
+                reported_user_name: reportedUser ? reportedUser.name : 'N/A',
+                reported_user_email: reportedUser ? reportedUser.email : '',
+                reported_product_name: reportedProduct ? reportedProduct.name : 'N/A'
+            };
+        });
+        return { rows: reportsWithJoins, rowCount: reportsWithJoins.length };
+    }
+
+    // --- CART ITEMS ---
+    if (cleanText.toLowerCase().startsWith('select') && cleanText.includes('FROM cart_items WHERE user_id = $1')) {
         const userId = parseInt(params[0], 10);
-        const saved = fallbackStore.saved_products
+        const cartItems = (fallbackStore.cart_items || [])
             .filter(sp => sp.user_id === userId)
             .map(sp => {
                 const product = fallbackStore.products.find(p => p.id === sp.product_id);
@@ -460,57 +685,83 @@ function queryFallback(text, params = []) {
                     return {
                         ...product,
                         vendor_name: vendor ? vendor.name : 'Unknown Vendor',
-                        vendor_verification: vendor ? vendor.verification_status : 'pending',
+                        vendor_email_verified: vendor ? vendor.email_verified : false,
+                        vendor_deals_completed: vendor ? (vendor.deals_completed || 0) : 0,
                         vendor_portrait: vendor ? (vendor.portrait || null) : null
                     };
                 }
                 return null;
             })
             .filter(p => p !== null);
-        return { rows: saved, rowCount: saved.length };
+        return { rows: cartItems, rowCount: cartItems.length };
     }
 
-    if (cleanText.toLowerCase().startsWith('insert into saved_products')) {
+    if (cleanText.toLowerCase().startsWith('insert into cart_items')) {
         const userId = parseInt(params[0], 10);
         const productId = parseInt(params[1], 10);
-        const exists = fallbackStore.saved_products.find(sp => sp.user_id === userId && sp.product_id === productId);
+        if (!fallbackStore.cart_items) fallbackStore.cart_items = [];
+        const exists = fallbackStore.cart_items.find(sp => sp.user_id === userId && sp.product_id === productId);
         if (!exists) {
-            fallbackStore.saved_products.push({ user_id: userId, product_id: productId, created_at: new Date().toISOString() });
+            fallbackStore.cart_items.push({ user_id: userId, product_id: productId, created_at: new Date().toISOString() });
             saveFallbackStore();
         }
         return { rows: [], rowCount: 1 };
     }
 
-    if (cleanText.toLowerCase().includes("from saved_products where user_id = $1 and product_id = $2")) {
+    if (cleanText.toLowerCase().includes("from cart_items where user_id = $1 and product_id = $2")) {
         const userId = parseInt(params[0], 10);
         const productId = parseInt(params[1], 10);
-        fallbackStore.saved_products = fallbackStore.saved_products.filter(sp => !(sp.user_id === userId && sp.product_id === productId));
+        if (!fallbackStore.cart_items) fallbackStore.cart_items = [];
+        fallbackStore.cart_items = fallbackStore.cart_items.filter(sp => !(sp.user_id === userId && sp.product_id === productId));
         saveFallbackStore();
         return { rows: [], rowCount: 1 };
     }
 
-    // 18. Admin Reports: Count non-admin users
+    // --- CATEGORIES ---
+    if (cleanText.toLowerCase().startsWith('select * from categories')) {
+        const categories = fallbackStore.categories || [];
+        return { rows: categories, rowCount: categories.length };
+    }
+
+    if (cleanText.toLowerCase().includes('insert into categories')) {
+        const name = params[0];
+        if (!fallbackStore.categories) fallbackStore.categories = [];
+        const exists = fallbackStore.categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+        if (exists) {
+            return { rows: [exists], rowCount: 1 };
+        }
+        const newCat = {
+            id: fallbackStore.categories.length + 1,
+            name,
+            created_at: new Date().toISOString()
+        };
+        fallbackStore.categories.push(newCat);
+        saveFallbackStore();
+        return { rows: [newCat], rowCount: 1 };
+    }
+
+    // --- ADMIN REPORTS: Count non-admin users ---
     if (cleanText.toLowerCase().includes("select count(*) as count from users where role != 'admin'")) {
         const nonAdmin = fallbackStore.users.filter(u => u.role !== 'admin');
         return { rows: [{ count: nonAdmin.length }], rowCount: 1 };
     }
 
-    // 19. Admin Reports: Count listings
+    // --- ADMIN REPORTS: Count listings ---
     if (cleanText.toLowerCase().includes("select count(*) as count from products where status != 'deleted'")) {
         const activeListings = fallbackStore.products.filter(p => p.status !== 'deleted');
         return { rows: [{ count: activeListings.length }], rowCount: 1 };
     }
 
-    // 20. Admin Reports: Transactions revenue sum flat split fee
-    if (cleanText.toLowerCase().includes("from orders where status in ('paid', 'shipped', 'completed')")) {
-        const paidOrders = fallbackStore.orders.filter(o => ['paid', 'shipped', 'completed'].includes(o.status));
-        const totalSales = paidOrders.reduce((sum, o) => sum + parseFloat(o.amount), 0);
-        const totalFees = paidOrders.reduce((sum, o) => sum + parseFloat(o.service_fee), 0);
+    // --- ADMIN REPORTS: Deals analytics ---
+    if (cleanText.toLowerCase().includes("from deals where status") || cleanText.toLowerCase().includes("from deals")) {
+        if (!fallbackStore.deals) fallbackStore.deals = [];
+        const completedDeals = fallbackStore.deals.filter(d => d.status === 'completed');
+        const totalDeals = completedDeals.length;
+        const totalVolume = completedDeals.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
         return {
             rows: [{
-                count: paidOrders.length.toString(),
-                total_sales: totalSales.toString(),
-                total_fees: totalFees.toString()
+                count: totalDeals.toString(),
+                total_volume: totalVolume.toString()
             }],
             rowCount: 1
         };

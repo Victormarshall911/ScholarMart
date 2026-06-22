@@ -39,19 +39,15 @@ function togglePasswordVisibility(inputId) {
     }
 }
 
-// 3. Toggle Vendor Bank Details
+// 3. Toggle Vendor WhatsApp Field
 function toggleVendorFields(role) {
-    const bankFields = document.getElementById('vendor-bank-fields');
+    const whatsappFields = document.getElementById('vendor-whatsapp-fields');
     if (role === 'vendor') {
-        bankFields.style.display = 'block';
-        document.getElementById('reg-bank').required = true;
-        document.getElementById('reg-account-num').required = true;
-        document.getElementById('reg-account-name').required = true;
+        whatsappFields.style.display = 'block';
+        document.getElementById('reg-whatsapp').required = true;
     } else {
-        bankFields.style.display = 'none';
-        document.getElementById('reg-bank').required = false;
-        document.getElementById('reg-account-num').required = false;
-        document.getElementById('reg-account-name').required = false;
+        whatsappFields.style.display = 'none';
+        document.getElementById('reg-whatsapp').required = false;
     }
 }
 
@@ -237,28 +233,19 @@ async function handleRegisterSubmit(event) {
     event.preventDefault();
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
-    const phone = document.getElementById('reg-phone').value;
     const role = document.getElementById('reg-role').value;
     const university = document.getElementById('reg-univ').value;
     const campus = document.getElementById('reg-campus').value;
     const password = document.getElementById('reg-password').value;
     const confirmPassword = document.getElementById('reg-confirm').value;
 
-    // Vendor bank fields
-    let bankName = '';
-    let bankCode = '';
-    let accountNumber = '';
-    let accountHolderName = '';
-
+    let whatsappNumber = '';
     if (role === 'vendor') {
-        const bankSelect = document.getElementById('reg-bank').value;
-        if (bankSelect) {
-            const parts = bankSelect.split('|');
-            bankCode = parts[0];
-            bankName = parts[1];
+        whatsappNumber = document.getElementById('reg-whatsapp').value;
+        if (!whatsappNumber) {
+            Toast.show('WhatsApp number is required for vendors!', 'warning');
+            return;
         }
-        accountNumber = document.getElementById('reg-account-num').value;
-        accountHolderName = document.getElementById('reg-account-name').value;
     }
 
     // Password client-side checks
@@ -279,8 +266,7 @@ async function handleRegisterSubmit(event) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                name, email, phone, role, university, campus, password, confirmPassword,
-                bankName, bankCode, accountNumber, accountHolderName
+                name, email, whatsappNumber, role, university, campus, password, confirmPassword
             })
         });
         const data = await response.json();
@@ -364,10 +350,10 @@ async function verifyStudentOtp() {
         const data = await response.json();
 
         if (data.status === 'success') {
-            currentUser.verification_status = 'approved';
+            currentUser.email_verified = true;
             localStorage.setItem('scholarmart_user', JSON.stringify(currentUser));
             
-            Toast.update(loader, 'Student identity verified!', 'success');
+            Toast.update(loader, 'Email address verified successfully! ✅', 'success');
             
             // Refresh dashboard views
             setTimeout(() => {
@@ -381,48 +367,7 @@ async function verifyStudentOtp() {
     }
 }
 
-// 9. Manual Student ID upload
-async function uploadStudentIDCard() {
-    if (!currentToken) return;
-
-    // Check files input
-    const buyerFile = document.getElementById('id-card-upload-input')?.files[0];
-    const vendorFile = document.getElementById('vendor-id-card-upload-input')?.files[0];
-    const file = buyerFile || vendorFile;
-
-    if (!file) {
-        Toast.show('Please select an ID card image file to upload', 'warning');
-        return;
-    }
-
-    const loader = Toast.show('Uploading document...', 'loading');
-    const formData = new FormData();
-    formData.append('id_card', file);
-
-    try {
-        const response = await fetch('/api/auth/upload-id', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${currentToken}` },
-            body: formData
-        });
-        const data = await response.json();
-
-        if (data.status === 'success') {
-            currentUser.verification_status = 'pending';
-            localStorage.setItem('scholarmart_user', JSON.stringify(currentUser));
-            
-            Toast.update(loader, 'Document uploaded. manual review pending.', 'success');
-            
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } else {
-            Toast.update(loader, data.message || 'Failed to upload document', 'error');
-        }
-    } catch (err) {
-        Toast.update(loader, 'Server error during upload.', 'error');
-    }
-}
+// 9. Removed student ID upload function
 
 // Initialize Form Bindings
 document.addEventListener('DOMContentLoaded', () => {
