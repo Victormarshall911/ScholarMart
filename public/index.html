@@ -197,8 +197,8 @@
                     </a>
                     
                     <div style="display: flex; gap: 10px;">
-                        <button id="details-save-btn" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            Save to Cart
+                        <button id="details-rate-btn" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="handleRateSellerClick()">
+                            Rate Seller
                         </button>
                         <button id="details-report-btn" class="btn btn-outline" style="flex: 1; border-color: #EF4444; color: #EF4444;" onclick="openReportModal()">
                             Report Listing
@@ -644,6 +644,39 @@
                         <textarea id="report-details" class="form-textarea" placeholder="Explain details of your concern..." required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary" style="background-color: #EF4444; border-color: #EF4444;">Submit Report</button>
+                </form>
+        </div>
+        
+        <!-- Rate Seller Modal -->
+        <div id="rate-seller-modal-overlay" class="modal-overlay" onclick="toggleRateSellerModal(false)">
+            <div class="modal-card" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3 style="font-size: 18px; font-weight: 800;">Rate Seller</h3>
+                    <button class="modal-close-btn" onclick="toggleRateSellerModal(false)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <form id="rate-seller-form" onsubmit="submitRateSeller(event)">
+                    <input type="hidden" id="rate-deal-id">
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">How was your deal with this seller? Share your feedback.</p>
+                    <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                        <label class="form-label" style="display: block; margin-bottom: 8px;">Select Rating</label>
+                        <div id="rate-stars-container" style="display: flex; justify-content: center; gap: 8px; font-size: 28px; color: var(--primary-orange);">
+                            <span style="cursor: pointer;" onclick="setRatingStars(1)">☆</span>
+                            <span style="cursor: pointer;" onclick="setRatingStars(2)">☆</span>
+                            <span style="cursor: pointer;" onclick="setRatingStars(3)">☆</span>
+                            <span style="cursor: pointer;" onclick="setRatingStars(4)">☆</span>
+                            <span style="cursor: pointer;" onclick="setRatingStars(5)">☆</span>
+                        </div>
+                        <input type="hidden" id="rate-stars-value" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="rate-review">Review / Comments (Optional)</label>
+                        <textarea id="rate-review" class="form-textarea" placeholder="Describe your experience (condition of item, punctuality, friendliness)..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Rating</button>
                 </form>
             </div>
         </div>

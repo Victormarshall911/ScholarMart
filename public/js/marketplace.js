@@ -414,3 +414,147 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTag.onclick = () => resetMarketplaceFilters();
     }
 });
+
+// --- RATE SELLER MODAL CONTROLLER ---
+let currentRatingValue = 0;
+let currentRatingDealId = null;
+
+function toggleRateSellerModal(show) {
+    const modal = document.getElementById('rate-seller-modal-overlay');
+    if (!modal) return;
+    if (show) {
+        modal.classList.add('active');
+    } else {
+        modal.classList.remove('active');
+        currentRatingValue = 0;
+        document.getElementById('rate-stars-value').value = '';
+        const reviewInput = document.getElementById('rate-review');
+        if (reviewInput) reviewInput.value = '';
+        updateRatingStarsUI(0);
+    }
+}
+
+function setRatingStars(rating) {
+    currentRatingValue = rating;
+    const valInput = document.getElementById('rate-stars-value');
+    if (valInput) valInput.value = rating;
+    updateRatingStarsUI(rating);
+}
+
+function updateRatingStarsUI(rating) {
+    const container = document.getElementById('rate-stars-container');
+    if (!container) return;
+    const stars = container.querySelectorAll('span');
+    stars.forEach((star, idx) => {
+        if (idx < rating) {
+            star.textContent = '⭐';
+        } else {
+            star.textContent = '☆';
+        }
+    });
+}
+
+async function handleRateSellerClick() {
+    if (!currentToken) {
+        Toast.show('Please login to rate this seller!', 'warning');
+        window.location.hash = '#/login';
+        return;
+    }
+
+    const hash = window.location.hash;
+    if (!hash.startsWith('#/products/')) return;
+    const productId = parseInt(hash.split('/').pop(), 10);
+
+    const loader = Toast.show('Checking transaction status...', 'loading');
+
+    try {
+        // Fetch current product details to get the vendor ID
+        const prodRes = await fetch(`/api/products/${productId}`);
+        const prodData = await prodRes.json();
+
+        if (prodData.status !== 'success') {
+            Toast.update(loader, 'Failed to locate product details', 'error');
+            return;
+        }
+
+        const vendorId = prodData.product.vendor.id;
+
+        // Fetch buyer's deals
+        const dealsRes = await fetch('/api/orders/buyer', {
+            headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const dealsData = await dealsRes.json();
+
+        if (dealsData.status !== 'success') {
+            Toast.update(loader, 'Failed to fetch deals history', 'error');
+            return;
+        }
+
+        // Find completed deals from this vendor that are NOT rated yet
+        const unratedDeal = (dealsData.deals || []).find(d => 
+            d.vendor_id === vendorId && 
+            d.status === 'completed' && 
+            !d.rating
+        );
+
+        if (!unratedDeal) {
+            Toast.update(loader, 'You can only rate a seller after completing a deal. Ask the seller to mark the product as sold to you!', 'warning', 5000);
+            return;
+        }
+
+        // Found an unrated completed deal!
+        currentRatingDealId = unratedDeal.id;
+        const idInput = document.getElementById('rate-deal-id');
+        if (idInput) idInput.value = unratedDeal.id;
+
+        Toast.dismiss(loader);
+        toggleRateSellerModal(true);
+    } catch(err) {
+        Toast.update(loader, 'Connection error.', 'error');
+    }
+}
+
+async function submitRateSeller(event) {
+    event.preventDefault();
+    if (!currentRatingDealId) return;
+
+    const valInput = document.getElementById('rate-stars-value');
+    const rating = valInput ? parseInt(valInput.value, 10) : 0;
+    const reviewInput = document.getElementById('rate-review');
+    const review = reviewInput ? reviewInput.value : '';
+
+    if (!rating || rating < 1 || rating > 5) {
+        Toast.show('Please select a star rating!', 'warning');
+        return;
+    }
+
+    const loader = Toast.show('Submitting rating...', 'loading');
+
+    try {
+        const response = await fetch(`/api/orders/${currentRatingDealId}/rate`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rating, review })
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            Toast.update(loader, 'Thank you! Rating submitted successfully.', 'success');
+            toggleRateSellerModal(false);
+            
+            // Reload product details to update the vendor rating UI immediately
+            const hash = window.location.hash;
+            if (hash.startsWith('#/products/')) {
+                const productId = hash.split('/').pop();
+                renderProductDetails(productId);
+            }
+        } else {
+            Toast.update(loader, data.message || 'Rating submission failed', 'error');
+        }
+    } catch(err) {
+        Toast.update(loader, 'Network error.', 'error');
+    }
+}
