@@ -295,7 +295,7 @@ async function runTests() {
         const catListRes = await fetch(`${BASE_URL}/api/categories`);
         const catListData = await catListRes.json();
         assertEqual(catListRes.status, 200, 'Retrieve categories returns status 200 OK');
-        assertEqual(catListData.categories.length > 0, true, 'Default categories are returned');
+        assertEqual(catListData.categories.length, 0, 'Categories are empty initially');
 
         const addCatRes = await fetch(`${BASE_URL}/api/categories`, {
             method: 'POST',
@@ -308,6 +308,10 @@ async function runTests() {
         const addCatData = await addCatRes.json();
         assertEqual(addCatRes.status, 201, 'Create category returns status 201 Created');
         assertEqual(addCatData.status, 'success', 'Category added successfully');
+
+        const catListRes2 = await fetch(`${BASE_URL}/api/categories`);
+        const catListData2 = await catListRes2.json();
+        assertEqual(catListData2.categories.length, 1, 'One category is returned after adding');
 
         // Test 15: Shopping Cart System
         console.log('\nTest 15: Shopping Cart System...');

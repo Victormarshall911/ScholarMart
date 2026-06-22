@@ -85,16 +85,7 @@ CREATE TABLE IF NOT EXISTS categories (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed Default Categories
-INSERT INTO categories (name) VALUES 
-('Electronics'), 
-('Fashion'), 
-('Books'), 
-('Hostel Essentials'), 
-('Gadgets'), 
-('Beauty Products'), 
-('Food & Snacks')
-ON CONFLICT (name) DO NOTHING;
+-- Categories Table initialized empty. Admin adds categories.
 
 -- Cart Items Table (Saved/Wishlist)
 CREATE TABLE IF NOT EXISTS cart_items (

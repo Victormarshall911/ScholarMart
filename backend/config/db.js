@@ -23,15 +23,7 @@ if (!fs.existsSync(dataDir)) {
 // Default seed data
 const defaultUniversities = [];
 const defaultCampuses = [];
-const defaultCategories = [
-    { id: 1, name: 'Electronics', created_at: new Date().toISOString() },
-    { id: 2, name: 'Fashion', created_at: new Date().toISOString() },
-    { id: 3, name: 'Books', created_at: new Date().toISOString() },
-    { id: 4, name: 'Hostel Essentials', created_at: new Date().toISOString() },
-    { id: 5, name: 'Gadgets', created_at: new Date().toISOString() },
-    { id: 6, name: 'Beauty Products', created_at: new Date().toISOString() },
-    { id: 7, name: 'Food & Snacks', created_at: new Date().toISOString() }
-];
+const defaultCategories = [];
 
 let fallbackStore = {
     users: [],
@@ -151,14 +143,7 @@ const testConnection = async () => {
             );
         `);
         
-        // Seed categories if empty
-        const catCheck = await pool.query('SELECT COUNT(*) FROM categories');
-        if (parseInt(catCheck.rows[0].count, 10) === 0) {
-            await pool.query(`
-                INSERT INTO categories (name) VALUES 
-                ('Electronics'), ('Fashion'), ('Books'), ('Hostel Essentials'), ('Gadgets'), ('Beauty Products'), ('Food & Snacks');
-            `);
-        }
+        // Categories table initialized empty. Admin adds categories.
 
         // Ensure cart_items table exists in Postgres
         await pool.query(`
