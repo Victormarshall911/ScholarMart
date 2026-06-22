@@ -52,11 +52,13 @@ function routeApp() {
     if (hash === '#/' || hash === '') {
         document.getElementById('landing-view').classList.add('active');
         document.querySelector('.app-nav [data-view="landing-view"]').classList.add('active');
+        fetchCategories();
         loadHomeFeatured();
     } 
     else if (hash === '#/marketplace') {
         document.getElementById('marketplace-view').classList.add('active');
         document.querySelector('.app-nav [data-view="marketplace-view"]').classList.add('active');
+        fetchCategories();
         loadMarketplaceProducts();
     } 
     else if (hash.startsWith('#/products/')) {
