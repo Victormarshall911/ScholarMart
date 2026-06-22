@@ -372,11 +372,15 @@ function toggleFilterDrawer(show) {
     if (!drawer) return;
     
     if (show) {
-        drawer.classList.add('active');
-        drawer.querySelector('.filter-drawer').classList.add('active');
+        drawer.style.display = 'flex';
+        requestAnimationFrame(() => {
+            drawer.classList.add('active');
+            drawer.querySelector('.filter-drawer').classList.add('active');
+        });
     } else {
         drawer.classList.remove('active');
         drawer.querySelector('.filter-drawer').classList.remove('active');
+        setTimeout(() => drawer.style.display = 'none', 350);
     }
 }
 
@@ -423,9 +427,11 @@ function toggleRateSellerModal(show) {
     const modal = document.getElementById('rate-seller-modal-overlay');
     if (!modal) return;
     if (show) {
-        modal.classList.add('active');
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => modal.classList.add('active'));
     } else {
         modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
         currentRatingValue = 0;
         document.getElementById('rate-stars-value').value = '';
         const reviewInput = document.getElementById('rate-review');

@@ -4,18 +4,10 @@
 
 // Sync auth settings with other modules
 function syncAuthUI() {
-    const authBtn = document.getElementById('header-auth-btn');
-    if (!authBtn) return;
-    if (currentToken && currentUser) {
-        authBtn.onclick = () => { window.location.hash = '#/dashboard'; };
-        authBtn.title = `${currentUser.name} (${currentUser.role})`;
-        
-        // Populate header university badge
-        const badge = document.getElementById('header-univ-badge');
-        if (badge) badge.textContent = currentUser.university || 'COOU';
-    } else {
-        authBtn.onclick = () => { window.location.hash = '#/login'; };
-        authBtn.title = "Sign In";
+    // Update Support button label when logged in
+    const supportBtn = document.getElementById('header-support-btn');
+    if (supportBtn && currentToken && currentUser) {
+        supportBtn.title = `${currentUser.name} (${currentUser.role})`;
     }
 }
 
@@ -275,11 +267,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('offline-mode');
     });
 
-    // 5. Fade out splash screen overlay after 2 seconds
+    // 5. Fade out splash screen overlay after 1.8 seconds
     const splash = document.getElementById('splash-screen');
     if (splash) {
         setTimeout(() => {
             splash.classList.add('fade-out');
-        }, 2000);
+        }, 1800);
     }
 });
+

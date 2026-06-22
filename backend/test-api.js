@@ -303,7 +303,7 @@ async function runTests() {
                 'Authorization': `Bearer ${adminToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: 'Fresh Fruits' })
+            body: JSON.stringify({ name: 'Electronics' })
         });
         const addCatData = await addCatRes.json();
         assertEqual(addCatRes.status, 201, 'Create category returns status 201 Created');
@@ -357,6 +357,58 @@ async function runTests() {
         });
         const cartFilledData = await cartFilledRes.json();
         assertEqual(cartFilledData.products.length, 1, 'Cart has 1 item');
+
+        // Test 16: Testimonials E2E Flow
+        console.log('\nTest 16: Testimonials E2E Flow...');
+        
+        // 1. Get public testimonials (should be empty/have existing seeds)
+        const tPublicRes1 = await fetch(`${BASE_URL}/api/testimonials`);
+        const tPublicData1 = await tPublicRes1.json();
+        assertEqual(tPublicRes1.status, 200, 'Public testimonials fetch returns 200');
+        assertEqual(tPublicData1.status, 'success', 'Public testimonials body returns success');
+
+        // 2. Submit a testimonial as student user (vendor)
+        const tSubmitRes = await fetch(`${BASE_URL}/api/testimonials`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${testToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: 'Test testimonial message from vendor student.',
+                rating: 5
+            })
+        });
+        const tSubmitData = await tSubmitRes.json();
+        assertEqual(tSubmitRes.status, 201, 'Submit testimonial returns 201 Created');
+        assertEqual(tSubmitData.status, 'success', 'Submit testimonial returns success');
+        const submittedTestimonialId = tSubmitData.testimonial.id;
+
+        // 3. Admin: Get pending testimonials (should contain our testimonial)
+        const tPendingRes = await fetch(`${BASE_URL}/api/testimonials/pending`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const tPendingData = await tPendingRes.json();
+        assertEqual(tPendingRes.status, 200, 'Admin pending testimonials returns 200');
+        assertEqual(tPendingData.status, 'success', 'Admin pending testimonials returns success');
+        const hasPending = tPendingData.testimonials.some(t => t.id === submittedTestimonialId);
+        assertEqual(hasPending, true, 'Pending testimonials queue contains the newly submitted testimonial');
+
+        // 4. Admin: Approve the testimonial
+        const tApproveRes = await fetch(`${BASE_URL}/api/testimonials/${submittedTestimonialId}/approve`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const tApproveData = await tApproveRes.json();
+        assertEqual(tApproveRes.status, 200, 'Approve testimonial returns 200');
+        assertEqual(tApproveData.status, 'success', 'Approve testimonial returns success');
+
+        // 5. Public: Get public testimonials again (should now include our approved testimonial)
+        const tPublicRes2 = await fetch(`${BASE_URL}/api/testimonials`);
+        const tPublicData2 = await tPublicRes2.json();
+        assertEqual(tPublicRes2.status, 200, 'Public testimonials fetch 2 returns 200');
+        const containsApproved = tPublicData2.testimonials.some(t => t.id === submittedTestimonialId);
+        assertEqual(containsApproved, true, 'Approved testimonial is now visible in the public testimonials feed');
 
         console.log('\n✨ ALL E2E API VERIFICATION TESTS PASSED SUCCESSFULLY! ✨');
     } catch(err) {

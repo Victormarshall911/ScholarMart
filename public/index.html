@@ -3,15 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scholarmart - Campus Marketplace</title>
+    <title>ScholarMart — Campus Marketplace for Nigerian Students</title>
+    <meta name="description" content="ScholarMart is the trusted student marketplace built for Nigerian university students. Buy, sell and connect safely on campus via WhatsApp.">
+    <meta name="keywords" content="campus marketplace, Nigerian students, buy sell campus, student market, scholarmart">
+    <meta name="robots" content="index, follow">
+    <!-- Open Graph -->
+    <meta property="og:title" content="ScholarMart — Campus Marketplace">
+    <meta property="og:description" content="Buy, Sell and Connect on Campus. Trusted by Nigerian students.">
+    <meta property="og:type" content="website">
     <!-- Favicon & manifest -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#00A86B">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Scholarmart">
+    <meta name="apple-mobile-web-app-title" content="ScholarMart">
     <link rel="apple-touch-icon" href="/uploads/products/placeholder.webp">
-
     <!-- CSS styling -->
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -26,8 +32,8 @@
         <!-- Sticky Header -->
         <header class="app-header">
             <a href="#/" class="brand-logo">Scholar<span>Mart</span></a>
-            <button class="btn btn-outline btn-sm" id="header-support-btn" style="width: auto; padding: 6px 12px; font-size: 11px; border-radius: var(--radius-sm); border-color: var(--primary-green); color: var(--primary-green);" onclick="openSupportModal()">
-                Support
+            <button class="btn btn-outline btn-sm" id="header-support-btn" style="width: auto; padding: 7px 14px; font-size: 12px;" onclick="openSupportModal()">
+                💬 Support
             </button>
         </header>
 
@@ -37,11 +43,13 @@
             <!-- 1. LANDING VIEW -->
             <section id="landing-view" class="view-container active">
                 <div class="hero-card">
-                    <h2 class="hero-title">Buy. Sell. Connect on Campus.</h2>
-                    <p class="hero-sub">A trusted marketplace built for Nigerian students.</p>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
-                        <button class="btn btn-orange" style="flex: 1; min-width: 140px;" onclick="window.location.hash = '#/marketplace'">Explore Listings</button>
-                        <button class="btn" style="flex: 1; min-width: 140px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; border: 1.5px solid rgba(255, 255, 255, 0.6);" onclick="window.location.hash = '#/register'">Join Now</button>
+                    <div style="position: relative; z-index: 1;">
+                        <h2 class="hero-title">Buy. Sell. Connect on Campus.</h2>
+                        <p class="hero-sub">A trusted marketplace built for Nigerian students. 🎓</p>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+                            <button class="btn btn-orange" style="flex: 1; min-width: 140px;" onclick="window.location.hash = '#/marketplace'">Explore Listings</button>
+                            <button class="btn" style="flex: 1; min-width: 140px; background: rgba(255,255,255,0.18); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: white; border: 1.5px solid rgba(255,255,255,0.55); font-weight: 700;" onclick="window.location.hash = '#/register'">Join Free →</button>
+                        </div>
                     </div>
                 </div>
 
@@ -54,63 +62,92 @@
                     </span>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3 style="font-size: 16px; font-weight: 700;">Categories</h3>
+                <div class="section-header">
+                    <h3 class="section-title">Categories</h3>
                 </div>
                 <div class="categories-wrapper" id="landing-categories">
                     <!-- Loaded dynamically -->
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 8px;">
-                    <h3 style="font-size: 16px; font-weight: 700;">Featured Listings</h3>
-                    <a href="#/marketplace" style="font-size: 12px; font-weight: 700; color: var(--primary-green); text-decoration: none;">View All</a>
+                <div class="section-header" style="margin-top: 8px;">
+                    <h3 class="section-title">Featured Listings</h3>
+                    <a href="#/marketplace" class="section-link">View All</a>
                 </div>
                 <div class="products-grid" id="landing-products">
                     <!-- Dynamic product cards -->
                 </div>
 
-                <!-- How It Works & Testimonials -->
-                <div style="margin-top: 32px; margin-bottom: 16px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">How It Works</h3>
-                    <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
-                        <strong style="color: var(--primary-green); font-size: 14px;">1. Register & Verify</strong>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Create your student profile and verify your email address</p>
+                <!-- How It Works -->
+                <div style="margin-top: 32px; margin-bottom: 8px;">
+                    <div class="section-header">
+                        <h3 class="section-title">How It Works</h3>
                     </div>
-                    <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
-                        <strong style="color: var(--primary-green); font-size: 14px;">2. Connect on WhatsApp</strong>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Chat directly with campus sellers to arrange inspection & deal</p>
+                    <div class="how-step-card">
+                        <div class="how-step-number">1</div>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary); display: block; margin-bottom: 3px;">Register &amp; Verify</strong>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Create your student profile and verify your email address</p>
+                        </div>
                     </div>
-                    <div class="card" style="padding: 12px 14px; margin-bottom: 10px;">
-                        <strong style="color: var(--primary-green); font-size: 14px;">3. Earn Reputation Badges</strong>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Confirm deals, get reviews, and rise from New to Top Seller</p>
+                    <div class="how-step-card">
+                        <div class="how-step-number">2</div>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary); display: block; margin-bottom: 3px;">Connect on WhatsApp</strong>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Chat directly with campus sellers to arrange inspection &amp; deal</p>
+                        </div>
+                    </div>
+                    <div class="how-step-card">
+                        <div class="how-step-number">3</div>
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-primary); display: block; margin-bottom: 3px;">Earn Reputation Badges</strong>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Confirm deals, get reviews, and rise from New to Top Seller</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Registration CTA Banner -->
-                <div class="card" style="background: linear-gradient(135deg, #FF6B00 0%, #FF8F3D 100%); border: none; color: white; padding: 24px 20px; border-radius: var(--radius-lg); position: relative; overflow: hidden; margin-top: 24px; box-shadow: var(--shadow-lg);">
+                <div class="cta-banner">
                     <div style="position: relative; z-index: 2;">
-                        <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">Ready to start trading?</h3>
-                        <p style="font-size: 13px; opacity: 0.9; margin-bottom: 16px; line-height: 1.4;">Join thousands of students buying and selling safely on campus today.</p>
-                        <button class="btn" style="background-color: white; color: var(--primary-orange); width: auto; padding: 10px 24px; font-size: 13px; border-radius: var(--radius-md);" onclick="window.location.hash = '#/register'">Create Free Account</button>
+                        <h3 style="font-size: 19px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px;">Ready to start trading?</h3>
+                        <p style="font-size: 13px; opacity: 0.92; margin-bottom: 18px; line-height: 1.5;">Join thousands of students buying and selling safely on campus today.</p>
+                        <button class="btn" style="background-color: white; color: var(--primary-orange); width: auto; padding: 11px 26px; font-size: 14px; font-weight: 800; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.12);" onclick="window.location.hash = '#/register'">Create Free Account →</button>
                     </div>
-                    <!-- Decorative abstract circles inside the card -->
-                    <div style="position: absolute; right: -30px; bottom: -30px; width: 120px; height: 120px; background: rgba(255, 255, 255, 0.15); border-radius: 50%; z-index: 1;"></div>
-                    <div style="position: absolute; right: 40px; top: -20px; width: 60px; height: 60px; background: rgba(255, 255, 255, 0.08); border-radius: 50%; z-index: 1;"></div>
                 </div>
 
-                <div style="margin-top: 24px;">
-                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">What Students Say</h3>
-                    <div class="card">
-                        <p style="font-size: 13px; font-style: italic; color: var(--text-secondary);">"I sold my hostel fan in less than an hour of posting on Scholarmart. The student verification makes it so safe!"</p>
-                        <small style="display: block; margin-top: 8px; font-weight: 700;">- Ngozi, COOU Igbariam</small>
+                <!-- Testimonials Section -->
+                <div style="margin-top: 28px; margin-bottom: 8px;">
+                    <div class="section-header">
+                        <h3 class="section-title">What Students Say</h3>
+                        <button class="section-link" id="share-story-btn" onclick="openTestimonialModal()" style="background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--primary-green); padding: 0;">
+                            ✍️ Share Yours
+                        </button>
                     </div>
+
+                    <!-- Dynamic testimonials feed -->
+                    <div id="testimonials-feed" class="testimonials-scroll">
+                        <!-- Loaded dynamically -->
+                        <div class="testimonial-skeleton"></div>
+                        <div class="testimonial-skeleton"></div>
+                    </div>
+
+                    <!-- Prominent share story CTA -->
+                    <button class="share-story-cta" onclick="openTestimonialModal()">
+                        <span class="share-story-icon">💬</span>
+                        <div>
+                            <div style="font-weight: 800; font-size: 14px; color: var(--text-primary); margin-bottom: 2px;">Had a good experience?</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Share your ScholarMart story — help other students trust the platform.</div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="var(--primary-green)" style="width: 18px; height: 18px; flex-shrink: 0; margin-left: auto;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
                 </div>
             </section>
 
             <!-- 2. MARKETPLACE CATALOG VIEW -->
             <section id="marketplace-view" class="view-container">
                 <h1 class="view-title">Marketplace</h1>
-                <p class="view-subtitle">Browse campus deals on your pilot campus.</p>
+                <p class="view-subtitle">Browse campus deals near you.</p>
 
                 <div style="display: flex; gap: 8px; margin-bottom: 16px;">
                     <div class="search-container" style="flex-grow: 1; margin-bottom: 0;">
@@ -122,8 +159,8 @@
                         </span>
                     </div>
                     <!-- Filter Toggle Button -->
-                    <button id="filter-toggle-btn" class="btn btn-secondary" style="width: 48px; height: 48px; padding: 0; border-radius: 16px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 22px; height: 22px;">
+                    <button id="filter-toggle-btn" class="btn btn-secondary" style="width: 48px; height: 48px; padding: 0; border-radius: 14px; flex-shrink: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
                         </svg>
                     </button>
@@ -133,9 +170,9 @@
                     <!-- Categories -->
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: var(--text-secondary); font-weight: 500;">
                     <span id="results-count">0 items found</span>
-                    <span id="active-filters-tag" style="font-weight: 700; color: var(--primary-green); cursor: pointer; display: none;">Clear filters</span>
+                    <span id="active-filters-tag" style="font-weight: 700; color: var(--primary-green); cursor: pointer; display: none; padding: 3px 10px; background: var(--primary-green-light); border-radius: 999px;">✕ Clear filters</span>
                 </div>
 
                 <div class="products-grid" id="marketplace-products">
@@ -334,13 +371,13 @@
                     <h1 class="view-title">Buyer Profile</h1>
                     <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: auto;">Logout</button>
                 </div>
-                <div class="card" style="background-color: #ECFDF5; border-color: #D1FAE5; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-                    <div class="vendor-avatar" id="buyer-profile-avatar" style="cursor: pointer;" title="Click to upload portrait">SB</div>
-                    <div>
-                        <div style="font-weight: 700;" id="buyer-profile-name">Student Buyer</div>
-                        <div style="font-size: 12px; color: var(--text-secondary);" id="buyer-profile-campus">COOU - Igbariam</div>
+                <div class="vendor-card" style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+                    <div class="vendor-avatar" id="buyer-profile-avatar" style="cursor: pointer; width: 52px; height: 52px; font-size: 18px;" title="Click to upload portrait">SB</div>
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: 800; font-size: 16px; letter-spacing: -0.2px;" id="buyer-profile-name">Student Buyer</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;" id="buyer-profile-campus">COOU - Igbariam</div>
                         <!-- Verification Status badge -->
-                        <div id="buyer-verification-badge" style="margin-top: 4px;"></div>
+                        <div id="buyer-verification-badge" style="margin-top: 6px;"></div>
                     </div>
                 </div>
                 <!-- Hidden file input for buyer portrait -->
@@ -354,7 +391,7 @@
                     <div id="verification-options">
                         <div id="verify-email-option" style="margin-bottom: 4px;">
                             <button class="btn btn-outline btn-sm" id="send-otp-btn" onclick="sendVerificationOtp()">Send OTP Code</button>
-                            <div id="otp-input-container" style="display: none; margin-top: 10px; display: flex; gap: 8px;">
+                            <div id="otp-input-container" style="display: none; margin-top: 10px; gap: 8px;">
                                 <input type="text" id="otp-code-input" class="form-input" placeholder="6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
                                 <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
                             </div>
@@ -388,14 +425,14 @@
                     <h1 class="view-title">Vendor Panel</h1>
                     <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: auto;">Logout</button>
                 </div>
-                <div class="card" style="background-color: #ECFDF5; border-color: #D1FAE5; display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                    <div class="vendor-avatar" id="vendor-profile-avatar" style="cursor: pointer;" title="Click to upload portrait">SV</div>
-                    <div>
-                        <div style="font-weight: 700; display: flex; align-items: center; gap: 4px;" id="vendor-profile-name">
+                <div class="vendor-card" style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+                    <div class="vendor-avatar" id="vendor-profile-avatar" style="cursor: pointer; width: 52px; height: 52px; font-size: 18px;" title="Click to upload portrait">SV</div>
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: 800; font-size: 16px; letter-spacing: -0.2px; display: flex; align-items: center; gap: 5px;" id="vendor-profile-name">
                             <span>Student Vendor</span>
                         </div>
-                        <div style="font-size: 12px; color: var(--text-secondary);" id="vendor-profile-campus">COOU - Uli</div>
-                        <div id="vendor-verification-badge" style="margin-top: 4px;"></div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;" id="vendor-profile-campus">COOU - Uli</div>
+                        <div id="vendor-verification-badge" style="margin-top: 6px;"></div>
                     </div>
                 </div>
 
@@ -432,7 +469,7 @@
                     <div id="vendor-verification-options">
                         <div id="vendor-verify-email-option" style="margin-bottom: 4px;">
                             <button class="btn btn-outline btn-sm" id="vendor-send-otp-btn" onclick="sendVerificationOtp()">Send OTP Code</button>
-                            <div id="vendor-otp-input-container" style="display: none; margin-top: 10px; display: flex; gap: 8px;">
+                            <div id="vendor-otp-input-container" style="display: none; margin-top: 10px; gap: 8px;">
                                 <input type="text" id="vendor-otp-code-input" class="form-input" placeholder="6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
                                 <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
                             </div>
@@ -490,6 +527,7 @@
                     <div class="tab-btn" onclick="switchDashboardTab('admin-universities')">Campuses</div>
                     <div class="tab-btn" onclick="switchDashboardTab('admin-categories')">Categories</div>
                     <div class="tab-btn" onclick="switchDashboardTab('admin-orders')">Deals</div>
+                    <div class="tab-btn" onclick="switchDashboardTab('admin-testimonials')">Testimonials</div>
                 </div>
 
                 <!-- Tab: Community Reports -->
@@ -596,20 +634,30 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tab: Testimonials Queue -->
+                <div id="tab-admin-testimonials" class="tab-pane">
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Testimonial Review Queue</h3>
+                        <div id="admin-testimonials-list">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
             </section>
 
         </main>
 
         <!-- Welcome Modal -->
-        <div id="welcome-modal-overlay" class="modal-overlay active" style="display: none;">
-            <div class="modal-card welcome-card" style="text-align: center; padding: 32px 24px; border: none; max-width: 400px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
-                <div style="font-size: 48px; margin-bottom: 16px;">🎓</div>
-                <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Welcome to Scholar<span>Mart</span></h2>
-                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px;">
+        <div id="welcome-modal-overlay" class="modal-overlay">
+            <div class="modal-card welcome-card" style="text-align: center; padding: 36px 26px 32px; border-radius: 28px; max-width: 400px;">
+                <div style="font-size: 52px; margin-bottom: 14px; line-height: 1;">🎓</div>
+                <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; letter-spacing: -0.4px;">Welcome to Scholar<span style="color: var(--primary-orange);">Mart</span></h2>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 26px;">
                     The trust-based campus marketplace. Connect directly with student buyers and sellers on WhatsApp, check community trust badges, and trade safely.
                 </p>
-                <button class="btn btn-primary" onclick="closeWelcomeModal()" style="border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0, 168, 107, 0.25);">
-                    Start Exploring
+                <button class="btn btn-primary" onclick="closeWelcomeModal()">
+                    🚀 Start Exploring
                 </button>
             </div>
         </div>
@@ -696,10 +744,10 @@
                 </svg>
                 Market
             </a>
-            
-            <!-- Spacing for FAB button in the center -->
-            <div style="width: 56px;"></div>
-            
+
+            <!-- FAB spacer -->
+            <div style="width: 64px; flex-shrink: 0;"></div>
+
             <a href="#/cart" class="nav-item" id="nav-cart-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
@@ -855,6 +903,57 @@
             </div>
         </div>
 
+        <!-- Testimonial Submit Modal -->
+        <div id="testimonial-modal-overlay" class="modal-overlay" onclick="closeTestimonialModal()">
+            <div class="modal-card" onclick="event.stopPropagation()" style="max-height: 92vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <div>
+                        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">Share Your Story 💬</h3>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Your feedback helps students trust ScholarMart</p>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeTestimonialModal()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="testimonial-form" onsubmit="submitTestimonial(event)">
+                    <!-- Star rating selector -->
+                    <div class="form-group">
+                        <label class="form-label">Your Rating</label>
+                        <div id="testimonial-stars" style="display: flex; gap: 10px; margin-top: 6px;">
+                            <span class="tstar" data-val="1" onclick="setTestimonialRating(1)" style="font-size: 28px; cursor: pointer; transition: transform 0.15s;">☆</span>
+                            <span class="tstar" data-val="2" onclick="setTestimonialRating(2)" style="font-size: 28px; cursor: pointer; transition: transform 0.15s;">☆</span>
+                            <span class="tstar" data-val="3" onclick="setTestimonialRating(3)" style="font-size: 28px; cursor: pointer; transition: transform 0.15s;">☆</span>
+                            <span class="tstar" data-val="4" onclick="setTestimonialRating(4)" style="font-size: 28px; cursor: pointer; transition: transform 0.15s;">☆</span>
+                            <span class="tstar" data-val="5" onclick="setTestimonialRating(5)" style="font-size: 28px; cursor: pointer; transition: transform 0.15s;">☆</span>
+                        </div>
+                        <input type="hidden" id="testimonial-rating" value="">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="testimonial-message">Your Experience</label>
+                        <textarea id="testimonial-message" class="form-textarea" rows="4"
+                            placeholder="Tell other students about your ScholarMart experience — what you bought or sold, how the process felt, what made it special..."
+                            maxlength="500" required></textarea>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                            <span id="testimonial-char-count" style="font-size: 11px; color: var(--text-muted);">0 / 500</span>
+                        </div>
+                    </div>
+
+                    <!-- Shows if not logged in -->
+                    <div id="testimonial-login-notice" style="display: none; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px; font-size: 13px; color: #92400E;">
+                        ⚠️ You need to <a href="#/login" onclick="closeTestimonialModal()" style="font-weight: 700; color: #B45309;">sign in</a> to share your story. Your experience will be displayed after a quick review.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="testimonial-submit-btn">
+                        Submit Feedback ✨
+                    </button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <!-- PWA scripts -->
@@ -862,6 +961,7 @@
     <script src="/js/auth.js"></script>
     <script src="/js/marketplace.js"></script>
     <script src="/js/dashboards.js"></script>
+    <script src="/js/testimonials.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>

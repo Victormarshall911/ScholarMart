@@ -33,7 +33,8 @@ let fallbackStore = {
     reports: [],
     universities: [...defaultUniversities],
     campuses: [...defaultCampuses],
-    categories: [...defaultCategories]
+    categories: [...defaultCategories],
+    testimonials: []
 };
 
 // Seed default Admin in store
@@ -92,7 +93,8 @@ if (fs.existsSync(fallbackFilePath)) {
             reports: loaded.reports || [],
             universities: loaded.universities && loaded.universities.length > 0 ? loaded.universities : [...defaultUniversities],
             campuses: loaded.campuses && loaded.campuses.length > 0 ? loaded.campuses : [...defaultCampuses],
-            categories: loaded.categories && loaded.categories.length > 0 ? loaded.categories : [...defaultCategories]
+            categories: loaded.categories && loaded.categories.length > 0 ? loaded.categories : [...defaultCategories],
+            testimonials: loaded.testimonials || []
         };
     } catch (err) {
         console.error('Failed to parse fallback database JSON. Initializing clean store.', err);
@@ -179,6 +181,21 @@ const testConnection = async () => {
                 reported_user_id INTEGER,
                 reported_product_id INTEGER,
                 reason TEXT NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Ensure testimonials table exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS testimonials (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                user_name VARCHAR(200) NOT NULL,
+                campus VARCHAR(200),
+                university VARCHAR(200),
+                message TEXT NOT NULL,
+                rating INTEGER DEFAULT 5 CHECK (rating >= 1 AND rating <= 5),
                 status VARCHAR(20) DEFAULT 'pending',
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
@@ -750,6 +767,61 @@ function queryFallback(text, params = []) {
             }],
             rowCount: 1
         };
+    }
+
+    // --- TESTIMONIALS: SELECT approved ---
+    if (cleanText.toLowerCase().includes('from testimonials') && cleanText.toLowerCase().includes("status = 'approved'")) {
+        if (!fallbackStore.testimonials) fallbackStore.testimonials = [];
+        const approved = fallbackStore.testimonials
+            .filter(t => t.status === 'approved')
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 20);
+        return { rows: approved, rowCount: approved.length };
+    }
+
+    // --- TESTIMONIALS: SELECT pending ---
+    if (cleanText.toLowerCase().includes('from testimonials') && cleanText.toLowerCase().includes("status = 'pending'")) {
+        if (!fallbackStore.testimonials) fallbackStore.testimonials = [];
+        const pending = fallbackStore.testimonials
+            .filter(t => t.status === 'pending')
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        return { rows: pending, rowCount: pending.length };
+    }
+
+    // --- TESTIMONIALS: INSERT ---
+    if (cleanText.toLowerCase().includes('insert into testimonials')) {
+        if (!fallbackStore.testimonials) fallbackStore.testimonials = [];
+        const newTestimonial = {
+            id: fallbackStore.testimonials.length + 1,
+            user_id: parseInt(params[0], 10),
+            user_name: params[1],
+            campus: params[2] || '',
+            university: params[3] || '',
+            message: params[4],
+            rating: parseInt(params[5], 10) || 5,
+            status: params[6] || 'pending',
+            created_at: new Date().toISOString()
+        };
+        fallbackStore.testimonials.push(newTestimonial);
+        saveFallbackStore();
+        return { rows: [newTestimonial], rowCount: 1 };
+    }
+
+    // --- TESTIMONIALS: UPDATE status (approve/reject) ---
+    if (cleanText.toLowerCase().includes('update testimonials') && cleanText.toLowerCase().includes('status =')) {
+        if (!fallbackStore.testimonials) fallbackStore.testimonials = [];
+        const id = parseInt(params[0], 10);
+        let newStatus = 'approved';
+        if (cleanText.toLowerCase().includes("status = 'rejected'")) {
+            newStatus = 'rejected';
+        }
+        const idx = fallbackStore.testimonials.findIndex(t => t.id === id);
+        if (idx !== -1) {
+            fallbackStore.testimonials[idx].status = newStatus;
+            saveFallbackStore();
+            return { rows: [fallbackStore.testimonials[idx]], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
     }
 
     console.warn('Unhandled SQL fallback query:', cleanText, params);

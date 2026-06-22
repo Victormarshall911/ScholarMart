@@ -44,6 +44,7 @@ function switchDashboardTab(tabId) {
     else if (tabId === 'admin-universities') loadAdminUniversities();
     else if (tabId === 'admin-categories') loadAdminCategories();
     else if (tabId === 'admin-orders') loadAdminOrders();
+    else if (tabId === 'admin-testimonials') loadAdminTestimonials();
 }
 
 /* ========================================================
@@ -481,8 +482,13 @@ async function updateSalesOrderStatus(dealId, status) {
 function toggleProductModal(show) {
     const modal = document.getElementById('product-modal-overlay');
     if (!modal) return;
-    if (show) modal.classList.add('active');
-    else modal.classList.remove('active');
+    if (show) {
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => modal.classList.add('active'));
+    } else {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
 }
 
 function openProductCreate() {
@@ -1269,8 +1275,13 @@ async function loadAdminOrders() {
 function toggleSupportModal(show) {
     const modal = document.getElementById('support-modal-overlay');
     if (!modal) return;
-    if (show) modal.classList.add('active');
-    else modal.classList.remove('active');
+    if (show) {
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => modal.classList.add('active'));
+    } else {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
 }
 
 function openSupportModal() {
@@ -1283,12 +1294,16 @@ function checkWelcomeModal() {
     const modal = document.getElementById('welcome-modal-overlay');
     if (!visited && modal) {
         modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 2300);
     }
 }
 
 function closeWelcomeModal() {
     const modal = document.getElementById('welcome-modal-overlay');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 450);
+    }
     localStorage.setItem('scholarmart_visited', 'true');
 }
 
@@ -1321,8 +1336,13 @@ function openReportModal() {
 function toggleReportModal(show) {
     const modal = document.getElementById('report-modal-overlay');
     if (!modal) return;
-    if (show) modal.classList.add('active');
-    else modal.classList.remove('active');
+    if (show) {
+        modal.style.display = 'flex';
+        requestAnimationFrame(() => modal.classList.add('active'));
+    } else {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
 }
 
 async function submitReport(event) {
