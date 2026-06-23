@@ -290,28 +290,23 @@ async function runTests() {
         assertEqual(getDealsData.deals.length > 0, true, 'Deals are returned');
         assertEqual(getDealsData.deals[0].id, testDealId, 'Returned deal matches created deal ID');
 
-        // Test 14: Category Management
-        console.log('\nTest 14: Category Management...');
+        // Test 14: Category Management (Read-Only)
+        console.log('\nTest 14: Category Management (Read-Only)...');
         const catListRes = await fetch(`${BASE_URL}/api/categories`);
         const catListData = await catListRes.json();
         assertEqual(catListRes.status, 200, 'Retrieve categories returns status 200 OK');
-        assertEqual(catListData.categories.length, 0, 'Categories are empty initially');
+        assertEqual(catListData.categories.length, 9, 'All 9 default categories are pre-populated');
 
+        // Test category addition is disabled
         const addCatRes = await fetch(`${BASE_URL}/api/categories`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${adminToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: 'Electronics and Gadgets' })
+            body: JSON.stringify({ name: 'Should Fail Category' })
         });
-        const addCatData = await addCatRes.json();
-        assertEqual(addCatRes.status, 201, 'Create category returns status 201 Created');
-        assertEqual(addCatData.status, 'success', 'Category added successfully');
-
-        const catListRes2 = await fetch(`${BASE_URL}/api/categories`);
-        const catListData2 = await catListRes2.json();
-        assertEqual(catListData2.categories.length, 1, 'One category is returned after adding');
+        assertEqual(addCatRes.status, 403, 'Create category returns 403 Forbidden');
 
         // Test 15: Shopping Cart System
         console.log('\nTest 15: Shopping Cart System...');

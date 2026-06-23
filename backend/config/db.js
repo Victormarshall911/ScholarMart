@@ -23,7 +23,17 @@ if (!fs.existsSync(dataDir)) {
 // Default seed data
 const defaultUniversities = [];
 const defaultCampuses = [];
-const defaultCategories = [];
+const defaultCategories = [
+    { id: 1, name: 'Electronics', created_at: new Date().toISOString() },
+    { id: 2, name: 'Gadgets', created_at: new Date().toISOString() },
+    { id: 3, name: 'Fashion & Clothing', created_at: new Date().toISOString() },
+    { id: 4, name: 'Books & Academic Materials', created_at: new Date().toISOString() },
+    { id: 5, name: 'Hostel Essentials', created_at: new Date().toISOString() },
+    { id: 6, name: 'Creative & Handmade', created_at: new Date().toISOString() },
+    { id: 7, name: 'Beauty & Personal Care', created_at: new Date().toISOString() },
+    { id: 8, name: 'Sports & Fitness', created_at: new Date().toISOString() },
+    { id: 9, name: 'Others', created_at: new Date().toISOString() }
+];
 
 let fallbackStore = {
     users: [],
