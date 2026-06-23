@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScholarMart — Campus Marketplace for Nigerian Students</title>
-    <meta name="description" content="ScholarMart is the trusted student marketplace built for Nigerian university students. Buy, sell and connect safely on campus via WhatsApp.">
-    <meta name="keywords" content="campus marketplace, Nigerian students, buy sell campus, student market, scholarmart">
+    <title>ScholarMart — Campus Marketplace for COOU Students</title>
+    <meta name="description" content="ScholarMart is the trusted student marketplace built for Chukwuemeka Odumegwu Ojukwu University (COOU) students. Buy, sell and connect safely on campus via WhatsApp.">
+    <meta name="keywords" content="campus marketplace, COOU, Uli, Igbariam, Awka, student market, scholarmart">
     <meta name="robots" content="index, follow">
     <!-- Open Graph -->
     <meta property="og:title" content="ScholarMart — Campus Marketplace">
-    <meta property="og:description" content="Buy, Sell and Connect on Campus. Trusted by Nigerian students.">
+    <meta property="og:description" content="Buy, Sell and Connect on Campus. Trusted by COOU students.">
     <meta property="og:type" content="website">
     <!-- Favicon & manifest -->
     <link rel="manifest" href="/manifest.json">
@@ -63,7 +63,7 @@
                 <div class="hero-card">
                     <div style="position: relative; z-index: 1;">
                         <h2 class="hero-title">Buy. Sell. Connect on Campus.</h2>
-                        <p class="hero-sub">A trusted marketplace built for Nigerian students. 🎓</p>
+                        <p class="hero-sub">A trusted marketplace built for COOU students. 🎓</p>
                         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
                             <button class="btn btn-orange" style="flex: 1; min-width: 140px;" onclick="window.location.hash = '#/marketplace'">Explore Listings</button>
                             <button class="btn" style="flex: 1; min-width: 140px; background: rgba(255,255,255,0.18); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: white; border: 1.5px solid rgba(255,255,255,0.55); font-weight: 700;" onclick="window.location.hash = '#/register'">Join Free →</button>
@@ -234,7 +234,7 @@
                 <!-- App Footer -->
                 <footer class="app-footer">
                     <span class="app-footer-logo">Scholar<span>Mart</span></span>
-                    <p class="app-footer-tagline">The trusted campus marketplace for Nigerian students 🎓</p>
+                    <p class="app-footer-tagline">The trusted campus marketplace for COOU students 🎓</p>
                     <div class="app-footer-links">
                         <button class="app-footer-link" onclick="window.location.hash = '#/terms'">Terms &amp; Conditions</button>
                         <span class="app-footer-sep">•</span>
@@ -379,7 +379,7 @@
                             <label style="display: flex; align-items: center; gap: 6px; font-weight: 500; cursor: pointer;">
                                 <input type="checkbox" id="login-remember" style="accent-color: var(--primary-green);"> Remember Me
                             </label>
-                            <a href="#" style="color: var(--primary-green); font-weight: 700; text-decoration: none;" onclick="Toast.show('Enter your email, and we will send a password reset code.', 'info')">Forgot Password?</a>
+                            <a href="javascript:void(0)" style="color: var(--primary-green); font-weight: 700; text-decoration: none;" onclick="toggleAuthPanel('forgot')">Forgot Password?</a>
                         </div>
                         <button type="submit" class="btn btn-primary">Sign In</button>
                     </form>
@@ -472,6 +472,41 @@
                         Already have an account? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="window.location.hash = '#/login'">Sign In</span>
                     </p>
                 </div>
+                
+                <!-- Forgot Password Panel -->
+                <div id="forgot-panel" class="auth-panel">
+                    <h1 class="view-title">Reset Password</h1>
+                    <p class="view-subtitle">Enter your email to receive a 6-digit reset pin.</p>
+ 
+                    <!-- Step 1: Request OTP -->
+                    <form id="forgot-request-form">
+                        <div class="form-group">
+                            <label class="form-label" for="forgot-email">Personal Email Address</label>
+                            <input type="email" id="forgot-email" class="form-input" placeholder="e.g. student@gmail.com" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="forgot-request-btn">Send Reset Pin</button>
+                    </form>
+
+                    <!-- Step 2: Verify OTP and Set New Password -->
+                    <form id="forgot-reset-form" style="display: none; margin-top: 20px;">
+                        <div class="form-group">
+                            <label class="form-label" for="forgot-otp">6-Digit Pin</label>
+                            <input type="text" id="forgot-otp" class="form-input" placeholder="e.g. 123456" maxlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="forgot-new-password">New Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="forgot-new-password" class="form-input" placeholder="Min. 8 characters" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('forgot-new-password')">Show</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="forgot-reset-btn">Reset Password</button>
+                    </form>
+
+                    <p style="text-align: center; margin-top: 24px; font-size: 14px; font-weight: 500; color: var(--text-secondary);">
+                        Remember your password? <span style="color: var(--primary-green); font-weight: 700; cursor: pointer;" onclick="toggleAuthPanel('login')">Sign In</span>
+                    </p>
+                </div>
             </section>
 
             <!-- 5. BUYER DASHBOARD VIEW -->
@@ -499,8 +534,8 @@
                     
                     <div id="verification-options">
                         <div id="verify-email-option" style="margin-bottom: 4px;">
-                            <button class="btn btn-outline btn-sm" id="send-otp-btn" onclick="sendVerificationOtp()">Send OTP Code</button>
-                            <div id="otp-input-container" style="display: none; margin-top: 10px; gap: 8px;">
+                            <button class="btn btn-outline btn-sm" id="send-otp-btn" onclick="sendVerificationOtp()">Resend OTP</button>
+                            <div id="otp-input-container" style="display: flex; margin-top: 10px; gap: 8px;">
                                 <input type="text" id="otp-code-input" class="form-input" placeholder="6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
                                 <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
                             </div>
@@ -530,7 +565,7 @@
                 <!-- Footer -->
                 <footer class="app-footer">
                     <span class="app-footer-logo">Scholar<span>Mart</span></span>
-                    <p class="app-footer-tagline">The trusted campus marketplace for Nigerian students 🎓</p>
+                    <p class="app-footer-tagline">The trusted campus marketplace for COOU students 🎓</p>
                     <div class="app-footer-links">
                         <button class="app-footer-link" onclick="window.location.hash = '#/terms'">Terms &amp; Conditions</button>
                         <span class="app-footer-sep">•</span>
@@ -591,8 +626,8 @@
                     
                     <div id="vendor-verification-options">
                         <div id="vendor-verify-email-option" style="margin-bottom: 4px;">
-                            <button class="btn btn-outline btn-sm" id="vendor-send-otp-btn" onclick="sendVerificationOtp()">Send OTP Code</button>
-                            <div id="vendor-otp-input-container" style="display: none; margin-top: 10px; gap: 8px;">
+                            <button class="btn btn-outline btn-sm" id="vendor-send-otp-btn" onclick="sendVerificationOtp()">Resend OTP</button>
+                            <div id="vendor-otp-input-container" style="display: flex; margin-top: 10px; gap: 8px;">
                                 <input type="text" id="vendor-otp-code-input" class="form-input" placeholder="6-digit OTP" style="padding: 8px 12px; font-size: 13px;" maxlength="6">
                                 <button class="btn btn-primary btn-sm" onclick="verifyStudentOtp()" style="width: auto;">Verify</button>
                             </div>
@@ -622,7 +657,7 @@
                 <!-- Footer -->
                 <footer class="app-footer">
                     <span class="app-footer-logo">Scholar<span>Mart</span></span>
-                    <p class="app-footer-tagline">The trusted campus marketplace for Nigerian students 🎓</p>
+                    <p class="app-footer-tagline">The trusted campus marketplace for COOU students 🎓</p>
                     <div class="app-footer-links">
                         <button class="app-footer-link" onclick="window.location.hash = '#/terms'">Terms &amp; Conditions</button>
                         <span class="app-footer-sep">•</span>

@@ -332,7 +332,7 @@ async function verifyStudentOtp() {
     const otp = buyerOtp || vendorOtp;
 
     if (!otp) {
-        Toast.show('Please enter the 6-digit OTP code', 'warning');
+        Toast.show('Please enter the verification code from your email', 'warning');
         return;
     }
 
@@ -376,4 +376,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const registerForm = document.getElementById('register-form');
     if (registerForm) registerForm.addEventListener('submit', handleRegisterSubmit);
+
+    const forgotRequestForm = document.getElementById('forgot-request-form');
+    if (forgotRequestForm) forgotRequestForm.addEventListener('submit', handleForgotRequestSubmit);
+
+    const forgotResetForm = document.getElementById('forgot-reset-form');
+    if (forgotResetForm) forgotResetForm.addEventListener('submit', handleForgotResetSubmit);
 });
+
+// 10. Forgot Password Handlers
+async function handleForgotRequestSubmit(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) return Toast.show('Email is required', 'warning');
+
+    const loader = Toast.show('Sending reset pin...', 'loading');
+    const btn = document.getElementById('forgot-request-btn');
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            Toast.update(loader, data.message, 'success');
+            document.getElementById('forgot-request-form').style.display = 'none';
+            document.getElementById('forgot-reset-form').style.display = 'block';
+        } else {
+            Toast.update(loader, data.message || 'Error requesting reset', 'error');
+            btn.disabled = false;
+        }
+    } catch (err) {
+        Toast.update(loader, 'Connection error', 'error');
+        btn.disabled = false;
+    }
+}
+
+async function handleForgotResetSubmit(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim();
+    const otp = document.getElementById('forgot-otp').value.trim();
+    const newPassword = document.getElementById('forgot-new-password').value;
+
+    if (!otp || !newPassword) return Toast.show('All fields are required', 'warning');
+
+    const loader = Toast.show('Resetting password...', 'loading');
+    const btn = document.getElementById('forgot-reset-btn');
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp, newPassword })
+        });
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            Toast.update(loader, data.message, 'success');
+            setTimeout(() => {
+                window.location.hash = '#/login';
+            }, 1500);
+        } else {
+            Toast.update(loader, data.message || 'Error resetting password', 'error');
+            btn.disabled = false;
+        }
+    } catch (err) {
+        Toast.update(loader, 'Connection error', 'error');
+        btn.disabled = false;
+    }
+}

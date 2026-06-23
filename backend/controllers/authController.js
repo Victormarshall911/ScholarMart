@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const { JWT_SECRET } = require('../middleware/auth');
+const { supabase } = require('../config/db');
 
 // Helper: Compute badge label from deals_completed & average_rating
 function getBadgeInfo(dealsCompleted, averageRating) {
@@ -44,19 +45,41 @@ exports.register = async (req, res) => {
 
         const userRole = role === 'vendor' ? 'vendor' : 'buyer';
 
-        // Vendor must provide WhatsApp number
         if (userRole === 'vendor' && !whatsappNumber) {
             return res.status(400).json({ status: 'error', message: 'Vendors must provide a WhatsApp number for buyers to contact you' });
         }
 
-        // Encrypt password
+        if (!supabase) {
+            return res.status(500).json({ status: 'error', message: 'Supabase is not configured on the server.' });
+        }
+
+        // Supabase Auth Signup
+        // This will send an OTP to their email if Supabase Auth is configured to require email confirmation
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    name,
+                    role: userRole
+                }
+            }
+        });
+
+        if (authError) {
+            console.error('Supabase signup error (full):', JSON.stringify(authError));
+            return res.status(400).json({ status: 'error', message: authError.message || 'Failed to register via Supabase.' });
+        }
+
+        // Encrypt password for our local fallback check if needed (or just store a dummy since supabase handles auth)
+        // We will keep it for backwards compatibility with the manual login route
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Create the user
+        // Create the user in our custom public.users table
         const result = await db.query(
             `INSERT INTO users (
-                name, email, whatsapp_number, university, campus, password_hash, role
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+                name, email, whatsapp_number, university, campus, password_hash, role, email_verified
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *`,
             [
                 name, email, whatsappNumber || null, university || 'COOU', campus, passwordHash, userRole
             ]
@@ -65,19 +88,19 @@ exports.register = async (req, res) => {
         const newUser = result.rows[0];
         const badge = getBadgeInfo(0, 0);
 
-        // Generate JWT Token
+        // Generate JWT Token (our custom one for local routes)
         const token = jwt.sign({ id: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
 
         return res.status(201).json({
             status: 'success',
-            message: `Welcome to ScholarMart! Your ${userRole} account is ready.`,
+            message: `Welcome! A verification code has been sent to ${email}. Please check your inbox to verify your account.`,
             token,
             user: {
                 id: newUser.id,
                 name: newUser.name,
                 email: newUser.email,
                 role: newUser.role,
-                email_verified: newUser.email_verified || false,
+                email_verified: false,
                 campus: newUser.campus,
                 university: newUser.university,
                 whatsapp_number: newUser.whatsapp_number,
@@ -104,6 +127,18 @@ exports.login = async (req, res) => {
             return res.status(400).json({ status: 'error', message: 'Email and password are required' });
         }
 
+        // Attempt login via Supabase first
+        if (supabase) {
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+            if (authError) {
+                return res.status(400).json({ status: 'error', message: authError.message });
+            }
+        }
+
+        // Fetch custom user data
         const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (result.rowCount === 0) {
             return res.status(400).json({ status: 'error', message: 'Invalid credentials' });
@@ -115,10 +150,12 @@ exports.login = async (req, res) => {
             return res.status(403).json({ status: 'error', message: 'Your account has been suspended by an administrator' });
         }
 
-        // Compare password
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) {
-            return res.status(400).json({ status: 'error', message: 'Invalid credentials' });
+        // If we didn't use supabase (or as a fallback check)
+        if (!supabase) {
+            const isMatch = await bcrypt.compare(password, user.password_hash);
+            if (!isMatch) {
+                return res.status(400).json({ status: 'error', message: 'Invalid credentials' });
+            }
         }
 
         // Update last login timestamp
@@ -126,7 +163,7 @@ exports.login = async (req, res) => {
 
         const badge = getBadgeInfo(user.deals_completed || 0, parseFloat(user.average_rating) || 0);
 
-        // Generate JWT Token
+        // Generate our JWT Token
         const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 
         return res.json({
@@ -154,7 +191,7 @@ exports.login = async (req, res) => {
     }
 };
 
-// 3. Send Email OTP (Email Verification)
+// 3. Send Email OTP (Resend Signup OTP or Login OTP)
 exports.sendOtp = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -165,26 +202,27 @@ exports.sendOtp = async (req, res) => {
 
         const email = userResult.rows[0].email;
 
-        // Generate a 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+        if (!supabase) {
+             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
+        }
 
-        await db.query(
-            'UPDATE users SET email_otp = $1, email_otp_expires = $2 WHERE id = $3',
-            [otp, expires, userId]
-        );
+        // Use signInWithOtp instead of resend — it always routes through custom SMTP
+        // and doesn't fall back to Supabase's default noreply@mail.app.supabase.io
+        const { error } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: {
+                shouldCreateUser: false // Don't create a new auth user, just send OTP
+            }
+        });
 
-        // In production: Send email with OTP
-        // In development: Log to console
-        console.log(`\n======================================================`);
-        console.log(`[EMAIL OTP] Email: ${email}`);
-        console.log(`[EMAIL OTP] Code: ${otp}`);
-        console.log(`[EMAIL OTP] Expires: ${expires.toISOString()}`);
-        console.log(`======================================================\n`);
+        if (error) {
+            console.error('Send OTP error (Supabase):', JSON.stringify(error));
+            return res.status(400).json({ status: 'error', message: error.message });
+        }
 
         return res.json({
             status: 'success',
-            message: `OTP code sent to ${email}. (For testing, see terminal log)`
+            message: `A new verification code has been sent to ${email}.`
         });
     } catch (error) {
         console.error('Send OTP error:', error);
@@ -195,41 +233,56 @@ exports.sendOtp = async (req, res) => {
 // 4. Verify Email OTP
 exports.verifyOtp = async (req, res) => {
     try {
-        const { otp } = req.body;
-        const userId = req.user.id;
+        const { otp, email: providedEmail } = req.body;
+        
+        // We might be verifying from a logged-in state (has req.user) or logged-out state (needs email in body)
+        let emailToVerify = providedEmail;
+        let userId = null;
 
-        if (!otp) {
-            return res.status(400).json({ status: 'error', message: 'OTP is required' });
+        if (req.user) {
+            userId = req.user.id;
+            const result = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
+            if (result.rowCount > 0) emailToVerify = result.rows[0].email;
+        } else if (providedEmail) {
+            const result = await db.query('SELECT id FROM users WHERE email = $1', [providedEmail]);
+            if (result.rowCount > 0) userId = result.rows[0].id;
         }
 
-        const result = await db.query(
-            'SELECT email_otp, email_otp_expires FROM users WHERE id = $1',
-            [userId]
-        );
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ status: 'error', message: 'User not found' });
+        if (!otp || !emailToVerify) {
+            return res.status(400).json({ status: 'error', message: 'OTP and email are required' });
         }
 
-        const user = result.rows[0];
-
-        if (!user.email_otp || user.email_otp !== otp) {
-            return res.status(400).json({ status: 'error', message: 'Invalid OTP' });
+        if (!supabase) {
+             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
         }
 
-        if (new Date() > new Date(user.email_otp_expires)) {
-            return res.status(400).json({ status: 'error', message: 'OTP has expired' });
+        // Try 'signup' type first (for initial registration OTPs)
+        // If that fails, try 'email' type (for resent OTPs via signInWithOtp)
+        let verifyResult = await supabase.auth.verifyOtp({
+            email: emailToVerify,
+            token: otp,
+            type: 'signup'
+        });
+
+        if (verifyResult.error) {
+            // Retry with 'email' type (used by signInWithOtp resend)
+            verifyResult = await supabase.auth.verifyOtp({
+                email: emailToVerify,
+                token: otp,
+                type: 'email'
+            });
         }
 
-        // Mark email as verified
-        await db.query(
-            `UPDATE users SET 
-                email_verified = true, 
-                email_otp = NULL, 
-                email_otp_expires = NULL 
-             WHERE id = $1`,
-            [userId]
-        );
+        if (verifyResult.error) {
+            return res.status(400).json({ status: 'error', message: verifyResult.error.message || 'Invalid or expired verification code' });
+        }
+
+        if (userId) {
+            // Mark email as verified
+            await db.query(`UPDATE users SET email_verified = true WHERE id = $1`, [userId]);
+        } else {
+            await db.query(`UPDATE users SET email_verified = true WHERE email = $1`, [emailToVerify]);
+        }
 
         return res.json({
             status: 'success',
@@ -242,7 +295,84 @@ exports.verifyOtp = async (req, res) => {
     }
 };
 
-// 5. Upload Portrait
+// 5. Forgot Password (Request OTP)
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ status: 'error', message: 'Email is required' });
+
+        if (!supabase) {
+             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
+        }
+
+        // Supabase sends an OTP pin if configured, or a magic link.
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+        if (error) {
+            return res.status(400).json({ status: 'error', message: error.message });
+        }
+
+        return res.json({
+            status: 'success',
+            message: 'A password reset pin has been sent to your email.'
+        });
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        return res.status(500).json({ status: 'error', message: 'Server error' });
+    }
+};
+
+// 6. Reset Password (Verify OTP & Set New Password)
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ status: 'error', message: 'Email, OTP, and new password are required' });
+        }
+
+        if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+            return res.status(400).json({ status: 'error', message: 'Password must be at least 8 characters long and contain both letters and numbers' });
+        }
+
+        if (!supabase) {
+             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
+        }
+
+        // Verify the recovery OTP
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token: otp,
+            type: 'recovery'
+        });
+
+        if (error) {
+            return res.status(400).json({ status: 'error', message: error.message || 'Invalid or expired reset pin' });
+        }
+
+        // Now that session is established via verifyOtp, update the user's password
+        const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+
+        if (updateError) {
+            return res.status(400).json({ status: 'error', message: updateError.message });
+        }
+
+        // Also update local custom table password_hash just in case
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await db.query('UPDATE users SET password_hash = $1 WHERE email = $2', [passwordHash, email]);
+
+        return res.json({
+            status: 'success',
+            message: 'Password has been reset successfully! You can now log in.'
+        });
+    } catch (err) {
+        console.error('Reset password error:', err);
+        return res.status(500).json({ status: 'error', message: 'Server error' });
+    }
+};
+
+// 7. Upload Portrait
 exports.uploadPortrait = async (req, res) => {
     try {
         const userId = req.user.id;
