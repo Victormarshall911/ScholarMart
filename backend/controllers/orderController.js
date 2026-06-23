@@ -264,3 +264,55 @@ exports.updateDealStatus = async (req, res) => {
         return res.status(500).json({ status: 'error', message: 'Server error updating deal status' });
     }
 };
+
+// 7. Rate Vendor Directly (Buyer rates a vendor freely, no deal required)
+exports.rateVendorDirectly = async (req, res) => {
+    try {
+        const vendorId = parseInt(req.params.id, 10);
+        const raterId = req.user.id;
+        const { rating, review } = req.body;
+
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ status: 'error', message: 'Rating must be between 1 and 5' });
+        }
+
+        // Cannot rate yourself
+        if (vendorId === raterId) {
+            return res.status(403).json({ status: 'error', message: 'You cannot rate yourself' });
+        }
+
+        // Confirm the target is a vendor
+        const vendorResult = await db.query(
+            `SELECT id, role, average_rating, total_ratings FROM users WHERE id = $1`,
+            [vendorId]
+        );
+        if (vendorResult.rowCount === 0) {
+            return res.status(404).json({ status: 'error', message: 'Vendor not found' });
+        }
+        const vendor = vendorResult.rows[0];
+        if (vendor.role !== 'vendor' && vendor.role !== 'admin') {
+            return res.status(400).json({ status: 'error', message: 'Target user is not a vendor' });
+        }
+
+        // Recalculate rolling average
+        const oldTotal = vendor.total_ratings || 0;
+        const oldAvg = parseFloat(vendor.average_rating) || 0;
+        const newTotal = oldTotal + 1;
+        const newAvg = ((oldAvg * oldTotal) + rating) / newTotal;
+
+        await db.query(
+            `UPDATE users SET average_rating = $1, total_ratings = $2 WHERE id = $3`,
+            [Math.round(newAvg * 100) / 100, newTotal, vendorId]
+        );
+
+        return res.json({
+            status: 'success',
+            message: 'Thank you for rating this seller! ⭐'
+        });
+
+    } catch (error) {
+        console.error('Rate vendor directly error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error rating vendor' });
+    }
+};
+

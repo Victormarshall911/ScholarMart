@@ -135,6 +135,11 @@ const testConnection = async () => {
     try {
         const res = await pool.query('SELECT NOW()');
         console.log('PostgreSQL Database Connected Successfully on port', DB_PORT);
+
+        // Migration helper: Ensure last_login column exists in users table
+        await pool.query(`
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+        `);
         
         // Ensure categories table exists in Postgres
         await pool.query(`
@@ -274,7 +279,11 @@ function queryFallback(text, params = []) {
     if (cleanText.includes('FROM users') && cleanText.includes('id = $1')) {
         const id = parseInt(params[0], 10);
         const user = fallbackStore.users.find(u => u.id === id);
-        return { rows: user ? [user] : [], rowCount: user ? 1 : 0 };
+        if (user) {
+            const active_listings = (fallbackStore.products || []).filter(p => p.vendor_id === user.id && p.status === 'active').length;
+            return { rows: [{ ...user, active_listings, last_login: user.last_login || user.created_at }], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
     }
 
     // --- USERS: INSERT ---
@@ -297,7 +306,8 @@ function queryFallback(text, params = []) {
             total_ratings: 0,
             report_count: 0,
             status: 'active',
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            last_login: new Date().toISOString()
         };
         fallbackStore.users.push(newUser);
         saveFallbackStore();
@@ -339,7 +349,9 @@ function queryFallback(text, params = []) {
         const id = parseInt(params[idIdx], 10);
         const userIdx = fallbackStore.users.findIndex(u => u.id === id);
         if (userIdx !== -1) {
-            if (cleanText.includes('status = $1') && params.length === 2) {
+            if (cleanText.includes('last_login =')) {
+                fallbackStore.users[userIdx].last_login = new Date().toISOString();
+            } else if (cleanText.includes('status = $1') && params.length === 2) {
                 fallbackStore.users[userIdx].status = params[0];
             } else if (cleanText.includes('portrait = $1')) {
                 fallbackStore.users[userIdx].portrait = params[0];
@@ -361,8 +373,12 @@ function queryFallback(text, params = []) {
     }
 
     // --- USERS: SELECT ALL (Admin) ---
-    if (cleanText.toLowerCase().startsWith('select * from users') && !cleanText.includes('where')) {
-        return { rows: fallbackStore.users, rowCount: fallbackStore.users.length };
+    if (cleanText.toLowerCase().startsWith('select * from users') || cleanText.toLowerCase().includes('from users u')) {
+        const usersWithListings = fallbackStore.users.map(u => {
+            const active_listings = (fallbackStore.products || []).filter(p => p.vendor_id === u.id && p.status === 'active').length;
+            return { ...u, active_listings, last_login: u.last_login || u.created_at };
+        });
+        return { rows: usersWithListings, rowCount: usersWithListings.length };
     }
 
     // --- PRODUCTS: SELECT with vendor join (cart query) ---
@@ -486,6 +502,42 @@ function queryFallback(text, params = []) {
             return { rows: [], rowCount: 1 };
         }
         return { rows: [], rowCount: 0 };
+    }
+    if (cleanText.includes('DELETE FROM products') && cleanText.includes('vendor_id = $1')) {
+        const vendorId = parseInt(params[0], 10);
+        fallbackStore.products = (fallbackStore.products || []).filter(p => p.vendor_id !== vendorId);
+        saveFallbackStore();
+        return { rows: [], rowCount: 1 };
+    }
+    if (cleanText.includes('DELETE FROM users') && cleanText.includes('id = $1')) {
+        const id = parseInt(params[0], 10);
+        fallbackStore.users = (fallbackStore.users || []).filter(u => u.id !== id);
+        saveFallbackStore();
+        return { rows: [], rowCount: 1 };
+    }
+    if (cleanText.includes('DELETE FROM deals') && (cleanText.includes('vendor_id = $1') || cleanText.includes('buyer_id = $1'))) {
+        const id = parseInt(params[0], 10);
+        fallbackStore.deals = (fallbackStore.deals || []).filter(d => d.vendor_id !== id && d.buyer_id !== id);
+        saveFallbackStore();
+        return { rows: [], rowCount: 1 };
+    }
+    if (cleanText.includes('DELETE FROM cart_items') && cleanText.includes('user_id = $1')) {
+        const id = parseInt(params[0], 10);
+        fallbackStore.cart_items = (fallbackStore.cart_items || []).filter(c => c.user_id !== id);
+        saveFallbackStore();
+        return { rows: [], rowCount: 1 };
+    }
+    if (cleanText.includes('DELETE FROM reports') && (cleanText.includes('reporter_id = $1') || cleanText.includes('reported_user_id = $1'))) {
+        const id = parseInt(params[0], 10);
+        fallbackStore.reports = (fallbackStore.reports || []).filter(r => r.reporter_id !== id && r.reported_user_id !== id);
+        saveFallbackStore();
+        return { rows: [], rowCount: 1 };
+    }
+    if (cleanText.includes('DELETE FROM testimonials') && cleanText.includes('user_id = $1')) {
+        const id = parseInt(params[0], 10);
+        fallbackStore.testimonials = (fallbackStore.testimonials || []).filter(t => t.user_id !== id);
+        saveFallbackStore();
+        return { rows: [], rowCount: 1 };
     }
 
     // --- DEALS: UPDATE ---

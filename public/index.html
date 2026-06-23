@@ -142,6 +142,20 @@
                         </svg>
                     </button>
                 </div>
+
+                <!-- App Footer -->
+                <footer class="app-footer">
+                    <span class="app-footer-logo">Scholar<span>Mart</span></span>
+                    <p class="app-footer-tagline">The trusted campus marketplace for Nigerian students 🎓</p>
+                    <div class="app-footer-links">
+                        <button class="app-footer-link" onclick="window.location.hash = '#/terms'">Terms &amp; Conditions</button>
+                        <span class="app-footer-sep">•</span>
+                        <button class="app-footer-link" onclick="window.location.hash = '#/privacy'">Privacy Policy</button>
+                        <span class="app-footer-sep">•</span>
+                        <button class="app-footer-link" onclick="openSupportModal()">Contact Us</button>
+                    </div>
+                    <p class="app-footer-copy">© 2026 ScholarMart. All rights reserved.</p>
+                </footer>
             </section>
 
             <!-- 2. MARKETPLACE CATALOG VIEW -->
@@ -232,6 +246,19 @@
                         </svg>
                         Chat on WhatsApp
                     </a>
+
+                    <button id="details-share-btn" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="shareProductLink()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186l5.57 3.285m-5.57-3.285a2.25 2.25 0 1 1 0-2.186m0 2.186l5.57-3.285M18 9a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Zm0 10.5a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" />
+                        </svg>
+                        Share Product Link
+                    </button>
+
+                    <!-- WhatsApp Disclaimer -->
+                    <div class="whatsapp-disclaimer">
+                        <span class="whatsapp-disclaimer-icon">⚠️</span>
+                        <span>ScholarMart is a marketplace. We are not responsible for transactions between users. Always meet in public places and inspect items before paying.</span>
+                    </div>
                     
                     <div style="display: flex; gap: 10px;">
                         <button id="details-rate-btn" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="handleRateSellerClick()">
@@ -356,6 +383,15 @@
                                 <button type="button" class="password-toggle" onclick="togglePasswordVisibility('reg-confirm')">Show</button>
                             </div>
                         </div>
+
+                        <!-- Terms Agreement Checkbox -->
+                        <div class="terms-agreement-box">
+                            <label class="terms-agreement-label" for="reg-terms-agree">
+                                <input type="checkbox" id="reg-terms-agree" required>
+                                <span>I have read and agree to ScholarMart's <a href="javascript:void(0)" onclick="window.location.hash='#/terms'">Terms &amp; Conditions</a> and <a href="javascript:void(0)" onclick="window.location.hash='#/privacy'">Privacy Policy</a>.</span>
+                            </label>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Create Account</button>
                     </form>
                     
@@ -417,6 +453,20 @@
                         <!-- Loaded dynamically -->
                     </div>
                 </div>
+
+                <!-- Footer -->
+                <footer class="app-footer">
+                    <span class="app-footer-logo">Scholar<span>Mart</span></span>
+                    <p class="app-footer-tagline">The trusted campus marketplace for Nigerian students 🎓</p>
+                    <div class="app-footer-links">
+                        <button class="app-footer-link" onclick="window.location.hash = '#/terms'">Terms &amp; Conditions</button>
+                        <span class="app-footer-sep">•</span>
+                        <button class="app-footer-link" onclick="window.location.hash = '#/privacy'">Privacy Policy</button>
+                        <span class="app-footer-sep">•</span>
+                        <button class="app-footer-link" onclick="openSupportModal()">Contact Us</button>
+                    </div>
+                    <p class="app-footer-copy">© 2026 ScholarMart. All rights reserved.</p>
+                </footer>
             </section>
 
             <!-- 6. VENDOR DASHBOARD VIEW -->
@@ -495,153 +545,626 @@
                         <!-- Sales -->
                     </div>
                 </div>
+
+                <!-- Footer -->
+                <footer class="app-footer">
+                    <span class="app-footer-logo">Scholar<span>Mart</span></span>
+                    <p class="app-footer-tagline">The trusted campus marketplace for Nigerian students 🎓</p>
+                    <div class="app-footer-links">
+                        <button class="app-footer-link" onclick="window.location.hash = '#/terms'">Terms &amp; Conditions</button>
+                        <span class="app-footer-sep">•</span>
+                        <button class="app-footer-link" onclick="window.location.hash = '#/privacy'">Privacy Policy</button>
+                        <span class="app-footer-sep">•</span>
+                        <button class="app-footer-link" onclick="openSupportModal()">Contact Us</button>
+                    </div>
+                    <p class="app-footer-copy">© 2026 ScholarMart. All rights reserved.</p>
+                </footer>
             </section>
 
             <!-- 7. ADMIN DASHBOARD VIEW -->
             <section id="dashboard-admin-view" class="view-container">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <h1 class="view-title">Admin Console</h1>
-                    <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: auto;">Logout</button>
+                <div class="admin-layout">
+                    <!-- Left Sidebar (Desktop) -->
+                    <aside class="admin-sidebar">
+                        <div class="admin-sidebar-header">
+                            <span class="brand-logo" style="color: white; font-size: 18px; margin-bottom: 20px; display: block;">Scholar<span>Mart</span> Admin</span>
+                        </div>
+                        <nav class="admin-sidebar-nav">
+                            <a href="javascript:void(0)" class="admin-side-item active" id="admin-side-dashboard" onclick="switchAdminNav('dashboard')">
+                                <span class="nav-icon">📊</span> Dashboard
+                            </a>
+                            <a href="javascript:void(0)" class="admin-side-item" id="admin-side-users" onclick="switchAdminNav('users')">
+                                <span class="nav-icon">👥</span> Users
+                            </a>
+                            <a href="javascript:void(0)" class="admin-side-item" id="admin-side-listings" onclick="switchAdminNav('listings')">
+                                <span class="nav-icon">🏪</span> Listings
+                            </a>
+                            <a href="javascript:void(0)" class="admin-side-item" id="admin-side-reports" onclick="switchAdminNav('reports')">
+                                <span class="nav-icon">⚠️</span> Reports
+                            </a>
+                            <a href="javascript:void(0)" class="admin-side-item" id="admin-side-settings" onclick="switchAdminNav('settings')">
+                                <span class="nav-icon">⚙️</span> Settings
+                            </a>
+                        </nav>
+                        <div style="margin-top: auto; padding: 10px 0 0 0;">
+                            <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: 100%; padding: 10px; font-weight: 700;">Logout</button>
+                        </div>
+                    </aside>
+
+                    <!-- Main Admin Content Area -->
+                    <div class="admin-main-area">
+                        <!-- Top mobile header -->
+                        <div class="admin-mobile-header">
+                            <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="admin-mobile-title">Admin Dashboard</h2>
+                            <button class="btn btn-secondary btn-sm" onclick="logoutUser()" style="width: auto; padding: 5px 12px; font-size: 11px;">Logout</button>
+                        </div>
+
+                        <!-- 1. DASHBOARD VIEW PANE -->
+                        <div id="admin-pane-dashboard" class="admin-pane active">
+                            <!-- Stats summary bar -->
+                            <div class="admin-users-stats" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
+                                <div class="au-stat-card au-stat-total">
+                                    <div class="au-stat-icon">👥</div>
+                                    <div class="au-stat-body">
+                                        <div class="au-stat-num" id="admin-stat-users">0</div>
+                                        <div class="au-stat-lbl">Total Users</div>
+                                    </div>
+                                </div>
+                                <div class="au-stat-card au-stat-active">
+                                    <div class="au-stat-icon">🏪</div>
+                                    <div class="au-stat-body">
+                                        <div class="au-stat-num" id="admin-stat-listings">0</div>
+                                        <div class="au-stat-lbl">Active Listings</div>
+                                    </div>
+                                </div>
+                                <div class="au-stat-card au-stat-vendors">
+                                    <div class="au-stat-icon">🤝</div>
+                                    <div class="au-stat-body">
+                                        <div class="au-stat-num" id="admin-stat-deals">0</div>
+                                        <div class="au-stat-lbl">Completed Deals</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800; color: var(--text-primary);">🤝 Completed Student Deals</h3>
+                                <div id="admin-orders-list">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. USERS VIEW PANE -->
+                        <div id="admin-pane-users" class="admin-pane">
+                            <!-- User Stats Summary -->
+                            <div class="admin-users-stats" id="admin-users-stats-row">
+                                <div class="au-stat-card au-stat-total">
+                                    <div class="au-stat-icon">👥</div>
+                                    <div class="au-stat-body">
+                                        <div class="au-stat-num" id="aus-total">0</div>
+                                        <div class="au-stat-lbl">Total Users</div>
+                                    </div>
+                                </div>
+                                <div class="au-stat-card au-stat-active">
+                                    <div class="au-stat-icon">🟢</div>
+                                    <div class="au-stat-body">
+                                        <div class="au-stat-num" id="aus-active">0</div>
+                                        <div class="au-stat-lbl">Active</div>
+                                    </div>
+                                </div>
+                                <div class="au-stat-card au-stat-suspended">
+                                    <div class="au-stat-icon">🔴</div>
+                                    <div class="au-stat-body">
+                                        <div class="au-stat-num" id="aus-suspended">0</div>
+                                        <div class="au-stat-lbl">Suspended</div>
+                                    </div>
+                                </div>
+                                <div class="au-stat-card au-stat-vendors">
+                                    <div class="au-stat-icon">🏪</div>
+                                    <div class="au-stat-body">
+                                        <div class="au-stat-num" id="aus-vendors">0</div>
+                                        <div class="au-stat-lbl">Vendors</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Search + Filter Bar -->
+                            <div class="admin-search-bar">
+                                <div class="admin-search-input-wrap">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:15px;height:15px;color:var(--text-muted);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z"/></svg>
+                                    <input type="text" id="admin-user-search" class="admin-search-input" placeholder="Search name or email..." oninput="filterAdminUsers()">
+                                </div>
+                                <select id="admin-filter-role" class="admin-filter-select" onchange="filterAdminUsers()">
+                                    <option value="">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="vendor">Vendor</option>
+                                    <option value="buyer">Buyer</option>
+                                </select>
+                                <select id="admin-filter-status" class="admin-filter-select" onchange="filterAdminUsers()">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                                <select id="admin-filter-campus" class="admin-filter-select" onchange="filterAdminUsers()">
+                                    <option value="">All Campuses</option>
+                                </select>
+                            </div>
+
+                            <!-- Bulk Actions Bar -->
+                            <div class="admin-bulk-bar">
+                                <label class="admin-bulk-check-label">
+                                    <input type="checkbox" id="admin-select-all" onchange="adminToggleSelectAll(this.checked)">
+                                    <span>Select All</span>
+                                </label>
+                                <span id="admin-selected-count" style="font-size:11px;color:var(--text-secondary);margin-left:6px;"></span>
+                                <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+                                    <select id="admin-bulk-action-select" class="admin-filter-select" style="width:auto;font-size:11px;">
+                                        <option value="">Bulk Action</option>
+                                        <option value="suspend">Suspend Selected</option>
+                                        <option value="delete">Delete Selected</option>
+                                        <option value="export">Export CSV</option>
+                                    </select>
+                                    <button class="btn btn-primary btn-sm" onclick="adminBulkAction()" style="width:auto;padding:5px 10px;font-size:11px;">Apply</button>
+                                </div>
+                            </div>
+
+                            <!-- Users Container -->
+                            <div id="admin-users-container">
+                                <!-- Rendered by JS -->
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="admin-pagination" id="admin-users-pagination">
+                                <span id="admin-page-info" style="font-size:11px;color:var(--text-secondary);"></span>
+                                <div style="display:flex;gap:4px;align-items:center;margin-left:auto;">
+                                    <select id="admin-per-page" class="admin-filter-select" style="width:auto;font-size:11px;" onchange="adminSetPerPage(this.value)">
+                                        <option value="10">10/page</option>
+                                        <option value="25">25/page</option>
+                                        <option value="50">50/page</option>
+                                    </select>
+                                    <button class="admin-page-btn" id="admin-prev-btn" onclick="adminChangePage(-1)">&lt;&lt;</button>
+                                    <span id="admin-page-nums" style="display:flex;gap:2px;"></span>
+                                    <button class="admin-page-btn" id="admin-next-btn" onclick="adminChangePage(1)">&gt;&gt;</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. LISTINGS VIEW PANE -->
+                        <div id="admin-pane-listings" class="admin-pane">
+                            <div class="card">
+                                <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800; color: var(--text-primary);">🏪 Listing Moderation Queue</h3>
+                                <div id="admin-moderation-list">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. REPORTS VIEW PANE -->
+                        <div id="admin-pane-reports" class="admin-pane">
+                            <div class="card">
+                                <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800; color: var(--text-primary);">⚠️ Community Reports Queue</h3>
+                                <div id="admin-reports-list">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. SETTINGS VIEW PANE -->
+                        <div id="admin-pane-settings" class="admin-pane">
+                            <div class="admin-settings-layout" style="display: flex; flex-direction: column; gap: 16px;">
+                                <!-- University Management -->
+                                <div class="card">
+                                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800;">Add University</h3>
+                                    <div class="form-group">
+                                        <label class="form-label" for="admin-univ-code">University Code (e.g. UNN, COOU)</label>
+                                        <input type="text" id="admin-univ-code" class="form-input" placeholder="e.g. UNN">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="admin-univ-name">University Name</label>
+                                        <input type="text" id="admin-univ-name" class="form-input" placeholder="e.g. University of Nigeria">
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="adminAddUniversity()" style="width: auto;">Add University</button>
+                                </div>
+
+                                <!-- Campus Management -->
+                                <div class="card">
+                                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800;">Add Campus</h3>
+                                    <div class="form-group">
+                                        <label class="form-label" for="admin-campus-univ-select">Select University</label>
+                                        <select id="admin-campus-univ-select" class="form-select">
+                                            <option value="" disabled selected>Select a University</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="admin-campus-name">Campus Name</label>
+                                        <input type="text" id="admin-campus-name" class="form-input" placeholder="e.g. Nsukka Campus">
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="adminAddCampus()" style="width: auto;">Add Campus</button>
+                                </div>
+
+                                <!-- List of current universities and campuses -->
+                                <div class="card">
+                                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800;">Current Universities & Campuses</h3>
+                                    <div id="admin-universities-list" style="max-height: 200px; overflow-y: auto; font-size: 12px; padding-right: 4px;">
+                                        <!-- Loaded dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- Category Management -->
+                                <div class="card">
+                                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800;">Add Product Category</h3>
+                                    <div class="form-group">
+                                        <label class="form-label" for="admin-category-name">Category Name</label>
+                                        <input type="text" id="admin-category-name" class="form-input" placeholder="e.g. Services, Tickets">
+                                    </div>
+                                    <button class="btn btn-primary btn-sm" onclick="adminAddCategory()" style="width: auto;">Add Category</button>
+                                </div>
+
+                                <div class="card">
+                                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800;">Current Categories</h3>
+                                    <div id="admin-categories-list" style="max-height: 150px; overflow-y: auto; font-size: 12px; padding-right: 4px;">
+                                        <!-- Loaded dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- Testimonials Queue -->
+                                <div class="card">
+                                    <h3 class="card-title" style="font-size: 14px; margin-bottom: 12px; font-weight: 800;">Testimonial Review Queue</h3>
+                                    <div id="admin-testimonials-list">
+                                        <!-- Loaded dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- USER DETAIL MODAL (Admin) -->
+            <div id="user-detail-modal-overlay" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeUserDetailModal()">
+                <div class="modal-sheet user-detail-modal">
+                    <div class="modal-header" style="padding-bottom: 10px; border-bottom: 1px solid var(--border);">
+                        <h3 style="font-size:15px;font-weight:800;">User Profile</h3>
+                        <button class="modal-close-btn" onclick="closeUserDetailModal()">✕</button>
+                    </div>
+                    <div class="modal-body" id="user-detail-modal-body" style="padding-top:12px;">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="modal-footer udm-footer">
+                        <button id="udm-suspend-btn" class="btn btn-secondary btn-sm" onclick="adminToggleUserStatusFromModal()">Suspend</button>
+                        <button id="udm-reset-btn" class="btn btn-outline btn-sm" onclick="adminResetPasswordFromModal()">Reset Password</button>
+                        <button id="udm-listings-btn" class="btn btn-outline btn-sm" onclick="adminViewUserListingsFromModal()">View Listings</button>
+                        <button class="btn btn-outline btn-sm udm-close-btn" onclick="closeUserDetailModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. TERMS & CONDITIONS VIEW -->
+            <section id="terms-view" class="view-container">
+                <button class="legal-back-btn" onclick="window.history.back()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                    Back
+                </button>
+
+                <!-- Quick nav between legal pages -->
+                <div class="legal-nav-pills">
+                    <button class="legal-nav-pill active" id="terms-pill" onclick="window.location.hash='#/terms'">📄 Terms &amp; Conditions</button>
+                    <button class="legal-nav-pill" id="privacy-pill-from-terms" onclick="window.location.hash='#/privacy'">🔒 Privacy Policy</button>
                 </div>
 
-                <!-- Admin Stats Cards -->
-                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
-                    <div class="stat-card" style="padding: 10px;">
-                        <div class="stat-num" id="admin-stat-users" style="font-size: 18px;">0</div>
-                        <div class="stat-lbl" style="font-size: 9px;">Users</div>
-                    </div>
-                    <div class="stat-card" style="padding: 10px;">
-                        <div class="stat-num" id="admin-stat-listings" style="font-size: 18px;">0</div>
-                        <div class="stat-lbl" style="font-size: 9px;">Listings</div>
-                    </div>
-                    <div class="stat-card" style="padding: 10px;">
-                        <div class="stat-num orange" id="admin-stat-deals" style="font-size: 18px;">0</div>
-                        <div class="stat-lbl" style="font-size: 9px;">Deals</div>
+                <!-- Header -->
+                <div class="legal-header">
+                    <span class="legal-header-icon">📄</span>
+                    <h1>Terms &amp; Conditions</h1>
+                    <span class="legal-header-date">Last Updated: June 2026</span>
+                </div>
+
+                <!-- Section 1: Introduction -->
+                <div class="legal-section">
+                    <div class="legal-section-title">1. Introduction</div>
+                    <div class="legal-text">
+                        <p>ScholarMart is a student-focused marketplace platform that connects student vendors with buyers within campus communities. By using ScholarMart, you agree to these terms.</p>
+                        <p><strong>1.1 Eligibility</strong><br>You must be at least 18 years old to use ScholarMart. If you are under 18, you must have parental/guardian consent. By using this platform, you confirm you are eligible.</p>
                     </div>
                 </div>
 
-                <div class="tabs-header">
-                    <div class="tab-btn active" onclick="switchDashboardTab('admin-reports')">Reports</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('admin-moderation')">Moderation</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('admin-users')">Users</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('admin-universities')">Campuses</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('admin-categories')">Categories</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('admin-orders')">Deals</div>
-                    <div class="tab-btn" onclick="switchDashboardTab('admin-testimonials')">Testimonials</div>
-                </div>
-
-                <!-- Tab: Community Reports -->
-                <div id="tab-admin-reports" class="tab-pane active">
-                    <div id="admin-reports-list">
-                        <!-- Community reports list -->
+                <!-- Section 2: Our Role -->
+                <div class="legal-section">
+                    <div class="legal-section-title">2. Our Role</div>
+                    <div class="legal-text">
+                        <p>ScholarMart is <strong>not</strong> the seller of goods or services. We only:</p>
+                        <ul>
+                            <li>Help vendors list their products</li>
+                            <li>Help students discover and contact vendors</li>
+                        </ul>
+                        <p>We do not process payments or guarantee transactions between users.</p>
+                        <p>ScholarMart is an independent platform not affiliated with any university or educational institution.</p>
                     </div>
                 </div>
 
-                <!-- Tab: Listing Moderation -->
-                <div id="tab-admin-moderation" class="tab-pane">
-                    <div id="admin-moderation-list">
-                        <!-- Reported products list -->
+                <!-- Section 3: Vendor Responsibility -->
+                <div class="legal-section">
+                    <div class="legal-section-title">3. Vendor Responsibility</div>
+                    <div class="legal-text">
+                        <p>All vendors must:</p>
+                        <ul>
+                            <li>Provide accurate product descriptions and pricing</li>
+                            <li>Only sell legal and allowed items</li>
+                            <li>Deliver what they advertise</li>
+                            <li>Respond to customers in good faith</li>
+                        </ul>
+                        <p>ScholarMart reserves the right to remove any vendor who provides false information or engages in misconduct.</p>
                     </div>
                 </div>
 
-                <!-- Tab: User Management -->
-                <div id="tab-admin-users" class="tab-pane">
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-users-table-body">
-                                <!-- Users list -->
-                            </tbody>
-                        </table>
+                <!-- Section 4: Prohibited Items -->
+                <div class="legal-section">
+                    <div class="legal-section-title">4. Prohibited Items</div>
+                    <div class="legal-text">
+                        <p>Vendors are <strong>not</strong> allowed to list:</p>
+                        <ul>
+                            <li>Illegal drugs or substances</li>
+                            <li>Weapons or harmful items</li>
+                            <li>Counterfeit or pirated products</li>
+                            <li>Fraudulent or misleading services</li>
+                            <li>Stolen goods</li>
+                            <li>Any item prohibited by school or Nigerian law</li>
+                        </ul>
                     </div>
                 </div>
 
-                <!-- Tab: University & Campus Management -->
-                <div id="tab-admin-universities" class="tab-pane">
-                    <!-- Form to add University -->
-                    <div class="card" style="margin-bottom: 16px;">
-                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Add University</h3>
-                        <div class="form-group">
-                            <label class="form-label" for="admin-univ-code">University Code (e.g. UNN, COOU)</label>
-                            <input type="text" id="admin-univ-code" class="form-input" placeholder="e.g. UNN">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="admin-univ-name">University Name</label>
-                            <input type="text" id="admin-univ-name" class="form-input" placeholder="e.g. University of Nigeria">
-                        </div>
-                        <button class="btn btn-primary btn-sm" onclick="adminAddUniversity()">Add University</button>
-                    </div>
-
-                    <!-- Form to add Campus -->
-                    <div class="card" style="margin-bottom: 16px;">
-                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Add Campus</h3>
-                        <div class="form-group">
-                            <label class="form-label" for="admin-campus-univ-select">Select University</label>
-                            <select id="admin-campus-univ-select" class="form-select">
-                                <option value="" disabled selected>Select a University</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="admin-campus-name">Campus Name</label>
-                            <input type="text" id="admin-campus-name" class="form-input" placeholder="e.g. Nsukka Campus">
-                        </div>
-                        <button class="btn btn-primary btn-sm" onclick="adminAddCampus()">Add Campus</button>
-                    </div>
-
-                    <!-- List of current universities and campuses -->
-                    <div class="card">
-                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Current Universities & Campuses</h3>
-                        <div id="admin-universities-list" style="max-height: 250px; overflow-y: auto; font-size: 13px; padding-right: 4px;">
-                            <!-- Loaded dynamically -->
-                        </div>
+                <!-- Section 5: User Responsibility -->
+                <div class="legal-section">
+                    <div class="legal-section-title">5. User Responsibility</div>
+                    <div class="legal-text">
+                        <p>Buyers are responsible for:</p>
+                        <ul>
+                            <li>Verifying product details before purchase</li>
+                            <li>Communicating clearly with vendors</li>
+                            <li>Completing transactions directly with vendors</li>
+                            <li>Meeting in public places for safety</li>
+                        </ul>
+                        <p><strong>5.1 Content Moderation</strong><br>We aim to review reported listings within 24–48 hours. We reserve the right to remove listings that violate these terms. We may suspend accounts pending investigation.</p>
                     </div>
                 </div>
 
-                <!-- Tab: Category Management -->
-                <div id="tab-admin-categories" class="tab-pane">
-                    <!-- Form to add Category -->
-                    <div class="card" style="margin-bottom: 16px;">
-                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Add Product Category</h3>
-                        <div class="form-group">
-                            <label class="form-label" for="admin-category-name">Category Name</label>
-                            <input type="text" id="admin-category-name" class="form-input" placeholder="e.g. Services, Tickets">
-                        </div>
-                        <button class="btn btn-primary btn-sm" onclick="adminAddCategory()">Add Category</button>
-                    </div>
-
-                    <!-- List of current categories -->
-                    <div class="card">
-                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Current Categories</h3>
-                        <div id="admin-categories-list" style="max-height: 250px; overflow-y: auto; font-size: 13px; padding-right: 4px;">
-                            <!-- Loaded dynamically -->
+                <!-- Section 6: Limitation of Liability -->
+                <div class="legal-section">
+                    <div class="legal-section-title">6. Limitation of Liability</div>
+                    <div class="legal-highlight-box">
+                        <div class="legal-text">
+                            <p>TO THE FULLEST EXTENT PERMITTED BY LAW:</p>
                         </div>
                     </div>
-                </div>
-
-                <!-- Tab: Deals List -->
-                <div id="tab-admin-orders" class="tab-pane">
-                    <div class="card">
-                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">All Student Deals</h3>
-                        <div id="admin-orders-list">
-                            <!-- Loaded dynamically -->
-                        </div>
+                    <div class="legal-text">
+                        <p><strong>6.1</strong> ScholarMart is provided "AS IS" without any warranties.</p>
+                        <p><strong>6.2</strong> ScholarMart is <strong>NOT</strong> responsible for:</p>
+                        <ul>
+                            <li>Any transaction between users</li>
+                            <li>Product quality, authenticity, or delivery</li>
+                            <li>Any financial loss, damage, or injury</li>
+                            <li>Any vendor misrepresentation or fraud</li>
+                            <li>Any disputes between users</li>
+                        </ul>
+                        <p><strong>6.3</strong> Users interact and transact at their own risk. ScholarMart does NOT guarantee any transaction will be completed.</p>
+                        <p><strong>6.4</strong> Total liability to any user shall not exceed ₦10,000.</p>
                     </div>
                 </div>
 
-                <!-- Tab: Testimonials Queue -->
-                <div id="tab-admin-testimonials" class="tab-pane">
-                    <div class="card">
-                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 12px;">Testimonial Review Queue</h3>
-                        <div id="admin-testimonials-list">
-                            <!-- Loaded dynamically -->
-                        </div>
+                <!-- Section 7: Indemnification -->
+                <div class="legal-section">
+                    <div class="legal-section-title">7. Indemnification</div>
+                    <div class="legal-text">
+                        <p>You agree to protect and hold ScholarMart harmless from:</p>
+                        <ul>
+                            <li>Any claims arising from your use of the platform</li>
+                            <li>Any disputes with other users</li>
+                            <li>Any violation of these terms</li>
+                            <li>Any harm caused by your products or actions</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Section 8: Account Removal -->
+                <div class="legal-section">
+                    <div class="legal-section-title">8. Account Removal</div>
+                    <div class="legal-text">
+                        <p>We may suspend or remove any vendor or user who:</p>
+                        <ul>
+                            <li>Breaks these rules</li>
+                            <li>Engages in fraud or spam</li>
+                            <li>Harms platform trust or users</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Sections 9–12: Updates, Law, Force Majeure, Contact -->
+                <div class="legal-section">
+                    <div class="legal-section-title">9. Updates</div>
+                    <div class="legal-text">
+                        <p>We may update these terms at any time. Continued use means you accept changes.</p>
+                    </div>
+                </div>
+
+                <div class="legal-section">
+                    <div class="legal-section-title">10. Governing Law</div>
+                    <div class="legal-text">
+                        <p>These terms are governed by the laws of <strong>Nigeria</strong>. Any disputes shall be resolved in Nigerian courts.</p>
+                    </div>
+                </div>
+
+                <div class="legal-section">
+                    <div class="legal-section-title">11. Force Majeure</div>
+                    <div class="legal-text">
+                        <p>We are not liable for any failure or delay caused by: natural disasters, government actions, internet outages, or any event beyond our reasonable control.</p>
+                    </div>
+                </div>
+
+                <div class="legal-section">
+                    <div class="legal-section-title">12. Contact</div>
+                    <div class="legal-contact-box">
+                        <div class="legal-contact-item">📧 contact@scholarmart.com</div>
+                        <div class="legal-contact-item">📱 WhatsApp: 07014109517</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 9. PRIVACY POLICY VIEW -->
+            <section id="privacy-view" class="view-container">
+                <button class="legal-back-btn" onclick="window.history.back()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                    Back
+                </button>
+
+                <!-- Quick nav between legal pages -->
+                <div class="legal-nav-pills">
+                    <button class="legal-nav-pill" id="terms-pill-from-privacy" onclick="window.location.hash='#/terms'">📄 Terms &amp; Conditions</button>
+                    <button class="legal-nav-pill active" id="privacy-pill" onclick="window.location.hash='#/privacy'">🔒 Privacy Policy</button>
+                </div>
+
+                <!-- Header -->
+                <div class="legal-header" style="background: linear-gradient(135deg, #1E293B 0%, #334155 100%);">
+                    <span class="legal-header-icon">🔒</span>
+                    <h1>Privacy Policy</h1>
+                    <span class="legal-header-date">Last Updated: June 2026</span>
+                </div>
+
+                <!-- Section 1: Information We Collect -->
+                <div class="legal-section">
+                    <div class="legal-section-title">1. Information We Collect</div>
+                    <div class="legal-text">
+                        <p>We may collect:</p>
+                        <ul>
+                            <li>Full Name</li>
+                            <li>Email Address</li>
+                            <li>WhatsApp Number</li>
+                            <li>University &amp; Campus</li>
+                            <li>Product listings and images</li>
+                            <li>Communication details with vendors</li>
+                        </ul>
+                        <p><strong>1.1 Legal Basis for Collecting Data</strong></p>
+                        <p>We collect your data based on:</p>
+                        <ul>
+                            <li>Your consent (you agree when you sign up)</li>
+                            <li>Contractual necessity (to connect you with buyers/sellers)</li>
+                            <li>Legitimate interest (to improve the platform)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Section 2: How We Use Information -->
+                <div class="legal-section">
+                    <div class="legal-section-title">2. How We Use Information</div>
+                    <div class="legal-text">
+                        <p>We use your data to:</p>
+                        <ul>
+                            <li>Connect buyers with vendors</li>
+                            <li>Display product listings</li>
+                            <li>Manage vendor accounts</li>
+                            <li>Improve platform experience</li>
+                            <li>Send important updates (optional)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Section 3: Data Sharing -->
+                <div class="legal-section">
+                    <div class="legal-section-title">3. Data Sharing</div>
+                    <div class="legal-text">
+                        <p>We <strong>do not sell</strong> personal data.</p>
+                        <p>We only share information:</p>
+                        <ul>
+                            <li>Between buyers and vendors (as needed for transactions)</li>
+                            <li>When required by law or school authorities</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Section 4: Data Protection -->
+                <div class="legal-section">
+                    <div class="legal-section-title">4. Data Protection</div>
+                    <div class="legal-text">
+                        <p><strong>4.1 Security Measures</strong></p>
+                        <p>We implement security measures including:</p>
+                        <ul>
+                            <li>Password encryption (hashing)</li>
+                            <li>Secure server hosting</li>
+                            <li>Access controls for admins</li>
+                        </ul>
+                        <p>However, no method is 100% secure. We cannot guarantee security for external communications like WhatsApp.</p>
+                        <p><strong>4.2 Data Retention</strong></p>
+                        <p>We keep your data as long as: you have an active account, we need it to provide service, or it is required by law. You can request deletion at any time.</p>
+                    </div>
+                </div>
+
+                <!-- Section 5: Third-Party Communication -->
+                <div class="legal-section">
+                    <div class="legal-section-title">5. Third-Party Communication</div>
+                    <div class="legal-text">
+                        <p>Transactions happen directly between users (often via WhatsApp or phone). ScholarMart is not responsible for third-party handling of data or payments.</p>
+                    </div>
+                </div>
+
+                <!-- Section 6: Your Rights -->
+                <div class="legal-section">
+                    <div class="legal-section-title">6. Your Rights</div>
+                    <div class="legal-text">
+                        <p><strong>6.1 Your Rights Under NDPA 2023</strong></p>
+                        <p>You have the right to:</p>
+                        <ul>
+                            <li>Access your data</li>
+                            <li>Correct inaccurate data</li>
+                            <li>Delete your data</li>
+                            <li>Object to processing</li>
+                            <li>Withdraw consent at any time</li>
+                        </ul>
+                        <p>To exercise these rights, contact us at <strong>privacy@scholarmart.com</strong>. We will respond within 30 days.</p>
+                    </div>
+                </div>
+
+                <!-- Section 7: Cookies -->
+                <div class="legal-section">
+                    <div class="legal-section-title">7. Cookies</div>
+                    <div class="legal-text">
+                        <p>ScholarMart may use cookies to:</p>
+                        <ul>
+                            <li>Improve user experience</li>
+                            <li>Remember login sessions</li>
+                            <li>Analyze platform usage</li>
+                        </ul>
+                        <p>You can disable cookies in your browser settings.</p>
+                    </div>
+                </div>
+
+                <!-- Section 8: Data Controller -->
+                <div class="legal-section">
+                    <div class="legal-section-title">8. Data Controller</div>
+                    <div class="legal-text">
+                        <p>ScholarMart is the data controller for your personal data. Contact us at:</p>
+                    </div>
+                    <div class="legal-contact-box">
+                        <div class="legal-contact-item">📧 privacy@scholarmart.com</div>
+                        <div class="legal-contact-item">📱 WhatsApp: 07014109517</div>
+                    </div>
+                </div>
+
+                <!-- Sections 9–10: Updates, Contact -->
+                <div class="legal-section">
+                    <div class="legal-section-title">9. Updates</div>
+                    <div class="legal-text">
+                        <p>We may update this policy at any time. Continued use means you accept changes.</p>
+                    </div>
+                </div>
+
+                <div class="legal-section">
+                    <div class="legal-section-title">10. Contact</div>
+                    <div class="legal-text">
+                        <p>For questions or requests:</p>
+                    </div>
+                    <div class="legal-contact-box">
+                        <div class="legal-contact-item">📧 privacy@scholarmart.com</div>
+                        <div class="legal-contact-item">📱 WhatsApp: 07014109517</div>
                     </div>
                 </div>
             </section>
@@ -759,6 +1282,30 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
                 Profile
+            </a>
+        </nav>
+
+        <!-- Sticky Bottom Navigation for ADMIN -->
+        <nav class="app-nav admin-only-nav" style="display: none;">
+            <a href="javascript:void(0)" class="nav-item active" id="admin-nav-dashboard" onclick="switchAdminNav('dashboard')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                Dashboard
+            </a>
+            <a href="javascript:void(0)" class="nav-item" id="admin-nav-users" onclick="switchAdminNav('users')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                Users
+            </a>
+            <a href="javascript:void(0)" class="nav-item" id="admin-nav-listings" onclick="switchAdminNav('listings')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72M6.75 18h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .414.336.75.75.75z" /></svg>
+                Listings
+            </a>
+            <a href="javascript:void(0)" class="nav-item" id="admin-nav-reports" onclick="switchAdminNav('reports')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                Reports
+            </a>
+            <a href="javascript:void(0)" class="nav-item" id="admin-nav-settings" onclick="switchAdminNav('settings')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                Settings
             </a>
         </nav>
 

@@ -19,11 +19,11 @@ function getClientBadgeInfo(dealsCompleted, averageRating) {
     if (dealsCompleted >= 50 && averageRating >= 4.5) {
         return { emoji: '🏆', label: 'Top Seller', cssClass: 'badge-top' };
     } else if (dealsCompleted >= 10 && averageRating >= 4.0) {
-        return { emoji: '⭐', label: 'Trusted', cssClass: 'badge-trusted' };
+        return { emoji: '⭐', label: 'Trusted by Community', cssClass: 'badge-trusted' };
     } else if (dealsCompleted >= 3) {
-        return { emoji: '🟡', label: 'Active', cssClass: 'badge-active' };
+        return { emoji: '🟡', label: 'Active Seller', cssClass: 'badge-active' };
     }
-    return { emoji: '🟢', label: 'New', cssClass: 'badge-new' };
+    return { emoji: '🟢', label: 'New on Scholarmart', cssClass: 'badge-new' };
 }
 
 // 1. Fetch products from API and render cards
@@ -107,7 +107,7 @@ async function loadMarketplaceProducts() {
                         <div class="product-card-body">
                             <span class="product-card-category">${product.category}</span>
                             <h4 class="product-card-name">${product.name}</h4>
-                            <div class="product-card-price">₦${parseFloat(product.price).toLocaleString()}</div>
+                            <div class="product-card-price">&#8358;${parseFloat(product.price).toLocaleString()}</div>
                             
                             <div class="product-card-footer">
                                 <div class="product-vendor-badge">
@@ -116,6 +116,7 @@ async function loadMarketplaceProducts() {
                                 </div>
                                 <span class="product-card-campus">${product.campus}</span>
                             </div>
+                            ${averageRating > 0 ? `<div class="product-card-rating">${renderStarBar(averageRating)} <span>${averageRating.toFixed(1)}</span></div>` : '<div class="product-card-rating" style="color: var(--text-muted);">No ratings yet</div>'}
                         </div>
                     </div>
                 `;
@@ -171,7 +172,7 @@ async function loadHomeFeatured() {
                         <div class="product-card-body">
                             <span class="product-card-category">${product.category}</span>
                             <h4 class="product-card-name">${product.name}</h4>
-                            <div class="product-card-price">₦${parseFloat(product.price).toLocaleString()}</div>
+                            <div class="product-card-price">&#8358;${parseFloat(product.price).toLocaleString()}</div>
                             
                             <div class="product-card-footer">
                                 <div class="product-vendor-badge">
@@ -180,6 +181,7 @@ async function loadHomeFeatured() {
                                 </div>
                                 <span class="product-card-campus">${product.campus}</span>
                             </div>
+                            ${averageRating > 0 ? `<div class="product-card-rating">${renderStarBar(averageRating)} <span>${averageRating.toFixed(1)}</span></div>` : '<div class="product-card-rating" style="color: var(--text-muted);">No ratings yet</div>'}
                         </div>
                     </div>
                 `;
@@ -460,6 +462,19 @@ function updateRatingStarsUI(rating) {
     });
 }
 
+// Helper: render a visual filled star bar (out of 5)
+function renderStarBar(rating) {
+    const full = Math.floor(rating);
+    const half = rating - full >= 0.5;
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= full) stars += '⭐';
+        else if (i === full + 1 && half) stars += '✨';
+        else stars += '☆';
+    }
+    return `<span style="font-size: 11px; letter-spacing: 1px;">${stars}</span>`;
+}
+
 async function handleRateSellerClick() {
     if (!currentToken) {
         Toast.show('Please login to rate this seller!', 'warning');
@@ -467,14 +482,19 @@ async function handleRateSellerClick() {
         return;
     }
 
+    // Buyers cannot rate themselves
+    if (currentUser && currentUser.role === 'vendor') {
+        Toast.show('Vendors cannot rate other vendors. Switch to a buyer account.', 'warning');
+        return;
+    }
+
     const hash = window.location.hash;
     if (!hash.startsWith('#/products/')) return;
     const productId = parseInt(hash.split('/').pop(), 10);
 
-    const loader = Toast.show('Checking transaction status...', 'loading');
+    const loader = Toast.show('Loading vendor info...', 'loading');
 
     try {
-        // Fetch current product details to get the vendor ID
         const prodRes = await fetch(`/api/products/${productId}`);
         const prodData = await prodRes.json();
 
@@ -483,35 +503,25 @@ async function handleRateSellerClick() {
             return;
         }
 
-        const vendorId = prodData.product.vendor.id;
+        const vendor = prodData.product.vendor;
 
-        // Fetch buyer's deals
-        const dealsRes = await fetch('/api/orders/buyer', {
-            headers: { 'Authorization': `Bearer ${currentToken}` }
-        });
-        const dealsData = await dealsRes.json();
-
-        if (dealsData.status !== 'success') {
-            Toast.update(loader, 'Failed to fetch deals history', 'error');
+        // Prevent rating your own listing
+        if (currentUser && vendor.id === currentUser.id) {
+            Toast.update(loader, 'You cannot rate your own listing.', 'warning');
             return;
         }
 
-        // Find completed deals from this vendor that are NOT rated yet
-        const unratedDeal = (dealsData.deals || []).find(d => 
-            d.vendor_id === vendorId && 
-            d.status === 'completed' && 
-            !d.rating
-        );
+        // Store vendor ID for submission
+        currentRatingDealId = null; // no deal needed
+        window._ratingVendorId = vendor.id;
+        window._ratingVendorName = vendor.name;
 
-        if (!unratedDeal) {
-            Toast.update(loader, 'You can only rate a seller after completing a deal. Ask the seller to mark the product as sold to you!', 'warning', 5000);
-            return;
-        }
-
-        // Found an unrated completed deal!
-        currentRatingDealId = unratedDeal.id;
         const idInput = document.getElementById('rate-deal-id');
-        if (idInput) idInput.value = unratedDeal.id;
+        if (idInput) idInput.value = vendor.id; // repurpose hidden field for vendor ID
+
+        // Update modal heading to show vendor name
+        const heading = document.querySelector('#rate-seller-modal-overlay .modal-header h3');
+        if (heading) heading.textContent = `Rate ${vendor.name}`;
 
         Toast.dismiss(loader);
         toggleRateSellerModal(true);
@@ -522,22 +532,27 @@ async function handleRateSellerClick() {
 
 async function submitRateSeller(event) {
     event.preventDefault();
-    if (!currentRatingDealId) return;
 
     const valInput = document.getElementById('rate-stars-value');
     const rating = valInput ? parseInt(valInput.value, 10) : 0;
     const reviewInput = document.getElementById('rate-review');
-    const review = reviewInput ? reviewInput.value : '';
+    const review = reviewInput ? reviewInput.value.trim() : '';
 
     if (!rating || rating < 1 || rating > 5) {
         Toast.show('Please select a star rating!', 'warning');
         return;
     }
 
+    const vendorId = window._ratingVendorId;
+    if (!vendorId) {
+        Toast.show('Could not identify vendor to rate.', 'error');
+        return;
+    }
+
     const loader = Toast.show('Submitting rating...', 'loading');
 
     try {
-        const response = await fetch(`/api/orders/${currentRatingDealId}/rate`, {
+        const response = await fetch(`/api/vendors/${vendorId}/rate`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${currentToken}`,
@@ -550,7 +565,9 @@ async function submitRateSeller(event) {
         if (data.status === 'success') {
             Toast.update(loader, 'Thank you! Rating submitted successfully.', 'success');
             toggleRateSellerModal(false);
-            
+            window._ratingVendorId = null;
+            window._ratingVendorName = null;
+
             // Reload product details to update the vendor rating UI immediately
             const hash = window.location.hash;
             if (hash.startsWith('#/products/')) {
@@ -564,3 +581,42 @@ async function submitRateSeller(event) {
         Toast.update(loader, 'Network error.', 'error');
     }
 }
+
+// 7. Share product details link via native Share API or copy to clipboard fallback
+function shareProductLink() {
+    const shareUrl = window.location.href;
+    const productName = document.getElementById('details-name').textContent || 'Product';
+    
+    if (navigator.share) {
+        navigator.share({
+            title: productName + ' - ScholarMart',
+            text: `Check out this listing on ScholarMart: ${productName}`,
+            url: shareUrl
+        }).then(() => {
+            Toast.show('Shared successfully!', 'success');
+        }).catch((err) => {
+            if (err.name !== 'AbortError') {
+                copyShareLinkToClipboard(shareUrl);
+            }
+        });
+    } else {
+        copyShareLinkToClipboard(shareUrl);
+    }
+}
+
+function copyShareLinkToClipboard(url) {
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            Toast.show('Product link copied to clipboard!', 'success');
+        })
+        .catch(() => {
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            Toast.show('Product link copied to clipboard!', 'success');
+        });
+}
+

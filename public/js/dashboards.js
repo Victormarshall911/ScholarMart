@@ -666,10 +666,66 @@ document.addEventListener('DOMContentLoaded', () => {
    ======================================================== */
 
 // Load Admin report stats and active tables
+// Load Admin report stats and active tables
 async function loadAdminDashboard() {
     if (!currentToken || currentUser.role !== 'admin') return;
 
-    // Load reports & analytics
+    document.body.classList.add('admin-mode');
+    switchAdminNav('dashboard');
+}
+
+// Switch Admin panes (Dashboard, Users, Listings, Reports, Settings)
+function switchAdminNav(paneId) {
+    // 1. Update active states on sidebar
+    document.querySelectorAll('.admin-sidebar-nav .admin-side-item').forEach(item => {
+        if (item.id === `admin-side-${paneId}`) item.classList.add('active');
+        else item.classList.remove('active');
+    });
+    
+    // 2. Update active states on mobile bottom nav
+    document.querySelectorAll('.admin-only-nav .nav-item').forEach(item => {
+        if (item.id === `admin-nav-${paneId}`) item.classList.add('active');
+        else item.classList.remove('active');
+    });
+
+    // 3. Update active pane
+    document.querySelectorAll('.admin-main-area .admin-pane').forEach(pane => {
+        if (pane.id === `admin-pane-${paneId}`) pane.classList.add('active');
+        else pane.classList.remove('active');
+    });
+
+    // Update Mobile header title
+    const titleEl = document.getElementById('admin-mobile-title');
+    if (titleEl) {
+        const titleMap = {
+            'dashboard': 'Admin Dashboard',
+            'users': 'Users Management',
+            'listings': 'Listings Moderation',
+            'reports': 'Community Reports',
+            'settings': 'Settings & Campuses'
+        };
+        titleEl.textContent = titleMap[paneId] || 'Admin Console';
+    }
+
+    // 4. Trigger appropriate loads
+    if (paneId === 'dashboard') {
+        loadAdminOrders();
+        loadAdminReportStats();
+    } else if (paneId === 'users') {
+        loadAdminUsers();
+    } else if (paneId === 'listings') {
+        loadAdminModeration();
+    } else if (paneId === 'reports') {
+        loadAdminReports();
+    } else if (paneId === 'settings') {
+        loadAdminUniversities();
+        loadAdminCategories();
+        loadAdminTestimonials();
+    }
+}
+
+// Load stats for dashboard top cards
+async function loadAdminReportStats() {
     try {
         const response = await fetch('/api/admin/reports', {
             headers: { 'Authorization': `Bearer ${currentToken}` }
@@ -685,12 +741,6 @@ async function loadAdminDashboard() {
     } catch(e) {
         console.warn('Failed to load admin analytics reports.');
     }
-
-    // Load active tab panel data
-    loadAdminReports();
-    loadAdminModeration();
-    loadAdminUsers();
-    loadAdminUniversities();
 }
 
 // Load community reports
@@ -806,12 +856,35 @@ async function moderateProductListing(productId, action) {
     }
 }
 
-// Load all registered users table
-async function loadAdminUsers() {
-    const tbody = document.getElementById('admin-users-table-body');
-    if (!tbody) return;
+/* =========================================================
+   ADMIN USER MANAGEMENT — FULL FEATURED
+   ========================================================= */
 
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;"><div class="toast-spinner" style="margin:0 auto;"></div></td></tr>';
+let allAdminUsers = [];          // master list from server
+let filteredAdminUsers = [];     // after search/filter/sort
+
+function getWhatsAppLink(phone) {
+    if (!phone) return '#';
+    let cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('0') && cleaned.length === 11) {
+        cleaned = '234' + cleaned.substring(1);
+    } else if (cleaned.length === 10 && !cleaned.startsWith('234')) {
+        cleaned = '234' + cleaned;
+    }
+    return `https://wa.me/${cleaned}`;
+}
+let adminUserSort = { field: 'created_at', dir: 'desc' };
+let adminUserPage = 1;
+let adminUserPerPage = 10;
+let selectedUserIds = new Set();
+let activeModalUserId = null;
+
+// Load all users from server → populate UI
+async function loadAdminUsers() {
+    const container = document.getElementById('admin-users-container');
+    if (!container) return;
+
+    container.innerHTML = '<div style="text-align:center;padding:30px;"><div class="toast-spinner" style="margin:0 auto;"></div></div>';
 
     try {
         const response = await fetch('/api/admin/users', {
@@ -820,99 +893,705 @@ async function loadAdminUsers() {
         const data = await response.json();
 
         if (data.status === 'success') {
-            const users = data.users;
-            
-            tbody.innerHTML = users.map(u => {
-                const isSuspended = u.status === 'suspended';
-                const statusBadge = isSuspended ? '<span class="badge badge-rejected">SUSPENDED</span>' : '<span class="badge badge-approved">ACTIVE</span>';
-                
-                const actionBtn = isSuspended ? 
-                    `<button class="btn btn-primary btn-sm" onclick="suspendUserAccount(${u.id}, 'active')" style="padding:4px 8px; width:auto; font-size:10px;">Activate</button>` :
-                    `<button class="btn btn-secondary btn-sm" onclick="suspendUserAccount(${u.id}, 'suspended')" style="padding:4px 8px; width:auto; font-size:10px; background-color:#FEE2E2; color:#DC2626;">Suspend</button>`;
+            allAdminUsers = data.users;
+            selectedUserIds.clear();
 
-                const resetBtn = `<button class="btn btn-secondary btn-sm" onclick="resetUserPassword(${u.id})" style="padding:4px 8px; width:auto; font-size:10px; margin-left: 4px;">Reset</button>`;
+            // Populate campus filter dropdown with unique values
+            const campusSelect = document.getElementById('admin-filter-campus');
+            if (campusSelect) {
+                const campuses = [...new Set(allAdminUsers.map(u => u.campus).filter(Boolean))].sort();
+                campusSelect.innerHTML = '<option value="">All Campuses</option>' +
+                    campuses.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
 
-                return `
-                    <tr>
-                        <td>
-                            <div style="font-weight: 700;">${u.name}</div>
-                            <div style="font-size: 10px; color: var(--text-secondary);">${u.email}</div>
-                        </td>
-                        <td style="text-transform: capitalize;">${u.role}</td>
-                        <td>${statusBadge}</td>
-                        <td>
-                            <div style="display:flex;">
-                                ${actionBtn}
-                                ${resetBtn}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            updateAdminUserStats();
+            filterAdminUsers();
+        } else {
+            container.innerHTML = '<p style="color:var(--danger);text-align:center;padding:20px;">Failed to load users.</p>';
         }
     } catch(e) {
-        tbody.innerHTML = '<tr><td colspan="4" style="color:var(--danger); text-align:center;">Failed to load users list.</td></tr>';
+        container.innerHTML = '<p style="color:var(--danger);text-align:center;padding:20px;">Connection error loading users.</p>';
     }
 }
 
-// Suspend/Reactivate user account
-async function suspendUserAccount(userId, targetStatus) {
-    const loader = Toast.show('Updating account state...', 'loading');
-
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/status`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${currentToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: targetStatus })
-        });
-        const data = await response.json();
-
-        if (data.status === 'success') {
-            Toast.update(loader, `User account state set to: ${targetStatus}`, 'success');
-            loadAdminDashboard();
-        } else {
-            Toast.update(loader, data.message || 'Action failed', 'error');
-        }
-    } catch (err) {
-        Toast.update(loader, 'Connection error.', 'error');
-    }
+// Update stats cards from master list
+function updateAdminUserStats() {
+    const users = allAdminUsers;
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('aus-total',     users.length);
+    setEl('aus-active',    users.filter(u => u.status === 'active').length);
+    setEl('aus-suspended', users.filter(u => u.status === 'suspended' || u.status === 'banned').length);
+    setEl('aus-vendors',   users.filter(u => u.role === 'vendor').length);
 }
 
-// Reset password for student
-async function resetUserPassword(userId) {
-    const newPassword = prompt('Enter a new password for this user (minimum 8 characters):');
-    if (!newPassword) return;
+// Apply search + role/status/campus filters + sort → re-render
+function filterAdminUsers() {
+    const query  = (document.getElementById('admin-user-search')?.value  || '').toLowerCase().trim();
+    const role   = document.getElementById('admin-filter-role')?.value   || '';
+    const status = document.getElementById('admin-filter-status')?.value || '';
+    const campus = document.getElementById('admin-filter-campus')?.value || '';
 
-    if (newPassword.length < 8) {
-        alert('Password is too short (min 8 characters).');
+    filteredAdminUsers = allAdminUsers.filter(u => {
+        if (query  && !u.name.toLowerCase().includes(query) && !u.email.toLowerCase().includes(query)) return false;
+        if (role   && u.role   !== role)   return false;
+        if (status && u.status !== status) return false;
+        if (campus && u.campus !== campus) return false;
+        return true;
+    });
+
+    // Sort
+    filteredAdminUsers.sort((a, b) => {
+        let av = a[adminUserSort.field], bv = b[adminUserSort.field];
+        if (typeof av === 'string') av = av.toLowerCase();
+        if (typeof bv === 'string') bv = bv.toLowerCase();
+        if (av < bv) return adminUserSort.dir === 'asc' ? -1 : 1;
+        if (av > bv) return adminUserSort.dir === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    adminUserPage = 1;
+    document.getElementById('admin-select-all').checked = false;
+    renderAdminUsersPage();
+}
+
+// Sort when column header clicked
+function adminSortUsers(field) {
+    if (adminUserSort.field === field) {
+        adminUserSort.dir = adminUserSort.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+        adminUserSort.field = field;
+        adminUserSort.dir = 'asc';
+    }
+    // Update header arrows
+    document.querySelectorAll('.admin-users-table th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.sort === field) th.classList.add(adminUserSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    });
+    filterAdminUsers();
+}
+
+// Render current page slice
+function renderAdminUsersPage() {
+    const container = document.getElementById('admin-users-container');
+    const isMobile  = window.innerWidth < 640;
+    const start = (adminUserPage - 1) * adminUserPerPage;
+    const pageUsers = filteredAdminUsers.slice(start, start + adminUserPerPage);
+
+    if (filteredAdminUsers.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-secondary);font-size:13px;">No users match your filters.</div>';
+        renderAdminPagination();
         return;
     }
 
-    const loader = Toast.show('Resetting password...', 'loading');
+    if (isMobile) {
+        renderAdminUserCards(container, pageUsers);
+    } else {
+        renderAdminUserTable(container, pageUsers);
+    }
 
-    try {
-        const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${currentToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ newPassword })
-        });
-        const data = await response.json();
+    renderAdminPagination();
+    updateSelectedCount();
+}
 
-        if (data.status === 'success') {
-            Toast.update(loader, data.message, 'success');
-        } else {
-            Toast.update(loader, data.message || 'Password reset failed', 'error');
+// Desktop table renderer
+function renderAdminUserTable(container, users) {
+    const trustBadgeHtml = (badge) => {
+        if (!badge) return '—';
+        const map = {
+            'Top Seller': 'badge-top',
+            'Trusted by Community': 'badge-trusted',
+            'Active Seller': 'badge-active',
+            'New on Scholarmart': 'badge-new'
+        };
+        const cls = map[badge.label] || 'badge-new';
+        return `<span class="au-trust-badge ${cls}">${badge.emoji} ${badge.label}</span>`;
+    };
+
+    const statusLabelMap = {
+        'active': '🟢 Active',
+        'suspended': '🔴 Suspended',
+        'pending': '🟡 Pending',
+        'banned': '🔴 Banned'
+    };
+
+    const rows = users.map(u => {
+        const initials = u.name.substring(0, 2).toUpperCase();
+        const avatarInner = u.portrait
+            ? `<img src="${u.portrait}" alt="${u.name}">`
+            : initials;
+        const statusCls = `status-${u.status || 'active'}`;
+        const roleCls   = `role-${u.role}`;
+        const isSuspended = u.status === 'suspended' || u.status === 'banned';
+        const suspendBtn = isSuspended
+            ? `<button class="au-action-btn activate" onclick="adminQuickStatusUpdate(${u.id},'active')">✓ Activate</button>`
+            : `<button class="au-action-btn suspend"  onclick="adminQuickStatusUpdate(${u.id},'suspended')">🚫 Suspend</button>`;
+        const joinedDate = u.created_at
+            ? new Date(u.created_at).toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'2-digit' })
+            : '—';
+        const lastLoginDate = u.last_login
+            ? new Date(u.last_login).toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'2-digit' })
+            : joinedDate;
+
+        const isSelected = selectedUserIds.has(u.id);
+        const statusLabel = statusLabelMap[u.status] || '🟢 Active';
+
+        return `
+            <tr class="${isSelected ? 'selected-row' : ''}" id="user-row-${u.id}">
+                <td><input type="checkbox" class="au-row-check" ${isSelected ? 'checked' : ''} onchange="adminToggleUserSelect(${u.id}, this.checked)"></td>
+                <td>
+                    <div class="au-user-cell">
+                        <div class="au-avatar">${avatarInner}</div>
+                        <div class="au-name" style="font-weight: 700;">${u.name}</div>
+                    </div>
+                </td>
+                <td>${u.email}</td>
+                <td>
+                    ${u.whatsapp_number 
+                        ? `<a href="${getWhatsAppLink(u.whatsapp_number)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary-green);text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:3px;" title="Message on WhatsApp">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color:#25D366;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.407.003 9.806-4.388 9.809-9.799.001-2.621-1.02-5.085-2.876-6.944C16.35 1.997 13.89 1.016 11.272 1.015c-5.41 0-9.813 4.394-9.816 9.806-.001 1.716.452 3.39 1.31 4.87L1.75 20.366l4.897-1.212zM17.51 14.3c-.307-.154-1.82-.9-2.1-.998-.28-.1-.482-.15-.68.15-.2.3-.77.962-.94 1.157-.17.195-.34.22-.647.066-.307-.153-1.3-.48-2.478-1.533-.915-.817-1.534-1.826-1.713-2.133-.18-.307-.02-.473.136-.626.14-.137.31-.35.46-.525.15-.176.2-.3.3-.5.1-.2.05-.375-.025-.53-.075-.153-.68-1.63-.93-2.24-.244-.587-.49-.508-.68-.517-.175-.008-.375-.01-.575-.01-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5s1.07 2.9 1.225 3.1c.15.2 2.1 3.2 5.082 4.5.71.31 1.265.495 1.7.633.71.226 1.356.194 1.867.118.57-.085 1.82-.743 2.076-1.46.257-.718.257-1.333.18-1.46-.078-.127-.278-.205-.586-.358z"/></svg>
+                            <span>${u.whatsapp_number}</span>
+                         </a>` 
+                        : '—'
+                    }
+                </td>
+                <td><span class="au-badge ${roleCls}">${u.role}</span></td>
+                <td><span class="au-badge ${statusCls}">${statusLabel}</span></td>
+                <td>${u.university || 'COOU'}</td>
+                <td>${u.campus || '—'}</td>
+                <td style="font-weight:700;color:var(--primary-green);">${u.deals_completed || 0}</td>
+                <td>${trustBadgeHtml(u.badge)}</td>
+                <td style="color:var(--text-secondary);">${joinedDate}</td>
+                <td style="color:var(--text-secondary);">${lastLoginDate}</td>
+                <td>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;max-width:220px;">
+                        <button class="au-action-btn view" onclick="openUserDetailModal(${u.id})">👁️ View Details</button>
+                        ${suspendBtn}
+                        <button class="au-action-btn reset" onclick="adminResetPasswordById(${u.id},'${u.name}')">🔄 Reset PW</button>
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+        <div class="admin-users-table-wrap">
+            <table class="admin-users-table">
+                <thead>
+                    <tr>
+                        <th style="width:32px;"></th>
+                        <th data-sort="name" onclick="adminSortUsers('name')">Name</th>
+                        <th data-sort="email" onclick="adminSortUsers('email')">Email</th>
+                        <th>WhatsApp</th>
+                        <th data-sort="role" onclick="adminSortUsers('role')">Role</th>
+                        <th data-sort="status" onclick="adminSortUsers('status')">Status</th>
+                        <th data-sort="university" onclick="adminSortUsers('university')">University</th>
+                        <th data-sort="campus" onclick="adminSortUsers('campus')">Campus</th>
+                        <th data-sort="deals_completed" onclick="adminSortUsers('deals_completed')">Deals</th>
+                        <th>Badge</th>
+                        <th data-sort="created_at" onclick="adminSortUsers('created_at')">Joined</th>
+                        <th data-sort="last_login" onclick="adminSortUsers('last_login')">Last Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+
+    // Mark current sort column
+    document.querySelectorAll('.admin-users-table th[data-sort]').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.sort === adminUserSort.field) {
+            th.classList.add(adminUserSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
         }
-    } catch (err) {
-        Toast.update(loader, 'Connection error.', 'error');
+    });
+}
+
+// Mobile card renderer
+function renderAdminUserCards(container, users) {
+    const statusLabelMap = {
+        'active': '🟢 Active',
+        'suspended': '🔴 Suspended',
+        'pending': '🟡 Pending',
+        'banned': '🔴 Banned'
+    };
+
+    const cards = users.map(u => {
+        const initials = u.name.substring(0, 2).toUpperCase();
+        const avatarInner = u.portrait ? `<img src="${u.portrait}" alt="${u.name}">` : initials;
+        const statusCls = `status-${u.status || 'active'}`;
+        const roleCls   = `role-${u.role}`;
+        const isSuspended = u.status === 'suspended' || u.status === 'banned';
+        const suspendBtnMobile = isSuspended
+            ? `<button class="au-action-btn activate" onclick="adminQuickStatusUpdate(${u.id},'active')" style="flex:1; font-size: 11px; padding: 6px;">✓ Activate</button>`
+            : `<button class="au-action-btn suspend"  onclick="adminQuickStatusUpdate(${u.id},'suspended')" style="flex:1; font-size: 11px; padding: 6px;">🚫 Suspend</button>`;
+        const isSelected = selectedUserIds.has(u.id);
+
+        const map = {
+            'Top Seller': 'badge-top',
+            'Trusted by Community': 'badge-trusted',
+            'Active Seller': 'badge-active',
+            'New on Scholarmart': 'badge-new'
+        };
+        const badgeCls = u.badge ? (map[u.badge.label] || 'badge-new') : 'badge-new';
+        const badgeHtml = u.badge
+            ? `<span class="au-trust-badge ${badgeCls}">${u.badge.emoji} ${u.badge.label}</span>`
+            : '<span class="au-trust-badge badge-new">🟢 New on Scholarmart</span>';
+
+        const statusLabel = statusLabelMap[u.status] || '🟢 Active';
+
+        return `
+            <div class="admin-user-card ${isSelected ? 'selected-row' : ''}" id="user-card-${u.id}">
+                <input type="checkbox" class="au-card-check" ${isSelected ? 'checked' : ''} onchange="adminToggleUserSelect(${u.id}, this.checked)" style="position: absolute; top: 12px; right: 12px; z-index: 10;">
+                <div class="au-card-header">
+                    <div class="au-avatar" style="width:38px;height:38px;font-size:13px;">${avatarInner}</div>
+                    <div>
+                        <div class="au-name" style="font-weight: 800; font-size: 15px;">${u.name}</div>
+                        <div class="au-email" style="font-size: 12px; color: var(--text-secondary);">📧 ${u.email}</div>
+                    </div>
+                </div>
+                <div class="au-card-meta" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;">
+                    <span class="au-badge ${roleCls}">🏷️ ${u.role}</span>
+                    <span class="au-badge ${statusCls}">${statusLabel}</span>
+                    ${badgeHtml}
+                    <span class="deals-badge" style="font-size: 11px; font-weight: 700; color: var(--primary-green);">📊 ${u.deals_completed || 0} deals</span>
+                </div>
+                <div class="au-card-info-row" style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
+                    📱 WhatsApp: 
+                    ${u.whatsapp_number 
+                        ? `<a href="${getWhatsAppLink(u.whatsapp_number)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary-green);text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:3px;" title="Message on WhatsApp">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:#25D366;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.407.003 9.806-4.388 9.809-9.799.001-2.621-1.02-5.085-2.876-6.944C16.35 1.997 13.89 1.016 11.272 1.015c-5.41 0-9.813 4.394-9.816 9.806-.001 1.716.452 3.39 1.31 4.87L1.75 20.366l4.897-1.212zM17.51 14.3c-.307-.154-1.82-.9-2.1-.998-.28-.1-.482-.15-.68.15-.2.3-.77.962-.94 1.157-.17.195-.34.22-.647.066-.307-.153-1.3-.48-2.478-1.533-.915-.817-1.534-1.826-1.713-2.133-.18-.307-.02-.473.136-.626.14-.137.31-.35.46-.525.15-.176.2-.3.3-.5.1-.2.05-.375-.025-.53-.075-.153-.68-1.63-.93-2.24-.244-.587-.49-.508-.68-.517-.175-.008-.375-.01-.575-.01-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5s1.07 2.9 1.225 3.1c.15.2 2.1 3.2 5.082 4.5.71.31 1.265.495 1.7.633.71.226 1.356.194 1.867.118.57-.085 1.82-.743 2.076-1.46.257-.718.257-1.333.18-1.46-.078-.127-.278-.205-.586-.358z"/></svg>
+                            <span>${u.whatsapp_number}</span>
+                         </a>` 
+                        : 'Not set'
+                    }
+                </div>
+                <div class="au-card-actions" style="margin-top: 12px; border-top: 1px solid var(--border); padding-top: 8px; display: flex; gap: 4px; flex-wrap: wrap;">
+                    <button class="au-action-btn view" onclick="openUserDetailModal(${u.id})" style="flex:1; font-size: 11px; padding: 6px;">👁️ View Details</button>
+                    ${suspendBtnMobile}
+                    <button class="au-action-btn reset" onclick="adminResetPasswordById(${u.id},'${u.name}')" style="flex:1; font-size: 11px; padding: 6px;">🔄 Reset PW</button>
+                </div>
+            </div>`;
+    }).join('');
+
+    container.innerHTML = `<div class="admin-user-cards">${cards}</div>`;
+}
+
+// Pagination renderer
+function renderAdminPagination() {
+    const total   = filteredAdminUsers.length;
+    const pages   = Math.ceil(total / adminUserPerPage) || 1;
+    const start   = Math.min((adminUserPage - 1) * adminUserPerPage + 1, total);
+    const end     = Math.min(adminUserPage * adminUserPerPage, total);
+
+    const infoEl  = document.getElementById('admin-page-info');
+    const numsEl  = document.getElementById('admin-page-nums');
+    const prevBtn = document.getElementById('admin-prev-btn');
+    const nextBtn = document.getElementById('admin-next-btn');
+
+    if (infoEl) infoEl.textContent = total > 0 ? `Showing ${start}–${end} of ${total} users` : 'No results';
+    if (prevBtn) prevBtn.disabled = adminUserPage <= 1;
+    if (nextBtn) nextBtn.disabled = adminUserPage >= pages;
+
+    if (numsEl) {
+        // Show up to 5 page numbers centred on current page
+        const half = 2;
+        let pStart = Math.max(1, adminUserPage - half);
+        let pEnd   = Math.min(pages, pStart + 4);
+        pStart = Math.max(1, pEnd - 4);
+
+        let html = '';
+        if (pStart > 1) html += `<button class="admin-page-num" onclick="adminGoToPage(1)">1</button>${pStart > 2 ? '<span style="align-self:center;font-size:11px;color:var(--text-muted);">…</span>' : ''}`;
+        for (let p = pStart; p <= pEnd; p++) {
+            html += `<button class="admin-page-num ${p === adminUserPage ? 'active-page' : ''}" onclick="adminGoToPage(${p})">${p}</button>`;
+        }
+        if (pEnd < pages) html += `${pEnd < pages - 1 ? '<span style="align-self:center;font-size:11px;color:var(--text-muted);">…</span>' : ''}<button class="admin-page-num" onclick="adminGoToPage(${pages})">${pages}</button>`;
+        numsEl.innerHTML = html;
     }
 }
+
+function adminGoToPage(page) {
+    adminUserPage = page;
+    renderAdminUsersPage();
+}
+
+function adminChangePage(delta) {
+    const pages = Math.ceil(filteredAdminUsers.length / adminUserPerPage) || 1;
+    adminUserPage = Math.max(1, Math.min(pages, adminUserPage + delta));
+    renderAdminUsersPage();
+}
+
+function adminSetPerPage(val) {
+    adminUserPerPage = parseInt(val, 10) || 10;
+    adminUserPage = 1;
+    renderAdminUsersPage();
+}
+
+// Select all / individual toggles
+function adminToggleSelectAll(checked) {
+    const start = (adminUserPage - 1) * adminUserPerPage;
+    const pageUsers = filteredAdminUsers.slice(start, start + adminUserPerPage);
+    pageUsers.forEach(u => {
+        if (checked) selectedUserIds.add(u.id);
+        else selectedUserIds.delete(u.id);
+    });
+    renderAdminUsersPage();
+}
+
+function adminToggleUserSelect(userId, checked) {
+    if (checked) selectedUserIds.add(userId);
+    else selectedUserIds.delete(userId);
+    const row = document.getElementById(`user-row-${userId}`) || document.getElementById(`user-card-${userId}`);
+    if (row) row.classList.toggle('selected-row', checked);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const el = document.getElementById('admin-selected-count');
+    if (el) el.textContent = selectedUserIds.size > 0 ? `${selectedUserIds.size} selected` : '';
+}
+
+// Bulk actions
+async function adminBulkAction() {
+    const action = document.getElementById('admin-bulk-action-select')?.value;
+    if (!action) { Toast.show('Please select a bulk action', 'warning'); return; }
+
+    if (action === 'export') { exportAdminUsersCSV(); return; }
+
+    if (selectedUserIds.size === 0) { Toast.show('No users selected', 'warning'); return; }
+
+    if (action === 'delete') {
+        if (!confirm(`Are you sure you want to permanently delete these ${selectedUserIds.size} user(s) and all their listings/deals? This action cannot be undone.`)) return;
+        const loader = Toast.show(`Deleting ${selectedUserIds.size} user(s)...`, 'loading');
+        let success = 0;
+        for (const uid of selectedUserIds) {
+            try {
+                const res = await fetch(`/api/admin/users/${uid}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                const d = await res.json();
+                if (d.status === 'success') success++;
+            } catch(e) {}
+        }
+        Toast.update(loader, `Done! ${success} of ${selectedUserIds.size} users deleted.`, 'success');
+        selectedUserIds.clear();
+        loadAdminUsers();
+        return;
+    }
+
+    const targetStatus = action === 'suspend' ? 'suspended' : 'active';
+    const label = action === 'suspend' ? 'Suspending' : 'Activating';
+    const loader = Toast.show(`${label} ${selectedUserIds.size} user(s)...`, 'loading');
+
+    let success = 0;
+    for (const uid of selectedUserIds) {
+        try {
+            const res = await fetch(`/api/admin/users/${uid}/status`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${currentToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: targetStatus })
+            });
+            const d = await res.json();
+            if (d.status === 'success') success++;
+        } catch(e) {}
+    }
+
+    Toast.update(loader, `Done! ${success} of ${selectedUserIds.size} users updated.`, 'success');
+    selectedUserIds.clear();
+    loadAdminUsers();
+}
+
+// Export visible filtered users to CSV
+function exportAdminUsersCSV() {
+    const headers = ['ID','Name','Email','WhatsApp','Role','Status','University','Campus','Deals','Avg Rating','Joined'];
+    const rows = filteredAdminUsers.map(u => [
+        u.id, u.name, u.email, u.whatsapp_number || '',
+        u.role, u.status, u.university || '', u.campus || '',
+        u.deals_completed || 0, u.average_rating || 0,
+        u.created_at ? new Date(u.created_at).toLocaleDateString('en-NG') : ''
+    ]);
+
+    const csvContent = [headers, ...rows]
+        .map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))
+        .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `scholarmart_users_${Date.now()}.csv`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    Toast.show(`Exported ${filteredAdminUsers.length} users as CSV`, 'success');
+}
+
+// Quick status update from row button (no modal)
+async function adminQuickStatusUpdate(userId, status) {
+    const loader = Toast.show('Updating status...', 'loading');
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/status`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${currentToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        const d = await res.json();
+        if (d.status === 'success') {
+            Toast.update(loader, d.message, 'success');
+            // Update local cache & re-render without full reload
+            const u = allAdminUsers.find(x => x.id === userId);
+            if (u) u.status = status;
+            updateAdminUserStats();
+            renderAdminUsersPage();
+        } else {
+            Toast.update(loader, d.message || 'Update failed', 'error');
+        }
+    } catch(e) {
+        Toast.update(loader, 'Connection error', 'error');
+    }
+}
+
+// Password reset from row button
+async function adminResetPasswordById(userId, userName) {
+    const newPassword = prompt(`Reset password for ${userName}:\nEnter new password (min 8 characters):`);
+    if (!newPassword) return;
+    if (newPassword.length < 8) { Toast.show('Password must be at least 8 characters', 'warning'); return; }
+    const loader = Toast.show('Resetting password...', 'loading');
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${currentToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newPassword })
+        });
+        const d = await res.json();
+        if (d.status === 'success') Toast.update(loader, d.message, 'success');
+        else Toast.update(loader, d.message || 'Reset failed', 'error');
+    } catch(e) { Toast.update(loader, 'Connection error', 'error'); }
+}
+
+// --- User Detail Modal ---
+function timeAgo(dateInput) {
+    if (!dateInput) return 'Never';
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return 'Never';
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    if (seconds < 0) return 'just now';
+    
+    if (seconds < 60) {
+        return 'just now';
+    }
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    }
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    }
+    const days = Math.floor(hours / 24);
+    if (days < 30) {
+        return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+    const months = Math.floor(days / 30);
+    if (months < 12) {
+        return `${months} month${months > 1 ? 's' : ''} ago`;
+    }
+    const years = Math.floor(months / 12);
+    return `${years} year${years > 1 ? 's' : ''} ago`;
+}
+
+function openUserDetailModal(userId) {
+    const u = allAdminUsers.find(x => x.id === userId);
+    if (!u) return;
+    activeModalUserId = userId;
+
+    const initials = u.name.substring(0, 2).toUpperCase();
+    const avatarInner = u.portrait ? `<img src="${u.portrait}" alt="${u.name}">` : initials;
+    const isSuspended = u.status === 'suspended' || u.status === 'banned';
+    const statusCls = `status-${u.status || 'active'}`;
+    const roleCls   = `role-${u.role}`;
+
+    const map = {
+        'Top Seller': 'badge-top',
+        'Trusted by Community': 'badge-trusted',
+        'Active Seller': 'badge-active',
+        'New on Scholarmart': 'badge-new'
+    };
+    const badgeCls = u.badge ? (map[u.badge.label] || 'badge-new') : 'badge-new';
+    const badgeHtml = u.badge
+        ? `<span class="au-trust-badge ${badgeCls}">${u.badge.emoji} ${u.badge.label}</span>`
+        : '<span class="au-trust-badge badge-new">🟢 New on Scholarmart</span>';
+
+    // Status text (Capitalized)
+    const statusText = u.status ? (u.status.charAt(0).toUpperCase() + u.status.slice(1)) : 'Active';
+    
+    // Role text (Capitalized)
+    const roleText = u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : 'Buyer';
+
+    // Formatted Joined Date: MMM DD, YYYY e.g. "Jan 15, 2026"
+    let joinedStr = '—';
+    if (u.created_at) {
+        const d = new Date(u.created_at);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        joinedStr = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    }
+
+    const activeListings = u.active_listings || 0;
+    const lastLoginFormatted = timeAgo(u.last_login || u.created_at);
+
+    const body = document.getElementById('user-detail-modal-body');
+    body.innerHTML = `
+        <div class="udm-profile-header">
+            <div class="udm-avatar">${avatarInner}</div>
+            <div>
+                <div class="udm-name">${u.name}</div>
+                <div class="udm-role-line">
+                    <span class="au-badge ${roleCls}">${roleText}</span>
+                    <span class="au-badge ${statusCls}">${statusText}</span>
+                    ${badgeHtml}
+                </div>
+            </div>
+        </div>
+        <div class="udm-info-grid">
+            <div class="udm-info-item">
+                <div class="udm-info-label">👤 User</div>
+                <div class="udm-info-value">${u.name}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">📧 Email</div>
+                <div class="udm-info-value" style="font-size:11px;font-weight:600;">${u.email}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">📱 WhatsApp</div>
+                <div class="udm-info-value">
+                    ${u.whatsapp_number 
+                        ? `<a href="${getWhatsAppLink(u.whatsapp_number)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary-green);text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:3px;" title="Message on WhatsApp">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color:#25D366;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.407.003 9.806-4.388 9.809-9.799.001-2.621-1.02-5.085-2.876-6.944C16.35 1.997 13.89 1.016 11.272 1.015c-5.41 0-9.813 4.394-9.816 9.806-.001 1.716.452 3.39 1.31 4.87L1.75 20.366l4.897-1.212zM17.51 14.3c-.307-.154-1.82-.9-2.1-.998-.28-.1-.482-.15-.68.15-.2.3-.77.962-.94 1.157-.17.195-.34.22-.647.066-.307-.153-1.3-.48-2.478-1.533-.915-.817-1.534-1.826-1.713-2.133-.18-.307-.02-.473.136-.626.14-.137.31-.35.46-.525.15-.176.2-.3.3-.5.1-.2.05-.375-.025-.53-.075-.153-.68-1.63-.93-2.24-.244-.587-.49-.508-.68-.517-.175-.008-.375-.01-.575-.01-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5s1.07 2.9 1.225 3.1c.15.2 2.1 3.2 5.082 4.5.71.31 1.265.495 1.7.633.71.226 1.356.194 1.867.118.57-.085 1.82-.743 2.076-1.46.257-.718.257-1.333.18-1.46-.078-.127-.278-.205-.586-.358z"/></svg>
+                            <span>${u.whatsapp_number}</span>
+                         </a>`
+                        : '—'
+                    }
+                </div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">🏛 University</div>
+                <div class="udm-info-value">${u.university || 'COOU'}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">🏫 Campus</div>
+                <div class="udm-info-value">${u.campus || '—'}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">🏷️ Role</div>
+                <div class="udm-info-value">${roleText}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">🟢 Status</div>
+                <div class="udm-info-value">${statusText}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">🎖️ Badge</div>
+                <div class="udm-info-value">${u.badge ? `${u.badge.emoji} ${u.badge.label}` : 'New on Scholarmart'}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">📊 Deals Completed</div>
+                <div class="udm-info-value" style="color:var(--primary-green); font-weight:700;">${u.deals_completed || 0}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">📦 Active Listings</div>
+                <div class="udm-info-value" style="font-weight:700;">${activeListings}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">📅 Joined</div>
+                <div class="udm-info-value">${joinedStr}</div>
+            </div>
+            <div class="udm-info-item">
+                <div class="udm-info-label">🕒 Last Login</div>
+                <div class="udm-info-value">${lastLoginFormatted}</div>
+            </div>
+        </div>
+    `;
+
+    // Update footer buttons
+    const suspendBtn = document.getElementById('udm-suspend-btn');
+    if (suspendBtn) {
+        if (isSuspended) {
+            suspendBtn.textContent = '✓ Activate Account';
+            suspendBtn.style.backgroundColor = '#22C55E';
+            suspendBtn.style.color = '#fff';
+            suspendBtn.style.borderColor = '#22C55E';
+        } else {
+            suspendBtn.textContent = '⊘ Suspend Account';
+            suspendBtn.style.backgroundColor = '';
+            suspendBtn.style.color = '';
+            suspendBtn.style.borderColor = '';
+        }
+    }
+
+    const overlay = document.getElementById('user-detail-modal-overlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        requestAnimationFrame(() => overlay.classList.add('active'));
+    }
+}
+
+function closeUserDetailModal() {
+    const overlay = document.getElementById('user-detail-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+    activeModalUserId = null;
+}
+
+async function adminToggleUserStatusFromModal() {
+    if (!activeModalUserId) return;
+    const u = allAdminUsers.find(x => x.id === activeModalUserId);
+    if (!u) return;
+    const isSuspended = u.status === 'suspended' || u.status === 'banned';
+    const newStatus = isSuspended ? 'active' : 'suspended';
+    closeUserDetailModal();
+    await adminQuickStatusUpdate(activeModalUserId, newStatus);
+}
+
+async function adminResetPasswordFromModal() {
+    if (!activeModalUserId) return;
+    const u = allAdminUsers.find(x => x.id === activeModalUserId);
+    if (!u) return;
+    closeUserDetailModal();
+    await adminResetPasswordById(activeModalUserId, u.name);
+}
+
+function adminViewUserListingsFromModal() {
+    if (!activeModalUserId) return;
+    const u = allAdminUsers.find(x => x.id === activeModalUserId);
+    if (!u) return;
+    
+    closeUserDetailModal();
+    
+    // Set search filter to vendor's name
+    if (typeof activeFilters !== 'undefined') {
+        activeFilters.search = u.name;
+    }
+    const marketSearch = document.getElementById('marketplace-search-input');
+    if (marketSearch) marketSearch.value = u.name;
+    
+    // Transition to the catalog page (#/marketplace)
+    window.location.hash = '#/marketplace';
+    if (typeof loadMarketplaceProducts === 'function') {
+        loadMarketplaceProducts();
+    }
+}
+
+// Old compat wrappers (used by older buttons still in the DOM elsewhere)
+async function suspendUserAccount(userId, targetStatus) {
+    await adminQuickStatusUpdate(userId, targetStatus);
+}
+
+async function resetUserPassword(userId) {
+    const u = allAdminUsers.find(x => x.id === userId) || { name: 'User' };
+    await adminResetPasswordById(userId, u.name);
+}
+
+
 
 // Generic upload portrait function
 async function uploadPortraitFile(fileInputId) {
@@ -1395,33 +2074,9 @@ async function submitReport(event) {
     }
 }
 
-// Vendor Trigger Mark as Sold
+// Vendor Trigger Mark as Sold — no buyer email needed
 async function triggerMarkAsSold(productId) {
-    const buyerEmail = prompt('Enter the buyer\'s email address to link this deal (optional):') || '';
-    let buyerId = null;
-
-    if (buyerEmail) {
-        const loader = Toast.show('Locating buyer details...', 'loading');
-        try {
-            const response = await fetch(`/api/admin/users`, {
-                headers: { 'Authorization': `Bearer ${currentToken}` }
-            });
-            const data = await response.json();
-            if (data.status === 'success') {
-                const buyer = data.users.find(u => u.email.toLowerCase() === buyerEmail.toLowerCase());
-                if (buyer) {
-                    buyerId = buyer.id;
-                    Toast.dismiss(loader);
-                } else {
-                    Toast.update(loader, 'Buyer email not found. Trade will be recorded without a linked buyer account.', 'warning', 3000);
-                }
-            } else {
-                Toast.dismiss(loader);
-            }
-        } catch(e) {
-            Toast.dismiss(loader);
-        }
-    }
+    if (!confirm('Mark this product as sold? It will be removed from the active marketplace.')) return;
 
     const loader = Toast.show('Marking product as sold...', 'loading');
     try {
@@ -1431,7 +2086,7 @@ async function triggerMarkAsSold(productId) {
                 'Authorization': `Bearer ${currentToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ productId, buyerId })
+            body: JSON.stringify({ productId, buyerId: null })
         });
         const data = await response.json();
         if (data.status === 'success') {

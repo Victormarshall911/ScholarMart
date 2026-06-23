@@ -18,6 +18,7 @@ function logoutUser() {
     currentToken = null;
     currentUser = null;
     cartProductIds = [];
+    document.body.classList.remove('admin-mode');
     
     syncAuthUI();
     Toast.show('Logged out successfully', 'info');
@@ -27,6 +28,10 @@ function logoutUser() {
 // SPA Router
 function routeApp() {
     const hash = window.location.hash || '#/';
+    
+    if (hash !== '#/admin-dashboard') {
+        document.body.classList.remove('admin-mode');
+    }
     
     // Hide all view panels
     const views = document.querySelectorAll('.view-container');
@@ -102,7 +107,19 @@ function routeApp() {
         }
         document.getElementById('dashboard-admin-view').classList.add('active');
         loadAdminDashboard();
-    } 
+    }
+    else if (hash === '#/terms') {
+        document.getElementById('terms-view').classList.add('active');
+        // Scroll to top of the content area
+        const appContent = document.querySelector('.app-content');
+        if (appContent) appContent.scrollTop = 0;
+    }
+    else if (hash === '#/privacy') {
+        document.getElementById('privacy-view').classList.add('active');
+        // Scroll to top of the content area
+        const appContent = document.querySelector('.app-content');
+        if (appContent) appContent.scrollTop = 0;
+    }
     else {
         // Not Found fallback
         window.location.hash = '#/';

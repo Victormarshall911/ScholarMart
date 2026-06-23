@@ -12,7 +12,7 @@ function getBadgeInfo(dealsCompleted, averageRating) {
     } else if (dealsCompleted >= 3) {
         return { emoji: '🟡', label: 'Active Seller', level: 2 };
     }
-    return { emoji: '🟢', label: 'New on ScholarMart', level: 1 };
+    return { emoji: '🟢', label: 'New on Scholarmart', level: 1 };
 }
 
 // 1. Register User
@@ -120,6 +120,9 @@ exports.login = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ status: 'error', message: 'Invalid credentials' });
         }
+
+        // Update last login timestamp
+        await db.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
 
         const badge = getBadgeInfo(user.deals_completed || 0, parseFloat(user.average_rating) || 0);
 

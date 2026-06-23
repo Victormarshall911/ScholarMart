@@ -20,6 +20,7 @@ router.post('/moderation/:id', adminController.moderateProduct);
 router.get('/users', adminController.getAllUsers);
 router.post('/users/:id/status', adminController.updateUserAccountStatus);
 router.post('/users/:id/reset-password', adminController.resetUserPassword);
+router.delete('/users/:id', adminController.deleteUser);
 
 // Reports & Analytics
 router.get('/reports', adminController.getReports);

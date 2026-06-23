@@ -150,7 +150,12 @@ exports.moderateProduct = async (req, res) => {
 // 5. User Management: View All Users
 exports.getAllUsers = async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM users ORDER BY created_at DESC');
+        const result = await db.query(`
+            SELECT u.*,
+                   (SELECT COUNT(*) FROM products p WHERE p.vendor_id = u.id AND p.status = 'active') as active_listings
+            FROM users u
+            ORDER BY u.created_at DESC
+        `);
         const users = result.rows.map(u => ({
             id: u.id,
             name: u.name,
@@ -162,10 +167,14 @@ exports.getAllUsers = async (req, res) => {
             email_verified: u.email_verified || false,
             deals_completed: u.deals_completed || 0,
             average_rating: parseFloat(u.average_rating) || 0,
+            total_ratings: u.total_ratings || 0,
             report_count: u.report_count || 0,
             status: u.status,
+            portrait: u.portrait || null,
             badge: getBadgeInfo(u.deals_completed || 0, parseFloat(u.average_rating) || 0),
-            created_at: u.created_at
+            created_at: u.created_at,
+            last_login: u.last_login || u.created_at,
+            active_listings: parseInt(u.active_listings, 10) || 0
         }));
 
         return res.json({
@@ -394,5 +403,28 @@ exports.addCampus = async (req, res) => {
     } catch (error) {
         console.error('Add campus error:', error);
         return res.status(500).json({ status: 'error', message: 'Server error adding campus' });
+    }
+};
+
+// 7. Delete User (Cascading delete of deals, products, cart items, reports, testimonials first)
+exports.deleteUser = async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id, 10);
+
+        // Delete from all tables to prevent constraint conflicts
+        await db.query('DELETE FROM deals WHERE vendor_id = $1 OR buyer_id = $1', [userId]);
+        await db.query('DELETE FROM cart_items WHERE user_id = $1', [userId]);
+        await db.query('DELETE FROM reports WHERE reporter_id = $1 OR reported_user_id = $1', [userId]);
+        await db.query('DELETE FROM testimonials WHERE user_id = $1', [userId]);
+        await db.query('DELETE FROM products WHERE vendor_id = $1', [userId]);
+        await db.query('DELETE FROM users WHERE id = $1', [userId]);
+
+        return res.json({
+            status: 'success',
+            message: 'User and all associated data deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        return res.status(500).json({ status: 'error', message: 'Server error deleting user' });
     }
 };
