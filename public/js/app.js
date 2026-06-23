@@ -47,6 +47,11 @@ function routeApp() {
 
     // Route views
     if (hash === '#/' || hash === '') {
+        // If user is logged in, redirect to marketplace instead of showing landing page
+        if (currentToken && currentUser) {
+            window.location.hash = '#/marketplace';
+            return;
+        }
         document.getElementById('landing-view').classList.add('active');
         document.querySelector('.app-nav [data-view="landing-view"]').classList.add('active');
         fetchCategories();

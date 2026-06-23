@@ -357,7 +357,7 @@ exports.getSavedProducts = async (req, res) => {
     try {
         const userId = req.user.id;
         const result = await db.query(
-            `SELECT p.*, u.name as vendor_name, u.verification_status as vendor_verification, u.portrait as vendor_portrait
+            `SELECT p.*, u.name as vendor_name, u.email_verified as vendor_email_verified, u.portrait as vendor_portrait
              FROM cart_items sp
              JOIN products p ON sp.product_id = p.id
              JOIN users u ON p.vendor_id = u.id
@@ -371,7 +371,7 @@ exports.getSavedProducts = async (req, res) => {
                 ...p,
                 vendor: {
                     name: p.vendor_name,
-                    verified: p.vendor_verification === 'approved',
+                    verified: p.vendor_email_verified || false,
                     portrait: p.vendor_portrait || null
                 }
             }))

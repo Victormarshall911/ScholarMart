@@ -132,6 +132,13 @@ async function loadBuyerOrders() {
                     </div>
                 `;
             }).join('');
+        } else {
+            list.innerHTML = `
+                <div style="text-align: center; padding: 24px; color: var(--text-secondary);">
+                    <p style="font-weight: 700; margin-bottom: 2px;">No deals yet</p>
+                    <p style="font-size: 12px;">Deals you make via WhatsApp will appear here after marking as sold.</p>
+                </div>
+            `;
         }
     } catch(e) {
         list.innerHTML = '<p style="color: var(--danger); font-size: 13px; text-align: center;">Failed to load deal history.</p>';
@@ -195,6 +202,13 @@ async function loadBuyerCartItems() {
                     </div>
                 `;
             }).join('');
+        } else {
+            list.innerHTML = `
+                <div style="grid-column: span 2; text-align: center; padding: 24px; color: var(--text-secondary);">
+                    <p style="font-weight: 700; margin-bottom: 2px;">No products in cart</p>
+                    <p style="font-size: 12px;">Add products in the marketplace to view them here.</p>
+                </div>
+            `;
         }
     } catch(e) {
         list.innerHTML = '<p style="color: var(--danger); font-size: 13px; text-align: center; grid-column: span 2;">Failed to load cart items.</p>';
@@ -221,6 +235,12 @@ function loadBuyerVerificationWizard() {
             avatar.textContent = currentUser.name.substring(0, 2).toUpperCase();
         }
     }
+
+    const nameTag = document.getElementById('buyer-profile-name');
+    if (nameTag) nameTag.textContent = currentUser.name;
+    
+    const campusTag = document.getElementById('buyer-profile-campus');
+    if (campusTag) campusTag.textContent = `${currentUser.university || 'COOU'} - ${currentUser.campus || 'Main Campus'}`;
 
     // Show/hide email verification box
     if (isVerified) {
@@ -300,6 +320,9 @@ function loadVendorVerificationWizard() {
     if (nameTag) {
         nameTag.innerHTML = `<span>${currentUser.name}</span> <span class="reputation-badge ${repBadge.cssClass}" style="font-size: 11px; padding: 2px 8px; font-weight: normal;">${repBadge.emoji} ${repBadge.label}</span>`;
     }
+
+    const campusTag = document.getElementById('vendor-profile-campus');
+    if (campusTag) campusTag.textContent = `${currentUser.university || 'COOU'} - ${currentUser.campus || 'Main Campus'}`;
 
     if (isVerified) {
         card.style.display = 'none';
