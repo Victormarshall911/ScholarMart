@@ -402,6 +402,9 @@ function resetMarketplaceFilters() {
     document.getElementById('filter-min-price').value = '';
     document.getElementById('filter-max-price').value = '';
     
+    const globalSearch = document.getElementById('global-search-input');
+    if (globalSearch) globalSearch.value = '';
+    
     activeFilters = { search: '', category: '', campus: '', minPrice: '', maxPrice: '' };
     
     toggleFilterDrawer(false);
@@ -410,7 +413,7 @@ function resetMarketplaceFilters() {
 
 // Bind Filter toggles
 document.addEventListener('DOMContentLoaded', () => {
-    const toggleBtn = document.getElementById('filter-toggle-btn');
+    const toggleBtn = document.getElementById('global-filter-btn');
     if (toggleBtn) {
         toggleBtn.onclick = () => toggleFilterDrawer(true);
     }

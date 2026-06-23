@@ -1571,8 +1571,8 @@ function adminViewUserListingsFromModal() {
     if (typeof activeFilters !== 'undefined') {
         activeFilters.search = u.name;
     }
-    const marketSearch = document.getElementById('marketplace-search-input');
-    if (marketSearch) marketSearch.value = u.name;
+    const globalSearch = document.getElementById('global-search-input');
+    if (globalSearch) globalSearch.value = u.name;
     
     // Transition to the catalog page (#/marketplace)
     window.location.hash = '#/marketplace';

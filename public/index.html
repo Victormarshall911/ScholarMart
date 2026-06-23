@@ -37,6 +37,24 @@
             </button>
         </header>
 
+        <!-- Global Search Bar -->
+        <div id="global-search-bar" class="global-search-bar" style="display: none;">
+            <div class="search-container" style="flex-grow: 1; margin-bottom: 0;">
+                <input type="text" id="global-search-input" class="search-input" placeholder="Search textbooks, hostel items...">
+                <span class="search-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                    </svg>
+                </span>
+            </div>
+            <!-- Filter Toggle Button -->
+            <button id="global-filter-btn" class="btn btn-secondary global-filter-btn" style="width: 48px; height: 48px; padding: 0; border-radius: 14px; flex-shrink: 0;" onclick="toggleFilterDrawer(true)">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px; vertical-align: middle;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                </svg>
+            </button>
+        </div>
+
         <!-- Main Scrollable Content -->
         <main class="app-content">
             
@@ -53,14 +71,7 @@
                     </div>
                 </div>
 
-                <div class="search-container">
-                    <input type="text" id="landing-search-input" class="search-input" placeholder="Search textbooks, hostel items...">
-                    <span class="search-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
-                        </svg>
-                    </span>
-                </div>
+
 
                 <div class="section-header">
                     <h3 class="section-title">Categories</h3>
@@ -163,22 +174,7 @@
                 <h1 class="view-title">Marketplace</h1>
                 <p class="view-subtitle">Browse campus deals near you.</p>
 
-                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                    <div class="search-container" style="flex-grow: 1; margin-bottom: 0;">
-                        <input type="text" id="marketplace-search-input" class="search-input" placeholder="Search products...">
-                        <span class="search-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 20px; height: 20px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
-                            </svg>
-                        </span>
-                    </div>
-                    <!-- Filter Toggle Button -->
-                    <button id="filter-toggle-btn" class="btn btn-secondary" style="width: 48px; height: 48px; padding: 0; border-radius: 14px; flex-shrink: 0;">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-                        </svg>
-                    </button>
-                </div>
+
 
                 <div class="categories-wrapper" id="marketplace-categories">
                     <!-- Categories -->

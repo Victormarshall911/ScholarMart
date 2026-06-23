@@ -380,6 +380,28 @@ p.view-subtitle {
     pointer-events: none;
 }
 
+/* ─── Global Search Bar (Sticky Sub-header) ──────── */
+.global-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 99;
+}
+
+.global-filter-btn {
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.global-filter-btn:hover {
+    background-color: var(--primary-green-light);
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
 /* ─── Forms ──────────────────────────────────────── */
 .form-group {
     margin-bottom: 16px;

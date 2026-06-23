@@ -303,7 +303,7 @@ async function runTests() {
                 'Authorization': `Bearer ${adminToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: 'Electronics' })
+            body: JSON.stringify({ name: 'Electronics and Gadgets' })
         });
         const addCatData = await addCatRes.json();
         assertEqual(addCatRes.status, 201, 'Create category returns status 201 Created');

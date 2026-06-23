@@ -124,6 +124,21 @@ function routeApp() {
         // Not Found fallback
         window.location.hash = '#/';
     }
+
+    updateGlobalSearchVisibility();
+}
+
+// Toggle Global Search Bar visibility based on current view/hash
+function updateGlobalSearchVisibility() {
+    const hash = window.location.hash || '#/';
+    const globalSearchBar = document.getElementById('global-search-bar');
+    if (globalSearchBar) {
+        if (hash === '#/' || hash === '' || hash === '#/marketplace') {
+            globalSearchBar.style.display = 'flex';
+        } else {
+            globalSearchBar.style.display = 'none';
+        }
+    }
 }
 
 // Populate Category horizontal carousels
@@ -203,33 +218,26 @@ function selectCategoryFilter(category) {
 
 // Bind search input hooks
 function bindSearchInputs() {
-    const landingSearch = document.getElementById('landing-search-input');
-    const marketSearch = document.getElementById('marketplace-search-input');
+    const globalSearch = document.getElementById('global-search-input');
 
-    if (landingSearch) {
-        landingSearch.addEventListener('keypress', (e) => {
+    if (globalSearch) {
+        globalSearch.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const val = landingSearch.value.trim();
-                activeFilters.search = val;
-                if (marketSearch) marketSearch.value = val;
-                window.location.hash = '#/marketplace';
-                loadMarketplaceProducts();
-            }
-        });
-    }
-
-    if (marketSearch) {
-        marketSearch.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                activeFilters.search = marketSearch.value.trim();
-                loadMarketplaceProducts();
+                activeFilters.search = globalSearch.value.trim();
+                if (window.location.hash !== '#/marketplace') {
+                    window.location.hash = '#/marketplace';
+                } else {
+                    loadMarketplaceProducts();
+                }
             }
         });
         // Realtime search on clear/input
-        marketSearch.addEventListener('input', () => {
-            if (!marketSearch.value) {
+        globalSearch.addEventListener('input', () => {
+            if (!globalSearch.value) {
                 activeFilters.search = '';
-                loadMarketplaceProducts();
+                if (window.location.hash === '#/marketplace') {
+                    loadMarketplaceProducts();
+                }
             }
         });
     }
