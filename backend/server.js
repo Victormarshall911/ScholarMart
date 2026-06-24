@@ -17,12 +17,18 @@ app.use(express.urlencoded({ extended: true }));
 
 // Create public directories if they do not exist
 const publicDir = path.join(__dirname, '..', 'public');
-const uploadsDir = path.join(publicDir, 'uploads');
+const uploadsDir = process.env.VERCEL
+    ? path.join('/tmp', 'uploads')
+    : path.join(publicDir, 'uploads');
 const productsDir = path.join(uploadsDir, 'products');
 
 [publicDir, uploadsDir, productsDir].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+    try {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    } catch (e) {
+        console.warn(`Could not create directory ${dir}: ${e.message}`);
     }
 });
 
@@ -34,7 +40,7 @@ if (!fs.existsSync(placeholderPath)) {
     try {
         fs.writeFileSync(placeholderPath, transparentGif);
     } catch (e) {
-        console.error('Failed to write placeholder.webp', e.message);
+        console.warn('Failed to write placeholder.webp:', e.message);
     }
 }
 
@@ -83,3 +89,5 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason, promise) => {
     console.error('CRITICAL UNHANDLED REJECTION AT:', promise, 'REASON:', reason);
 });
+
+module.exports = app;

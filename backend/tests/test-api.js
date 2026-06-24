@@ -37,7 +37,7 @@ function startServer() {
 
         console.log('Starting test server on port 3001...');
         
-        serverProcess = spawn('node', [path.join(__dirname, 'server.js')], {
+        serverProcess = spawn('node', [path.join(__dirname, '..', 'server.js')], {
             env: { ...process.env, PORT: PORT.toString(), JWT_SECRET: 'test-secret' },
             shell: true
         });

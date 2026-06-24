@@ -3,14 +3,20 @@ const path = require('path');
 const fs = require('fs');
 
 // Target directory paths in the public static folder
-const uploadBaseDir = path.join(__dirname, '..', '..', 'public', 'uploads');
+const uploadBaseDir = process.env.VERCEL
+    ? path.join('/tmp', 'uploads')
+    : path.join(__dirname, '..', '..', 'public', 'uploads');
 const productsDir = path.join(uploadBaseDir, 'products');
 const portraitsDir = path.join(uploadBaseDir, 'portraits');
 
 // Create upload folders if they don't exist
 [uploadBaseDir, productsDir, portraitsDir].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
+    try {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    } catch (e) {
+        console.warn(`Could not create directory ${dir}: ${e.message}`);
     }
 });
 
