@@ -86,12 +86,12 @@ async function loadVendorListings() {
     list.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="toast-spinner" style="margin: 0 auto;"></div></div>';
 
     try {
-        const response = await fetch('/api/products');
+        const response = await fetch(`/api/products?_cb=${Date.now()}`, { cache: 'no-store' });
         const data = await response.json();
 
         if (data.status === 'success') {
-            // Filter products belonging to current vendor
-            const myListings = data.products.filter(p => p.vendor_id === currentUser.id && p.status !== 'deleted');
+            // Filter products belonging to current vendor (support both string/int IDs)
+            const myListings = data.products.filter(p => String(p.vendor_id) === String(currentUser.id) && p.status !== 'deleted');
             
             // Set stats number
             document.getElementById('stat-total-listings').textContent = myListings.length;
