@@ -47,8 +47,10 @@ async function loadMarketplaceProducts() {
     if (activeFilters.minPrice) params.append('minPrice', activeFilters.minPrice);
     if (activeFilters.maxPrice) params.append('maxPrice', activeFilters.maxPrice);
 
+    params.append('_cb', Date.now());
+
     try {
-        const response = await fetch(`/api/products?${params.toString()}`);
+        const response = await fetch(`/api/products?${params.toString()}`, { cache: 'no-store' });
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -134,7 +136,7 @@ async function loadHomeFeatured() {
     if (!list) return;
 
     try {
-        const response = await fetch('/api/products');
+        const response = await fetch(`/api/products?_cb=${Date.now()}`, { cache: 'no-store' });
         const data = await response.json();
         if (data.status === 'success') {
             const products = data.products.slice(0, 4); // Show only top 4
