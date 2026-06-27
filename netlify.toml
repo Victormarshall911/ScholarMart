@@ -1,0 +1,21 @@
+[build]
+  base = "frontend"
+  publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://scholar-mart-q5mt5dx82-marshallvictor46-5378s-projects.vercel.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://scholar-mart-q5mt5dx82-marshallvictor46-5378s-projects.vercel.app/uploads/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
