@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholarmart - Offline</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #00A86B;
+            --background: #F8FAFC;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --surface: #FFFFFF;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .offline-card {
+            background-color: var(--surface);
+            padding: 40px 24px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            max-width: 400px;
+            width: 100%;
+        }
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            background-color: #ECFDF5;
+            color: var(--primary-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+        .icon-container svg {
+            width: 40px;
+            height: 40px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+        }
+        p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0 0 24px 0;
+        }
+        .btn {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 168, 107, 0.2);
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        <div class="icon-container">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.284 16.284A3 3 0 0012 21h.008a3 3 0 002.708-1.716M20.758 5.242A9.96 9.96 0 0121 12m-2.122 4.95A7 7 0 0019 12m-2.122-1.414A3 3 0 0012 9V3m0 0l-3 3m3-3l3 3" />
+            </svg>
+        </div>
+        <h1>Connection Lost</h1>
+        <p>It seems you are currently offline. Scholarmart needs an active internet connection to browse and search products on campus.</p>
+        <button class="btn" onclick="window.location.reload()">Retry Connection</button>
+    </div>
+</body>
+</html>

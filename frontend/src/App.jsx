@@ -8,6 +8,7 @@ import ProductModal from './components/ProductModal';
 import ProductCard from './components/ProductCard';
 import { SupportModal, FilterDrawer, CreateListingModal, TestimonialModal } from './components/Modals';
 import api from './services/api';
+import Toast from './services/toast';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
@@ -113,6 +114,18 @@ export default function App() {
     window.location.hash = '#/marketplace';
   };
 
+  const handleOpenSellModal = () => {
+    const token = localStorage.getItem('scholarmart_token');
+    if (!token) {
+      Toast.show('Please login to list products!', 'warning');
+      window.location.hash = '#/login';
+    } else if (user && user.role !== 'vendor' && user.role !== 'admin') {
+      Toast.show('Only vendor profiles can create listings.', 'warning');
+    } else {
+      setShowSellModal(true);
+    }
+  };
+
   return (
     <>
       {/* Splash Screen Overlay */}
@@ -129,7 +142,7 @@ export default function App() {
           setSearchQuery={setSearchQuery}
           onOpenSupportModal={() => setShowSupportModal(true)}
           onOpenFilterDrawer={() => setShowFilterDrawer(true)}
-          onOpenSellModal={() => setShowSellModal(true)}
+          onOpenSellModal={handleOpenSellModal}
         />
 
         <main className="app-content">
@@ -160,7 +173,7 @@ export default function App() {
             <VendorDashboard 
               user={user} 
               onLogout={handleLogout} 
-              onOpenSellModal={() => setShowSellModal(true)}
+              onOpenSellModal={handleOpenSellModal}
               onSelectProduct={setSelectedProduct}
             />
           ) : activeTab === 'cart' ? (
