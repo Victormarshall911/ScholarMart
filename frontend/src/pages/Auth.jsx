@@ -10,6 +10,17 @@ export default function Auth({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Dynamic university and campus state from backend
+  const [universities, setUniversities] = useState([
+    { code: 'COOU', name: 'Chukwuemeka Odumegwu Ojukwu University' }
+  ]);
+  const [campuses, setCampuses] = useState([
+    { university_code: 'COOU', name: 'Uli' },
+    { university_code: 'COOU', name: 'Igbariam' },
+    { university_code: 'COOU', name: 'Awka' }
+  ]);
+  const [showCampusDropdown, setShowCampusDropdown] = useState(false);
+
   // Login form states
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -43,6 +54,29 @@ export default function Auth({ onLoginSuccess }) {
     };
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  useEffect(() => {
+    const fetchRegistrationData = async () => {
+      try {
+        const uRes = await api.get('/auth/universities');
+        if (uRes.data && uRes.data.universities && uRes.data.universities.length > 0) {
+          setUniversities(uRes.data.universities);
+        }
+      } catch (err) {
+        // Fallback to COOU
+      }
+
+      try {
+        const cRes = await api.get('/auth/campuses');
+        if (cRes.data && cRes.data.campuses && cRes.data.campuses.length > 0) {
+          setCampuses(cRes.data.campuses);
+        }
+      } catch (err) {
+        // Fallback to Uli, Igbariam, Awka
+      }
+    };
+    fetchRegistrationData();
   }, []);
 
   const handleLoginSubmit = async (e) => {
@@ -87,7 +121,7 @@ export default function Auth({ onLoginSuccess }) {
         role: regRole,
         whatsapp_number: regRole === 'vendor' ? regWhatsapp : regPhone,
         university: regUniv,
-        campus: regCampus || 'Main Campus'
+        campus: regCampus || 'Igbariam'
       });
       if (res.data.token) {
         localStorage.setItem('scholarmart_token', res.data.token);
@@ -117,6 +151,8 @@ export default function Auth({ onLoginSuccess }) {
     setMode('login');
     window.location.hash = '#/login';
   };
+
+  const availableCampuses = campuses.filter(c => c.university_code === regUniv || !regUniv);
 
   return (
     <section id="auth-view" className="view-container active">
@@ -250,30 +286,48 @@ export default function Auth({ onLoginSuccess }) {
 
           <div className="form-group">
             <label className="form-label" htmlFor="reg-univ">University</label>
-            <select id="reg-univ" className="form-select" required value={regUniv} onChange={e => setRegUniv(e.target.value)}>
+            <select id="reg-univ" className="form-select" required value={regUniv} onChange={e => { setRegUniv(e.target.value); setRegCampus(''); }}>
               <option value="" disabled>Select your University</option>
-              <option value="COOU">Chukwuemeka Odumegwu Ojukwu University (COOU)</option>
-              <option value="UNIZIK">Nnamdi Azikiwe University (UNIZIK)</option>
-              <option value="UNN">University of Nigeria, Nsukka (UNN)</option>
-              <option value="FUTO">Federal University of Technology, Owerri (FUTO)</option>
-              <option value="UI">University of Ibadan (UI)</option>
-              <option value="UNILAG">University of Lagos (UNILAG)</option>
+              {universities.map(u => (
+                <option key={u.code} value={u.code}>{u.name} ({u.code})</option>
+              ))}
             </select>
           </div>
 
           {/* Searchable Autocomplete Campus Input */}
-          <div className="form-group autocomplete-container">
+          <div className="form-group autocomplete-container" style={{ position: 'relative' }}>
             <label className="form-label" htmlFor="reg-campus">Campus Name</label>
             <input 
               type="text" 
               id="reg-campus" 
               className="form-input" 
               placeholder="Type to search campus... (e.g. Igbariam)" 
-              autocomplete="off" 
+              autoComplete="off" 
               required 
               value={regCampus}
-              onChange={e => setRegCampus(e.target.value)}
+              onFocus={() => setShowCampusDropdown(true)}
+              onBlur={() => setTimeout(() => setShowCampusDropdown(false), 200)}
+              onChange={e => { setRegCampus(e.target.value); setShowCampusDropdown(true); }}
             />
+            {showCampusDropdown && (
+              <div id="reg-campus-dropdown" className="autocomplete-dropdown" style={{ display: 'block' }}>
+                {(() => {
+                  const filtered = availableCampuses.filter(c => c.name.toLowerCase().includes(regCampus.toLowerCase().trim()));
+                  if (filtered.length === 0) {
+                    return <div className="autocomplete-item" style={{ color: 'var(--text-secondary)' }}>No campuses found</div>;
+                  }
+                  return filtered.map((c, idx) => (
+                    <div 
+                      key={idx} 
+                      className="autocomplete-item" 
+                      onClick={() => { setRegCampus(c.name); setShowCampusDropdown(false); }}
+                    >
+                      {c.name}
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
           </div>
 
           <div className="form-group">

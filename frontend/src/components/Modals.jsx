@@ -42,6 +42,7 @@ export function SupportModal({ isOpen, onClose }) {
 }
 
 export function FilterDrawer({ isOpen, onClose, filters, setFilters, onApply, onReset }) {
+  const [showCampusDropdown, setShowCampusDropdown] = useState(false);
   if (!isOpen) return null;
 
   return (
@@ -52,16 +53,26 @@ export function FilterDrawer({ isOpen, onClose, filters, setFilters, onApply, on
           <button className="filter-drawer-close" onClick={onClose}>Close</button>
         </div>
         
-        <div className="form-group">
+        <div className="form-group autocomplete-container" style={{ position: 'relative' }}>
           <label className="form-label" htmlFor="filter-campus">Campus Location</label>
           <input 
             type="text" 
             id="filter-campus" 
             className="form-input" 
             placeholder="Type to search campus..." 
+            autoComplete="off"
             value={filters?.campus || ''}
-            onChange={(e) => setFilters && setFilters({ ...filters, campus: e.target.value })}
+            onFocus={() => setShowCampusDropdown(true)}
+            onBlur={() => setTimeout(() => setShowCampusDropdown(false), 200)}
+            onChange={(e) => { setFilters && setFilters({ ...filters, campus: e.target.value }); setShowCampusDropdown(true); }}
           />
+          {showCampusDropdown && (
+            <div id="filter-campus-dropdown" className="autocomplete-dropdown" style={{ display: 'block' }}>
+              {['Uli', 'Igbariam', 'Awka'].filter(c => c.toLowerCase().includes((filters?.campus || '').toLowerCase().trim())).map((c, idx) => (
+                <div key={idx} className="autocomplete-item" onClick={() => { setFilters && setFilters({ ...filters, campus: c }); setShowCampusDropdown(false); }}>{c}</div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="form-group">
@@ -123,7 +134,8 @@ export function CreateListingModal({ isOpen, onClose, onSuccess }) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
-  const [campus, setCampus] = useState('COOU Igbariam');
+  const [campus, setCampus] = useState('Igbariam');
+  const [showCampusDropdown, setShowCampusDropdown] = useState(false);
   const [description, setDescription] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [file, setFile] = useState(null);
@@ -195,9 +207,27 @@ export function CreateListingModal({ isOpen, onClose, onSuccess }) {
             </select>
           </div>
 
-          <div className="form-group">
+          <div className="form-group autocomplete-container" style={{ position: 'relative' }}>
             <label className="form-label" htmlFor="prod-campus">Campus Location</label>
-            <input type="text" id="prod-campus" className="form-input" placeholder="Type campus..." required value={campus} onChange={e => setCampus(e.target.value)} />
+            <input 
+              type="text" 
+              id="prod-campus" 
+              className="form-input" 
+              placeholder="Type campus..." 
+              autoComplete="off"
+              required 
+              value={campus} 
+              onFocus={() => setShowCampusDropdown(true)}
+              onBlur={() => setTimeout(() => setShowCampusDropdown(false), 200)}
+              onChange={e => { setCampus(e.target.value); setShowCampusDropdown(true); }} 
+            />
+            {showCampusDropdown && (
+              <div id="prod-campus-dropdown" className="autocomplete-dropdown" style={{ display: 'block' }}>
+                {['Uli', 'Igbariam', 'Awka'].filter(c => c.toLowerCase().includes(campus.toLowerCase().trim())).map((c, idx) => (
+                  <div key={idx} className="autocomplete-item" onClick={() => { setCampus(c); setShowCampusDropdown(false); }}>{c}</div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
