@@ -5,7 +5,7 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
 
   return (
     <>
-      <!-- Sticky Header -->
+      {/* Sticky Header */}
       <header className="app-header">
         <a 
           href="#/" 
@@ -24,7 +24,7 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
         </button>
       </header>
 
-      <!-- Global Search Bar -->
+      {/* Global Search Bar */}
       <div 
         id="global-search-bar" 
         className="global-search-bar" 
@@ -45,7 +45,7 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
             </svg>
           </span>
         </div>
-        <!-- Filter Toggle Button -->
+        {/* Filter Toggle Button */}
         <button 
           id="global-filter-btn" 
           className="btn btn-secondary global-filter-btn" 
@@ -58,7 +58,7 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
         </button>
       </div>
 
-      <!-- FLOATING ACTION BUTTON (FAB) -->
+      {/* FLOATING ACTION BUTTON (FAB) */}
       <div className="fab-container">
         <button id="fab-create-listing" className="fab-btn" title="Sell Item" onClick={onOpenSellModal}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
@@ -67,7 +67,7 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
         </button>
       </div>
 
-      <!-- Sticky Bottom Navigation -->
+      {/* Sticky Bottom Navigation */}
       <nav className="app-nav">
         <a 
           href="#/" 
@@ -90,7 +90,7 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
           Market
         </a>
 
-        <!-- FAB spacer -->
+        {/* FAB spacer */}
         <div style={{ width: '64px', flexShrink: 0 }}></div>
 
         <a 
