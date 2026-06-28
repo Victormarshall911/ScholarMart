@@ -174,7 +174,7 @@ exports.getVendorProducts = async (req, res) => {
             SELECT p.*, u.name as vendor_name, u.whatsapp_number
             FROM products p
             JOIN users u ON p.vendor_id = u.id
-            WHERE p.vendor_id = $1
+            WHERE p.vendor_id = $1 AND p.status != 'deleted'
             ORDER BY p.created_at DESC
         `;
         const result = await db.query(sql, [vendorId]);
