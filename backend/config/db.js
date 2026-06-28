@@ -16,12 +16,21 @@ const DB_PORT = process.env.DB_PORT || 5432;
 // Supabase configuration
 const SUPABASE_URL = process.env.SUPABASE_URL || '';
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 let supabase = null;
 if (SUPABASE_URL && SUPABASE_KEY) {
     supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 } else {
     console.warn('Supabase URL or Key is missing. Supabase Auth will not work properly.');
+}
+
+// Admin client uses service role key — bypasses RLS for storage uploads
+let supabaseAdmin = null;
+if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        auth: { persistSession: false }
+    });
 }
 
 let pool = null;
@@ -59,5 +68,6 @@ module.exports = {
         return await pool.query(text, params);
     },
     isFallback: () => false,
-    supabase
+    supabase,
+    supabaseAdmin
 };

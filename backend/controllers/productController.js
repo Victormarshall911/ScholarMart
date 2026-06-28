@@ -212,10 +212,14 @@ exports.createProduct = async (req, res) => {
         const userCheck = await db.query('SELECT email_verified FROM users WHERE id = $1', [vendorId]);
         const emailVerified = userCheck.rows[0]?.email_verified || false;
 
-        // Process upload: store first image as image_url
-        let imageUrl = '/uploads/products/placeholder.webp';
+        // Process upload: upload to Supabase Storage and get CDN URL
+        let imageUrl = null;
         if (req.files && req.files.length > 0) {
-            imageUrl = await processUploadedFile(req.files[0], 'products') || `/uploads/products/${req.files[0].filename}`;
+            imageUrl = await processUploadedFile(req.files[0], 'products');
+        }
+        // Use a generic placeholder if no image was uploaded or upload failed
+        if (!imageUrl) {
+            imageUrl = `https://placehold.co/400x300/1a1a2e/ffffff?text=${encodeURIComponent(name || 'Product')}`;
         }
 
         const sql = `

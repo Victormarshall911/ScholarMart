@@ -70,54 +70,64 @@ const uploadPortrait = multer({
     fileFilter: fileFilter
 }).single('portrait');
 
-// Helper: Process file into Supabase Storage CDN URL or Base64 DataURI
+// Upload file to Supabase Storage — returns a permanent public CDN URL
 const processUploadedFile = async (file, bucketName = 'products') => {
-    if (!file || !file.path || !fs.existsSync(file.path)) return null;
+    if (!file) return null;
 
-    // 1. Try Supabase Storage (Best Practice)
     try {
-        const { supabase } = require('../config/db');
-        if (supabase) {
-            const fileBuffer = fs.readFileSync(file.path);
-            const cleanName = file.originalname ? file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_') : 'img.webp';
-            const fileName = `${Date.now()}-${Math.round(Math.random()*1e6)}-${cleanName}`;
+        const { supabaseAdmin } = require('../config/db');
 
-            const { data, error } = await supabase.storage
-                .from(bucketName)
-                .upload(fileName, fileBuffer, {
-                    contentType: file.mimetype || 'image/webp',
-                    upsert: true
-                });
-
-            if (!error && data) {
-                const { data: publicData } = supabase.storage
-                    .from(bucketName)
-                    .getPublicUrl(fileName);
-                if (publicData && publicData.publicUrl) {
-                    try { fs.unlinkSync(file.path); } catch(e) {}
-                    return publicData.publicUrl;
-                }
-            }
+        if (!supabaseAdmin) {
+            console.error('supabaseAdmin not initialized — check SUPABASE_SERVICE_KEY in .env');
+            return null;
         }
-    } catch (e) {
-        // Supabase storage bucket not configured yet or RLS error, gracefully fall back
-    }
 
-    // 2. Fallback for Vercel Serverless (Permanent Base64 Data URI)
-    if (process.env.VERCEL) {
-        try {
-            const fileBuffer = fs.readFileSync(file.path);
-            const base64 = fileBuffer.toString('base64');
-            const dataUri = `data:${file.mimetype || 'image/webp'};base64,${base64}`;
-            try { fs.unlinkSync(file.path); } catch(e) {}
-            return dataUri;
-        } catch (e) {
-            console.error('DataURI conversion error:', e.message);
+        // Read file buffer (works for multer disk storage)
+        let fileBuffer;
+        if (file.path && fs.existsSync(file.path)) {
+            fileBuffer = fs.readFileSync(file.path);
+        } else if (file.buffer) {
+            fileBuffer = file.buffer; // memoryStorage fallback
+        } else {
+            console.error('File has no readable path or buffer');
+            return null;
         }
-    }
 
-    // 3. Fallback for Localhost Static Files
-    return `/uploads/${bucketName}/${file.filename}`;
+        const ext = path.extname(file.originalname || '').toLowerCase() || '.jpg';
+        const cleanName = (file.originalname || 'image').replace(/[^a-zA-Z0-9.-]/g, '_');
+        const fileName = `${Date.now()}-${Math.round(Math.random() * 1e6)}-${cleanName}`;
+
+        const { data, error } = await supabaseAdmin.storage
+            .from(bucketName)
+            .upload(fileName, fileBuffer, {
+                contentType: file.mimetype || 'image/jpeg',
+                upsert: false
+            });
+
+        // Clean up temp file regardless
+        if (file.path) {
+            try { fs.unlinkSync(file.path); } catch (e) {}
+        }
+
+        if (error) {
+            console.error(`Supabase Storage upload error (${bucketName}):`, error.message);
+            return null;
+        }
+
+        const { data: publicData } = supabaseAdmin.storage
+            .from(bucketName)
+            .getPublicUrl(fileName);
+
+        return publicData?.publicUrl || null;
+
+    } catch (err) {
+        console.error('processUploadedFile error:', err.message);
+        // Clean up temp file on error
+        if (file.path) {
+            try { fs.unlinkSync(file.path); } catch (e) {}
+        }
+        return null;
+    }
 };
 
 module.exports = {
