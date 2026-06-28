@@ -79,7 +79,8 @@ exports.listProducts = async (req, res) => {
         return res.json({
             status: 'success',
             count: enrichedProducts.length,
-            products: enrichedProducts
+            products: enrichedProducts,
+            data: enrichedProducts
         });
     } catch (error) {
         console.error('List products error:', error);

@@ -66,8 +66,8 @@ export default function App() {
 
     // Fetch featured products for landing view
     api.get('/products').then(res => {
-      if (res.data && res.data.data) {
-        setFeaturedProducts(res.data.data);
+      if (res.data && (res.data.data || res.data.products)) {
+        setFeaturedProducts(res.data.data || res.data.products);
       } else if (Array.isArray(res.data)) {
         setFeaturedProducts(res.data);
       }
@@ -250,7 +250,7 @@ export default function App() {
           onClose={() => setShowSellModal(false)}
           onSuccess={() => {
             api.get('/products').then(res => {
-              if (res.data && res.data.data) setFeaturedProducts(res.data.data);
+              if (res.data && (res.data.data || res.data.products)) setFeaturedProducts(res.data.data || res.data.products);
             });
           }}
         />

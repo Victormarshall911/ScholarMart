@@ -18,8 +18,8 @@ export default function Marketplace({ onSelectProduct, savedIds, onToggleSave, s
     try {
       setLoading(true);
       const res = await api.get('/products?_cb=' + Date.now());
-      if (res.data && res.data.data) {
-        setProducts(res.data.data);
+      if (res.data && (res.data.data || res.data.products)) {
+        setProducts(res.data.data || res.data.products);
       } else if (Array.isArray(res.data)) {
         setProducts(res.data);
       }
