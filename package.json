@@ -4,7 +4,8 @@
   "private": true,
   "description": "ScholarMart Marketplace Production Root",
   "scripts": {
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "build": "cd frontend && npm install && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
