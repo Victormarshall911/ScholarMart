@@ -1,8 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Toast from '../services/toast';
 
 export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearchQuery, onOpenSupportModal, onOpenFilterDrawer, onOpenSellModal }) {
   const showGlobalSearch = activeTab === 'marketplace';
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      Toast.show('ScholarMart app installed successfully!', 'success');
+      setInstallPrompt(null);
+    }
+  };
 
   return (
     <>
@@ -16,7 +36,17 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
           Scholar<span>Mart</span>
         </a>
         {/* Action icons */}
-        <div className="header-actions">
+        <div className="header-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {installPrompt && (
+            <button 
+              className="btn btn-sm" 
+              style={{ width: 'auto', padding: '7px 12px', fontSize: '12px', fontWeight: 800, borderRadius: '20px', backgroundColor: 'var(--primary-green)', color: '#fff', display: 'flex', alignItems: 'center', gap: '4px', border: 'none', boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)', animation: 'pulse 2s infinite' }}
+              onClick={handleInstallClick}
+              title="Install ScholarMart to your home screen"
+            >
+              📲 Install App
+            </button>
+          )}
           <button 
             className="btn btn-outline btn-sm support-trigger-btn" 
             id="header-support-btn" 
