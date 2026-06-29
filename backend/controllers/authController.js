@@ -179,13 +179,17 @@ exports.login = async (req, res) => {
 
         // Attempt login via Supabase first
         let supabaseSuccess = false;
+        let isSupabaseVerified = false;
         if (supabase) {
             const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                 email: cleanEmail,
                 password
             });
-            if (!authError) {
+            if (!authError && authData?.user) {
                 supabaseSuccess = true;
+                if (authData.user.email_confirmed_at || authData.user.confirmed_at) {
+                    isSupabaseVerified = true;
+                }
             }
         }
 
@@ -196,6 +200,12 @@ exports.login = async (req, res) => {
         }
 
         const user = result.rows[0];
+
+        // Sync verification status if manually confirmed in Supabase dashboard
+        if (isSupabaseVerified && !user.email_verified) {
+            await db.query('UPDATE users SET email_verified = true WHERE id = $1', [user.id]);
+            user.email_verified = true;
+        }
 
         if (user.status === 'suspended' || user.status === 'banned') {
             return res.status(403).json({ status: 'error', message: 'Your account has been suspended by an administrator' });
