@@ -171,48 +171,50 @@ export default function Auth({ onLoginSuccess }) {
         <h1 className="view-title">Welcome Back</h1>
         <p className="view-subtitle">Sign in to buy and sell on your campus.</p>
 
-        <form id="login-form" onSubmit={handleLoginSubmit}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="login-email">Personal Email Address</label>
-            <input 
-              type="email" 
-              id="login-email" 
-              className="form-input" 
-              placeholder="e.g. student@gmail.com" 
-              required 
-              value={loginEmail}
-              onChange={e => setLoginEmail(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="login-password">Password</label>
-            <div className="password-wrapper">
+        <div className="card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: 'var(--surface)' }}>
+          <form id="login-form" onSubmit={handleLoginSubmit}>
+            <div className="form-group">
+              <label className="form-label" htmlFor="login-email">Personal Email Address</label>
               <input 
-                type={showLoginPass ? 'text' : 'password'} 
-                id="login-password" 
+                type="email" 
+                id="login-email" 
                 className="form-input" 
-                placeholder="Min. 8 characters" 
+                placeholder="e.g. student@gmail.com" 
                 required 
-                value={loginPassword}
-                onChange={e => setLoginPassword(e.target.value)}
+                value={loginEmail}
+                onChange={e => setLoginEmail(e.target.value)}
               />
-              <button type="button" className="password-toggle" onClick={() => setShowLoginPass(!showLoginPass)}>
-                {showLoginPass ? 'Hide' : 'Show'}
-              </button>
             </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', fontSize: '13px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500, cursor: 'pointer' }}>
-              <input type="checkbox" id="login-remember" style={{ accentColor: 'var(--primary-green)' }} checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} /> Remember Me
-            </label>
-            <a href="#/forgot" onClick={(e) => { e.preventDefault(); setMode('forgot'); setError(''); }} style={{ color: 'var(--primary-green)', fontWeight: 700, textDecoration: 'none' }}>
-              Forgot Password?
-            </a>
-          </div>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
+            <div className="form-group">
+              <label className="form-label" htmlFor="login-password">Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showLoginPass ? 'text' : 'password'} 
+                  id="login-password" 
+                  className="form-input" 
+                  placeholder="Min. 8 characters" 
+                  required 
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                />
+                <button type="button" className="password-toggle" onClick={() => setShowLoginPass(!showLoginPass)}>
+                  {showLoginPass ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', fontSize: '13px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500, cursor: 'pointer' }}>
+                <input type="checkbox" id="login-remember" style={{ accentColor: 'var(--primary-green)' }} checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} /> Remember Me
+              </label>
+              <a href="#/forgot" onClick={(e) => { e.preventDefault(); setMode('forgot'); setError(''); }} style={{ color: 'var(--primary-green)', fontWeight: 700, textDecoration: 'none' }}>
+                Forgot Password?
+              </a>
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
         
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>
           New to Scholarmart? <span style={{ color: 'var(--primary-green)', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setMode('register'); window.location.hash = '#/register'; setError(''); }}>Register Now</span>
@@ -224,163 +226,165 @@ export default function Auth({ onLoginSuccess }) {
         <h1 className="view-title">Join Scholarmart</h1>
         <p className="view-subtitle">Create a student profile to get started.</p>
 
-        <form id="register-form" onSubmit={handleRegisterSubmit}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-name">Full Name</label>
-            <input 
-              type="text" 
-              id="reg-name" 
-              className="form-input" 
-              placeholder="e.g., John Doe" 
-              required 
-              value={regName}
-              onChange={e => setRegName(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-email">Personal Email Address</label>
-            <input 
-              type="email" 
-              id="reg-email" 
-              className="form-input" 
-              placeholder="e.g., yourname@gmail.com" 
-              required 
-              value={regEmail}
-              onChange={e => setRegEmail(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-phone">Phone Number</label>
-            <input 
-              type="tel" 
-              id="reg-phone" 
-              className="form-input" 
-              placeholder="08012345678" 
-              required 
-              value={regPhone}
-              onChange={e => setRegPhone(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-role">I want to:</label>
-            <select id="reg-role" className="form-select" value={regRole} onChange={(e) => setRegRole(e.target.value)}>
-              <option value="buyer">Buy Products only</option>
-              <option value="vendor">Sell Products on Campus</option>
-            </select>
-          </div>
-
-          {/* Vendor WhatsApp Field */}
-          {regRole === 'vendor' && (
-            <div id="vendor-whatsapp-fields" style={{ backgroundColor: '#F1F5F9', padding: '14px', borderRadius: '16px', marginBottom: '16px', border: '1px solid var(--border)' }}>
-              <h4 style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px', color: 'var(--text-primary)' }}>WHATSAPP INFO</h4>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" htmlFor="reg-whatsapp">WhatsApp Number</label>
-                <input 
-                  type="tel" 
-                  id="reg-whatsapp" 
-                  className="form-input" 
-                  placeholder="e.g. 08012345678" 
-                  value={regWhatsapp}
-                  onChange={e => setRegWhatsapp(e.target.value)}
-                />
-                <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>This number is required so buyers can contact you on WhatsApp to request your listings.</small>
-              </div>
+        <div className="card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: 'var(--surface)' }}>
+          <form id="register-form" onSubmit={handleRegisterSubmit}>
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-name">Full Name</label>
+              <input 
+                type="text" 
+                id="reg-name" 
+                className="form-input" 
+                placeholder="e.g., John Doe" 
+                required 
+                value={regName}
+                onChange={e => setRegName(e.target.value)}
+              />
             </div>
-          )}
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-email">Personal Email Address</label>
+              <input 
+                type="email" 
+                id="reg-email" 
+                className="form-input" 
+                placeholder="e.g., yourname@gmail.com" 
+                required 
+                value={regEmail}
+                onChange={e => setRegEmail(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-phone">Phone Number</label>
+              <input 
+                type="tel" 
+                id="reg-phone" 
+                className="form-input" 
+                placeholder="08012345678" 
+                required 
+                value={regPhone}
+                onChange={e => setRegPhone(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-role">I want to:</label>
+              <select id="reg-role" className="form-select" value={regRole} onChange={(e) => setRegRole(e.target.value)}>
+                <option value="buyer">Buy Products only</option>
+                <option value="vendor">Sell Products on Campus</option>
+              </select>
+            </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-univ">University</label>
-            <select id="reg-univ" className="form-select" required value={regUniv} onChange={e => { setRegUniv(e.target.value); setRegCampus(''); }}>
-              <option value="" disabled>Select your University</option>
-              {universities.map(u => (
-                <option key={u.code} value={u.code}>{u.name} ({u.code})</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Searchable Autocomplete Campus Input */}
-          <div className="form-group autocomplete-container" style={{ position: 'relative' }}>
-            <label className="form-label" htmlFor="reg-campus">Campus Name</label>
-            <input 
-              type="text" 
-              id="reg-campus" 
-              className="form-input" 
-              placeholder="Type to search campus... (e.g. Igbariam)" 
-              autoComplete="off" 
-              required 
-              value={regCampus}
-              onFocus={() => setShowCampusDropdown(true)}
-              onBlur={() => setTimeout(() => setShowCampusDropdown(false), 200)}
-              onChange={e => { setRegCampus(e.target.value); setShowCampusDropdown(true); }}
-            />
-            {showCampusDropdown && (
-              <div id="reg-campus-dropdown" className="autocomplete-dropdown" style={{ display: 'block' }}>
-                {(() => {
-                  const filtered = availableCampuses.filter(c => c.name.toLowerCase().includes(regCampus.toLowerCase().trim()));
-                  if (filtered.length === 0) {
-                    return <div className="autocomplete-item" style={{ color: 'var(--text-secondary)' }}>No campuses found</div>;
-                  }
-                  return filtered.map((c, idx) => (
-                    <div 
-                      key={idx} 
-                      className="autocomplete-item" 
-                      onClick={() => { setRegCampus(c.name); setShowCampusDropdown(false); }}
-                    >
-                      {c.name}
-                    </div>
-                  ));
-                })()}
+            {/* Vendor WhatsApp Field */}
+            {regRole === 'vendor' && (
+              <div id="vendor-whatsapp-fields" style={{ backgroundColor: 'var(--primary-orange-light)', padding: '14px', borderRadius: '16px', marginBottom: '16px', border: '1px solid var(--primary-orange-glow)' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 800, marginBottom: '10px', color: 'var(--primary-orange)' }}>WHATSAPP INFO</h4>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" htmlFor="reg-whatsapp">WhatsApp Number</label>
+                  <input 
+                    type="tel" 
+                    id="reg-whatsapp" 
+                    className="form-input" 
+                    placeholder="e.g. 08012345678" 
+                    value={regWhatsapp}
+                    onChange={e => setRegWhatsapp(e.target.value)}
+                  />
+                  <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>This number is required so buyers can contact you on WhatsApp to request your listings.</small>
+                </div>
               </div>
             )}
-          </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-password">Password</label>
-            <div className="password-wrapper">
-              <input 
-                type={showRegPass ? 'text' : 'password'} 
-                id="reg-password" 
-                className="form-input" 
-                placeholder="Min. 8 characters (letters+numbers)" 
-                required 
-                value={regPassword}
-                onChange={e => setRegPassword(e.target.value)}
-              />
-              <button type="button" className="password-toggle" onClick={() => setShowRegPass(!showRegPass)}>
-                {showRegPass ? 'Hide' : 'Show'}
-              </button>
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-univ">University</label>
+              <select id="reg-univ" className="form-select" required value={regUniv} onChange={e => { setRegUniv(e.target.value); setRegCampus(''); }}>
+                <option value="" disabled>Select your University</option>
+                {universities.map(u => (
+                  <option key={u.code} value={u.code}>{u.name} ({u.code})</option>
+                ))}
+              </select>
             </div>
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="reg-confirm">Confirm Password</label>
-            <div className="password-wrapper">
+
+            {/* Searchable Autocomplete Campus Input */}
+            <div className="form-group autocomplete-container" style={{ position: 'relative' }}>
+              <label className="form-label" htmlFor="reg-campus">Campus Name</label>
               <input 
-                type={showConfirmPass ? 'text' : 'password'} 
-                id="reg-confirm" 
+                type="text" 
+                id="reg-campus" 
                 className="form-input" 
-                placeholder="Re-enter password" 
+                placeholder="Type to search campus... (e.g. Igbariam)" 
+                autoComplete="off" 
                 required 
-                value={regConfirm}
-                onChange={e => setRegConfirm(e.target.value)}
+                value={regCampus}
+                onFocus={() => setShowCampusDropdown(true)}
+                onBlur={() => setTimeout(() => setShowCampusDropdown(false), 200)}
+                onChange={e => { setRegCampus(e.target.value); setShowCampusDropdown(true); }}
               />
-              <button type="button" className="password-toggle" onClick={() => setShowConfirmPass(!showConfirmPass)}>
-                {showConfirmPass ? 'Hide' : 'Show'}
-              </button>
+              {showCampusDropdown && (
+                <div id="reg-campus-dropdown" className="autocomplete-dropdown" style={{ display: 'block' }}>
+                  {(() => {
+                    const filtered = availableCampuses.filter(c => c.name.toLowerCase().includes(regCampus.toLowerCase().trim()));
+                    if (filtered.length === 0) {
+                      return <div className="autocomplete-item" style={{ color: 'var(--text-secondary)' }}>No campuses found</div>;
+                    }
+                    return filtered.map((c, idx) => (
+                      <div 
+                        key={idx} 
+                        className="autocomplete-item" 
+                        onClick={() => { setRegCampus(c.name); setShowCampusDropdown(false); }}
+                      >
+                        {c.name}
+                      </div>
+                    ));
+                  })()}
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Terms Agreement Checkbox */}
-          <div className="terms-agreement-box">
-            <label className="terms-agreement-label" htmlFor="reg-terms-agree">
-              <input type="checkbox" id="reg-terms-agree" required />
-              <span>I have read and agree to ScholarMart's <a href="#/terms">Terms &amp; Conditions</a> and <a href="#/privacy">Privacy Policy</a>.</span>
-            </label>
-          </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-password">Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showRegPass ? 'text' : 'password'} 
+                  id="reg-password" 
+                  className="form-input" 
+                  placeholder="Min. 8 characters (letters+numbers)" 
+                  required 
+                  value={regPassword}
+                  onChange={e => setRegPassword(e.target.value)}
+                />
+                <button type="button" className="password-toggle" onClick={() => setShowRegPass(!showRegPass)}>
+                  {showRegPass ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="reg-confirm">Confirm Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showConfirmPass ? 'text' : 'password'} 
+                  id="reg-confirm" 
+                  className="form-input" 
+                  placeholder="Re-enter password" 
+                  required 
+                  value={regConfirm}
+                  onChange={e => setRegConfirm(e.target.value)}
+                />
+                <button type="button" className="password-toggle" onClick={() => setShowConfirmPass(!showConfirmPass)}>
+                  {showConfirmPass ? 'Hide' : 'Show'}
+                </button>
+              </div>
+            </div>
 
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
-        </form>
+            {/* Terms Agreement Checkbox */}
+            <div className="terms-agreement-box" style={{ marginBottom: '20px' }}>
+              <label className="terms-agreement-label" htmlFor="reg-terms-agree" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                <input type="checkbox" id="reg-terms-agree" required style={{ marginTop: '3px' }} />
+                <span>I have read and agree to ScholarMart's <a href="#/terms" style={{ color: 'var(--primary-green)', fontWeight: 700 }}>Terms &amp; Conditions</a> and <a href="#/privacy" style={{ color: 'var(--primary-green)', fontWeight: 700 }}>Privacy Policy</a>.</span>
+              </label>
+            </div>
+
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </form>
+        </div>
         
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>
           Already have an account? <span style={{ color: 'var(--primary-green)', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setMode('login'); window.location.hash = '#/login'; setError(''); }}>Sign In</span>
@@ -392,57 +396,59 @@ export default function Auth({ onLoginSuccess }) {
         <h1 className="view-title">Reset Password</h1>
         <p className="view-subtitle">Enter your email to receive a 6-digit reset pin.</p>
 
-        {forgotStep === 1 ? (
-          <form id="forgot-request-form" onSubmit={handleForgotRequest}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="forgot-email">Personal Email Address</label>
-              <input 
-                type="email" 
-                id="forgot-email" 
-                className="form-input" 
-                placeholder="e.g. student@gmail.com" 
-                required 
-                value={forgotEmail}
-                onChange={e => setForgotEmail(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="btn btn-primary" id="forgot-request-btn">Send Reset Pin</button>
-          </form>
-        ) : (
-          <form id="forgot-reset-form" onSubmit={handleForgotReset} style={{ marginTop: '20px' }}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="forgot-otp">6-Digit Pin</label>
-              <input 
-                type="text" 
-                id="forgot-otp" 
-                className="form-input" 
-                placeholder="e.g. 123456" 
-                maxLength="6" 
-                required 
-                value={forgotOtp}
-                onChange={e => setForgotOtp(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label" htmlFor="forgot-new-password">New Password</label>
-              <div className="password-wrapper">
+        <div className="card" style={{ padding: '24px', borderRadius: '24px', backgroundColor: 'var(--surface)' }}>
+          {forgotStep === 1 ? (
+            <form id="forgot-request-form" onSubmit={handleForgotRequest}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="forgot-email">Personal Email Address</label>
                 <input 
-                  type={showForgotPass ? 'text' : 'password'} 
-                  id="forgot-new-password" 
+                  type="email" 
+                  id="forgot-email" 
                   className="form-input" 
-                  placeholder="Min. 8 characters" 
+                  placeholder="e.g. student@gmail.com" 
                   required 
-                  value={forgotNewPass}
-                  onChange={e => setForgotNewPass(e.target.value)}
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
                 />
-                <button type="button" className="password-toggle" onClick={() => setShowForgotPass(!showForgotPass)}>
-                  {showForgotPass ? 'Hide' : 'Show'}
-                </button>
               </div>
-            </div>
-            <button type="submit" className="btn btn-primary" id="forgot-reset-btn">Reset Password</button>
-          </form>
-        )}
+              <button type="submit" className="btn btn-primary" id="forgot-request-btn">Send Reset Pin</button>
+            </form>
+          ) : (
+            <form id="forgot-reset-form" onSubmit={handleForgotReset} style={{ marginTop: '20px' }}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="forgot-otp">6-Digit Pin</label>
+                <input 
+                  type="text" 
+                  id="forgot-otp" 
+                  className="form-input" 
+                  placeholder="e.g. 123456" 
+                  maxLength="6" 
+                  required 
+                  value={forgotOtp}
+                  onChange={e => setForgotOtp(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="forgot-new-password">New Password</label>
+                <div className="password-wrapper">
+                  <input 
+                    type={showForgotPass ? 'text' : 'password'} 
+                    id="forgot-new-password" 
+                    className="form-input" 
+                    placeholder="Min. 8 characters" 
+                    required 
+                    value={forgotNewPass}
+                    onChange={e => setForgotNewPass(e.target.value)}
+                  />
+                  <button type="button" className="password-toggle" onClick={() => setShowForgotPass(!showForgotPass)}>
+                    {showForgotPass ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary" id="forgot-reset-btn">Reset Password</button>
+            </form>
+          )}
+        </div>
 
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>
           Remember your password? <span style={{ color: 'var(--primary-green)', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setMode('login'); window.location.hash = '#/login'; setError(''); }}>Sign In</span>

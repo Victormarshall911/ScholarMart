@@ -34,6 +34,16 @@ export default function App() {
   // Splash screen fade
   const [hideSplash, setHideSplash] = useState(false);
 
+  // Theme Management
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('scholarmart_theme') || 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('scholarmart_theme', theme);
+  }, [theme]);
+
   useEffect(() => {
     // Fade out splash after 1.8s
     const timer = setTimeout(() => {
@@ -162,6 +172,8 @@ export default function App() {
           onOpenFilterDrawer={() => setShowFilterDrawer(true)}
           onOpenSellModal={handleOpenSellModal}
           user={user}
+          theme={theme}
+          setTheme={setTheme}
         />
 
         <main className="app-content">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, MessageCircle, ShieldCheck, MapPin, Tag, Share2, Star, AlertTriangle } from 'lucide-react';
+import { X, MessageCircle, Share2, Star, AlertTriangle, ShieldCheck, MapPin, Layers } from 'lucide-react';
 import Toast from '../services/toast';
 
 export default function ProductModal({ product, onClose, user }) {
@@ -14,6 +14,10 @@ export default function ProductModal({ product, onClose, user }) {
   const vendorName = product.vendor_name || product.vendor?.name || 'Verified Student Vendor';
   const dealsCompleted = product.vendor?.deals_completed || 0;
   const avgRating = product.vendor?.average_rating ? Number(product.vendor.average_rating).toFixed(1) : null;
+  const reputationScore = product.vendor?.reputation_score || (dealsCompleted > 5 ? 85 : 70);
+
+  // Generate a mock condition score if not detailed, e.g. Used -> 8.2/10, Brand New -> 10/10
+  const conditionScore = product.condition === 'Used' ? '8.5/10 (Excellent)' : '10/10 (Brand New)';
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -24,7 +28,7 @@ export default function ProductModal({ product, onClose, user }) {
           url: window.location.href
         });
       } catch (err) {
-        // Ignored if cancelled
+        // Ignored
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
@@ -41,95 +45,120 @@ export default function ProductModal({ product, onClose, user }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      backgroundColor: 'rgba(15, 23, 42, 0.65)',
-      backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'flex-end', justifyContent: 'center'
-    }}>
-      <div style={{
-        backgroundColor: 'var(--surface)', width: '100%', maxWidth: '480px',
-        maxHeight: '90vh', borderTopLeftRadius: '28px', borderTopRightRadius: '28px',
-        overflowY: 'auto', padding: '24px', position: 'relative',
-        animation: 'slideUpFade 0.3s ease-out'
-      }}>
+    <div 
+      className="modal-overlay active" 
+      onClick={onClose} 
+      style={{ zIndex: 1000, display: 'flex', alignItems: 'center' }}
+    >
+      <div 
+        className="modal-card" 
+        onClick={(e) => e.stopPropagation()} 
+        style={{ 
+          position: 'relative', 
+          maxWidth: '560px', 
+          borderRadius: '24px', 
+          padding: '24px',
+          border: '1px solid var(--border)'
+        }}
+      >
+        {/* Close Button */}
         <button 
           onClick={onClose}
+          className="modal-close-btn"
           style={{
-            position: 'absolute', top: '16px', right: '16px', zIndex: 10,
-            background: 'var(--background)', border: 'none', borderRadius: '50%',
-            width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: 'var(--text-primary)'
+            position: 'absolute', 
+            top: '16px', 
+            right: '16px', 
+            zIndex: 10,
+            background: 'var(--surface-hover)',
+            boxShadow: 'var(--shadow-sm)',
+            border: 'none',
+            cursor: 'pointer'
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        <div style={{ borderRadius: '20px', overflow: 'hidden', marginBottom: '20px', backgroundColor: 'var(--background)' }}>
-          <img src={imageUrl} alt={product.name} style={{ width: '100%', maxHeight: '320px', objectFit: 'cover' }} />
+        {/* Gallery/Image Frame */}
+        <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', backgroundColor: 'var(--background)', position: 'relative', border: '1px solid var(--border)' }}>
+          <img src={imageUrl} alt={product.name} style={{ width: '100%', maxHeight: '340px', objectFit: 'cover', display: 'block' }} />
+          <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(9, 13, 22, 0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ fontSize: '11px', color: '#fff', fontWeight: 800, letterSpacing: '0.5px' }}>📸 campus inspection ready</span>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '12px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--primary-orange)', backgroundColor: 'rgba(249,115,22,0.1)', padding: '4px 10px', borderRadius: '20px', textTransform: 'uppercase' }}>
+        {/* Tag Badges Bar */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--primary-orange)', backgroundColor: 'var(--primary-orange-light)', padding: '5px 12px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {product.category || 'General'}
           </span>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary-green)', backgroundColor: 'rgba(16,185,129,0.1)', padding: '4px 10px', borderRadius: '20px' }}>
-            📍 {campusName}
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary-green)', backgroundColor: 'var(--primary-green-light)', padding: '5px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <MapPin size={12} /> {campusName}
           </span>
-          {product.condition && (
-            <span style={{ fontSize: '11px', fontWeight: 700, color: product.condition === 'Used' ? 'var(--primary-orange)' : 'var(--text-primary)', backgroundColor: 'var(--background)', padding: '4px 10px', borderRadius: '20px' }}>
-              {product.condition}
-            </span>
-          )}
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', backgroundColor: 'var(--surface-hover)', padding: '5px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid var(--border)' }}>
+            <Layers size={12} /> {conditionScore}
+          </span>
         </div>
 
-        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', lineHeight: 1.2 }}>
+        {/* PDP Title & Price */}
+        <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', lineHeight: 1.25, letterSpacing: '-0.3px' }}>
           {product.name}
         </h2>
 
-        <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--primary-green)', marginBottom: '16px' }}>
-          ₦{Number(product.price).toLocaleString()}
+        <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--primary-green)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>₦{Number(product.price).toLocaleString()}</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>(meetup arrangement)</span>
         </div>
 
-        <div style={{ backgroundColor: 'var(--background)', padding: '14px 16px', borderRadius: '16px', marginBottom: '20px', border: '1px solid var(--border)' }}>
-          <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)', marginBottom: '4px' }}>
-            🧑‍🎓 Seller: {vendorName}
+        {/* Seller Verification Box */}
+        <div style={{ backgroundColor: 'var(--surface-hover)', padding: '16px', borderRadius: '16px', marginBottom: '20px', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🧑‍🎓 Vendor: {vendorName}</span>
+              <ShieldCheck size={16} color="var(--primary-green)" fill="var(--primary-green-light)" />
+            </div>
+            <span style={{ fontSize: '11px', color: 'var(--primary-orange)', fontWeight: 700 }}>
+              ★ {avgRating ? `${avgRating} Rating` : 'New Vendor'}
+            </span>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Typically replies in 2 hours • <strong>{dealsCompleted}</strong> deals completed • <strong>{avgRating ? `${avgRating}★` : 'New Vendor'}</strong>
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: 'var(--background)', padding: '16px', borderRadius: '16px', marginBottom: '20px' }}>
-          <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Description</h4>
-          <p style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-            {product.description || 'No detailed description provided by the vendor.'}
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            Reputation Score: <strong style={{ color: 'var(--primary-green)' }}>{reputationScore}% Trust</strong> • Typically replies in 2 hours • <strong>{dealsCompleted}</strong> deals completed on campus.
           </p>
         </div>
 
+        {/* Description Box */}
+        <div style={{ backgroundColor: 'var(--surface)', padding: '16px', borderRadius: '16px', marginBottom: '20px', border: '1px solid var(--border)' }}>
+          <h4 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Item Description</h4>
+          <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
+            {product.description || 'No detailed description provided by the vendor. Inspect item carefully before completing the transaction.'}
+          </p>
+        </div>
+
+        {/* Action Controls */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <a 
             href={whatsappLink} 
             target="_blank" 
             rel="noopener noreferrer"
             className="btn btn-primary"
-            style={{ textDecoration: 'none', fontSize: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            style={{ textDecoration: 'none', fontSize: '15px', padding: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            <MessageCircle size={20} /> Chat on WhatsApp
+            <MessageCircle size={18} /> Chat on WhatsApp
           </a>
 
           <button 
             type="button"
             onClick={handleShare}
             className="btn btn-secondary"
-            style={{ width: '100%', padding: '14px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            style={{ width: '100%', padding: '13px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            <Share2 size={18} /> Share Product Link
+            <Share2 size={16} /> Share Product Link
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '12px 14px', borderRadius: '14px', fontSize: '12px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
+          {/* Safety Notice Disclaimer */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', background: 'var(--primary-orange-light)', border: '1px solid var(--primary-orange-glow)', padding: '12px 14px', borderRadius: '14px', fontSize: '12px', color: 'var(--text-primary)', lineHeight: '1.4' }}>
             <span style={{ fontSize: '16px' }}>⚠️</span>
-            <span>ScholarMart is a marketplace. We are not responsible for transactions between users. Always meet in public places and inspect items before paying.</span>
+            <span><strong>Campus Safety Guarantee:</strong> Only pay after physical inspection at high-traffic campus locations (e.g. Faculty Gate, Library Plaza). Never send money in advance.</span>
           </div>
 
           <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
@@ -137,17 +166,17 @@ export default function ProductModal({ product, onClose, user }) {
               type="button"
               onClick={handleRate}
               className="btn btn-secondary"
-              style={{ flex: 1, padding: '12px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              style={{ flex: 1, padding: '11px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
-              <Star size={16} /> Rate Seller
+              <Star size={14} /> Rate Seller
             </button>
             <button 
               type="button"
               onClick={handleReport}
               className="btn"
-              style={{ flex: 1, padding: '12px', fontSize: '13px', fontWeight: 700, backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '11px', fontSize: '12px', backgroundColor: 'rgba(239,68,68,0.08)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
             >
-              <AlertTriangle size={16} /> Report Listing
+              <AlertTriangle size={14} /> Report Listing
             </button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, Trash2, ShieldAlert, LogOut, Package } from 'lucide-react';
+import { PlusCircle, Trash2, ShieldAlert, LogOut, Package, Award, Activity, TrendingUp } from 'lucide-react';
 import api from '../services/api';
 import Toast from '../services/toast';
 
@@ -72,23 +72,52 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
     try {
       await api.delete(`/products/${productId}`);
       setMyProducts(myProducts.filter(p => p.id !== productId));
+      Toast.show('Listing deleted successfully', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete listing.');
+      Toast.show(err.response?.data?.message || 'Failed to delete listing.', 'error');
     }
   };
 
   if (!user) return null;
 
+  // Calculate Vendor Trust Metrics
+  const dealsCount = user.deals_completed || 0;
+  const ratingScore = user.reputation_score || (dealsCount > 5 ? 85 : 70);
+  
+  let sellerLevel = "New Seller 🟢";
+  let ratingLabel = "Active Profile";
+  if (dealsCount >= 50 && ratingScore >= 90) {
+    sellerLevel = "Top Seller 🏆";
+    ratingLabel = "Elite Campus Merchant";
+  } else if (dealsCount >= 10 && ratingScore >= 80) {
+    sellerLevel = "Trusted Seller ⭐";
+    ratingLabel = "Highly Rated";
+  } else if (dealsCount >= 3) {
+    sellerLevel = "Active Seller 🟡";
+    ratingLabel = "Verified Trades";
+  }
+
   return (
-    <div className="view-container active" style={{ padding: '16px' }}>
+    <div className="view-container active" style={{ padding: '20px' }}>
       {/* Email Verification Card */}
       {user.email_verified === false && (
-        <div id="verification-wizard-card" className="card" style={{ padding: '16px', marginBottom: '20px', borderLeft: '4px solid var(--primary-orange)', backgroundColor: 'var(--surface)' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-primary)' }}>
-            <ShieldAlert size={18} color="var(--primary-orange)" /> Verify Your Email
+        <div 
+          id="verification-wizard-card" 
+          className="card" 
+          style={{ 
+            padding: '20px', 
+            marginBottom: '24px', 
+            borderLeft: '4px solid var(--primary-orange)', 
+            backgroundColor: 'var(--surface)',
+            boxShadow: 'var(--shadow-md)',
+            borderRadius: '16px'
+          }}
+        >
+          <h3 style={{ fontSize: '15px', fontWeight: 800, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+            <ShieldAlert size={18} color="var(--primary-orange)" /> Verify Your Student Email
           </h3>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: '1.4' }}>
-            A 6-digit verification code was sent to <strong>{user.email}</strong> upon registration. Please verify your email address to enable deal confirmation and badge tracking.
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', lineHeight: '1.5' }}>
+            A 6-digit verification code was sent to <strong>{user.email}</strong>. Please enter the OTP to enable deal verification, reviews, and rise in seller ranks.
           </p>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             <input 
@@ -99,21 +128,21 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
               value={otpInput}
               onChange={(e) => setOtpInput(e.target.value)}
               className="form-input"
-              style={{ width: '130px', padding: '8px 12px', fontSize: '13px', marginBottom: 0 }}
+              style={{ width: '130px', padding: '10px 14px', fontSize: '13px', marginBottom: 0 }}
             />
             <button 
               className="btn btn-primary" 
               onClick={handleVerifyOtp}
               disabled={verifyingOtp || !otpInput}
-              style={{ width: 'auto', padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}
+              style={{ width: 'auto', padding: '10px 20px', fontSize: '13px', borderRadius: '12px' }}
             >
               {verifyingOtp ? 'Verifying...' : 'Verify'}
             </button>
             <button 
-              className="btn btn-outline" 
+              className="btn btn-secondary" 
               id="send-otp-btn"
               onClick={handleResendOtp}
-              style={{ width: 'auto', padding: '8px 16px', fontSize: '13px', borderRadius: '10px' }}
+              style={{ width: 'auto', padding: '10px 20px', fontSize: '13px', borderRadius: '12px' }}
             >
               Resend OTP
             </button>
@@ -121,50 +150,70 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
         </div>
       )}
 
-      {/* Profile Header */}
-      <div className="card" style={{ padding: '20px', borderRadius: '20px', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
+      {/* Premium Profile Header Card */}
+      <div 
+        className="card" 
+        style={{ 
+          padding: '24px', 
+          borderRadius: '24px', 
+          background: 'linear-gradient(135deg, #090D16 0%, #151e33 100%)', 
+          color: 'white',
+          border: '1px solid rgba(255,255,255,0.06)',
+          boxShadow: 'var(--shadow-lg)',
+          marginBottom: '24px'
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: user.role === 'vendor' ? 'var(--primary-orange)' : 'var(--primary-green)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              {user.role === 'vendor' ? 'Verified Campus Vendor' : 'Student Buyer Profile'}
+            <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--primary-orange)', textTransform: 'uppercase', letterSpacing: '1.5px', background: 'rgba(255,107,0,0.12)', padding: '4px 10px', borderRadius: '20px' }}>
+              {user.role === 'vendor' ? 'Verified Campus Seller' : 'Student Buyer'}
             </span>
-            <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '4px 0' }}>{user.full_name || user.name || user.email?.split('@')[0]}</h2>
-            <p style={{ fontSize: '13px', opacity: 0.8 }}>{user.email}</p>
+            <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '12px 0 4px', letterSpacing: '-0.5px' }}>
+              {user.full_name || user.name || user.email?.split('@')[0]}
+            </h2>
+            <p style={{ fontSize: '13px', opacity: 0.72 }}>🎓 {user.campus || 'COOU Campus'} ({user.email})</p>
           </div>
           <button 
             onClick={onLogout}
-            style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#EF4444', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}
+            style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#EF4444', padding: '10px', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
             title="Sign Out"
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
           >
-            <LogOut size={18} />
+            <LogOut size={16} />
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '16px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          {user.role === 'vendor' ? (
-            <>
+        {/* Reputation Analytics Rows */}
+        {user.role === 'vendor' && (
+          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
               <div>
-                <div style={{ fontSize: '12px', opacity: 0.7 }}>Reputation Score</div>
-                <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--success)' }}>⭐ {user.reputation_score || 0} / 100</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Award size={12} /> Level</div>
+                <div style={{ fontSize: '14px', fontWeight: 800, marginTop: '4px', color: 'var(--primary-orange)' }}>{sellerLevel}</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', opacity: 0.7 }}>Active Listings</div>
-                <div style={{ fontSize: '18px', fontWeight: 800 }}>{myProducts.length} Items</div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <div style={{ fontSize: '12px', opacity: 0.7 }}>Campus Location</div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--primary-green)' }}>🎓 {user.campus || 'COOU Campus'}</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={12} /> Trust Score</div>
+                <div style={{ fontSize: '14px', fontWeight: 800, marginTop: '4px', color: 'var(--primary-green)' }}>{ratingScore}%</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', opacity: 0.7 }}>Account Role</div>
-                <div style={{ fontSize: '16px', fontWeight: 800 }}>Student Buyer</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><TrendingUp size={12} /> Deals Done</div>
+                <div style={{ fontSize: '14px', fontWeight: 800, marginTop: '4px' }}>{dealsCount} trades</div>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+
+            {/* Custom linear trust meter */}
+            <div style={{ marginTop: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginBottom: '6px' }}>
+                <span>Reputation Track</span>
+                <span>{ratingScore} / 100 XP</span>
+              </div>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: `${ratingScore}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary-orange) 0%, var(--primary-green) 100%)', borderRadius: '3px' }}></div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {user.role === 'vendor' ? (
@@ -173,22 +222,46 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
           <button 
             className="btn btn-primary" 
             onClick={onOpenSellModal}
-            style={{ padding: '16px', borderRadius: '16px', marginBottom: '24px', fontSize: '15px' }}
+            style={{ 
+              padding: '16px', 
+              borderRadius: '16px', 
+              marginBottom: '32px', 
+              fontSize: '15px',
+              boxShadow: 'var(--shadow-green)'
+            }}
           >
-            <PlusCircle size={20} /> Post New Item for Sale
+            <PlusCircle size={20} /> Publish New Listing
           </button>
 
-          {/* My Listings */}
-          <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '12px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Package size={20} color="var(--primary-green)" /> My Active Listings
-          </h3>
+          {/* My Listings header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Package size={20} color="var(--primary-green)" /> Campus Inventory
+            </h3>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', background: 'var(--surface-hover)', padding: '4px 10px', borderRadius: '20px', border: '1px solid var(--border)' }}>
+              {myProducts.length} active
+            </span>
+          </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading your inventory...</div>
+            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--text-secondary)' }}>
+              <div className="toast-spinner" style={{ margin: '0 auto 12px', borderTopColor: 'var(--primary-green)' }}></div>
+              Fetching active listings...
+            </div>
           ) : myProducts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'var(--surface)', borderRadius: '16px', border: '1px dashed var(--border)' }}>
-              <p style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>No active listings</p>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Click the button above to publish your first product!</p>
+            <div 
+              style={{ 
+                textAlign: 'center', 
+                padding: '40px 20px', 
+                backgroundColor: 'var(--surface)', 
+                borderRadius: '20px', 
+                border: '1px dashed var(--border)'
+              }}
+            >
+              <div style={{ fontSize: '36px', marginBottom: '10px' }}>📦</div>
+              <p style={{ fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px', fontSize: '15px' }}>No items listed yet</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>List your textbooks, mattress, or gadgets to reach students nearby.</p>
+              <button className="btn btn-secondary btn-sm" style={{ width: 'auto' }} onClick={onOpenSellModal}>Create First Listing</button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -197,24 +270,44 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
                   key={p.id} 
                   className="card card-clickable" 
                   onClick={() => onSelectProduct(p)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', marginBottom: 0 }}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '16px', 
+                    padding: '14px', 
+                    marginBottom: 0,
+                    borderRadius: '16px',
+                    border: '1px solid var(--border)',
+                    boxShadow: 'var(--shadow-sm)'
+                  }}
                 >
                   <img 
                     src={p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200'} 
                     alt={p.name} 
-                    style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }}
+                    style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }}
                   />
                   <div style={{ flexGrow: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--primary-orange)', textTransform: 'uppercase' }}>{p.category}</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--primary-orange)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{p.category}</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '2px 0' }}>{p.name}</div>
                     <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary-green)' }}>₦{Number(p.price).toLocaleString()}</div>
                   </div>
                   <button 
                     onClick={(e) => handleDelete(e, p.id)}
-                    style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: 'var(--danger)', padding: '10px', borderRadius: '12px', cursor: 'pointer', flexShrink: 0 }}
+                    style={{ 
+                      background: 'rgba(239, 68, 68, 0.08)', 
+                      border: '1px solid rgba(239, 68, 68, 0.15)', 
+                      color: 'var(--danger)', 
+                      padding: '10px', 
+                      borderRadius: '12px', 
+                      cursor: 'pointer', 
+                      flexShrink: 0,
+                      transition: 'all 0.2s'
+                    }}
                     title="Delete Listing"
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'}
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               ))}
@@ -223,11 +316,11 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
         </>
       ) : (
         <div style={{ marginTop: '24px' }}>
-          <div className="card" style={{ padding: '28px 20px', textAlign: 'center', backgroundColor: 'var(--surface)', borderRadius: '20px', border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '42px', marginBottom: '12px' }}>🛍️</div>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>Ready to explore items?</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 20px', lineHeight: 1.5 }}>
-              Browse verified student listings for textbooks, hostel gadgets, fashion, and more across all COOU campuses.
+          <div className="card" style={{ padding: '32px 24px', textAlign: 'center', backgroundColor: 'var(--surface)', borderRadius: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)' }}>
+            <div style={{ fontSize: '48px', marginBottom: '14px' }}>🛍️</div>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.3px' }}>Explore student listings</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '380px', margin: '0 auto 24px', lineHeight: 1.55 }}>
+              Browse verified student items for sale including textbooks, laptops, hostel mattress, and fashion gears.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button 
@@ -235,14 +328,14 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
                 onClick={() => { window.location.hash = '#/marketplace'; }}
                 style={{ width: 'auto', padding: '12px 24px', borderRadius: '14px', fontSize: '14px' }}
               >
-                Explore Marketplace →
+                Open Marketplace →
               </button>
               <button 
-                className="btn btn-outline" 
+                className="btn btn-secondary" 
                 onClick={() => { window.location.hash = '#/cart'; }}
                 style={{ width: 'auto', padding: '12px 24px', borderRadius: '14px', fontSize: '14px' }}
               >
-                🛒 Saved Items
+                Saved Wishlist 🤍
               </button>
             </div>
           </div>
