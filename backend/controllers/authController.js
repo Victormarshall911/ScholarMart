@@ -43,8 +43,22 @@ exports.register = async (req, res) => {
         }
 
         // Check if user already exists
-        const userCheck = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+        const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userCheck.rowCount > 0) {
+            const existingUser = userCheck.rows[0];
+            if (existingUser.email_verified === false) {
+                // Auto-resume verification: resend OTP and return token so frontend opens OTP modal
+                if (supabase) {
+                    await supabase.auth.resend({ type: 'signup', email }).catch(() => {});
+                }
+                const token = jwt.sign({ id: existingUser.id, role: existingUser.role }, JWT_SECRET, { expiresIn: '7d' });
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Verification pin resent! Please enter the 6-digit code sent to your email.',
+                    token,
+                    user: existingUser
+                });
+            }
             return res.status(400).json({ status: 'error', message: 'Email already registered' });
         }
 
@@ -73,6 +87,21 @@ exports.register = async (req, res) => {
 
         if (authError) {
             console.error('Supabase signup error (full):', JSON.stringify(authError));
+            if (authError.message && (authError.message.toLowerCase().includes('already registered') || authError.message.toLowerCase().includes('already exists'))) {
+                const checkAgain = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+                if (checkAgain.rowCount > 0 && checkAgain.rows[0].email_verified === false) {
+                    const exUser = checkAgain.rows[0];
+                    await supabase.auth.resend({ type: 'signup', email }).catch(() => {});
+                    const token = jwt.sign({ id: exUser.id, role: exUser.role }, JWT_SECRET, { expiresIn: '7d' });
+                    return res.status(200).json({
+                        status: 'success',
+                        message: 'Verification pin resent! Please enter the 6-digit code sent to your email.',
+                        token,
+                        user: exUser
+                    });
+                }
+                return res.status(400).json({ status: 'error', message: 'Email already registered' });
+            }
             return res.status(400).json({ status: 'error', message: authError.message || 'Failed to register via Supabase.' });
         }
 
@@ -216,30 +245,35 @@ exports.login = async (req, res) => {
 // 3. Send Email OTP (Resend Signup OTP or Login OTP)
 exports.sendOtp = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const userResult = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
-        if (userResult.rowCount === 0) {
-            return res.status(404).json({ status: 'error', message: 'User not found' });
+        let email = req.body?.email;
+        if (!email && req.user?.id) {
+            const userResult = await db.query('SELECT email FROM users WHERE id = $1', [req.user.id]);
+            if (userResult.rowCount > 0) email = userResult.rows[0].email;
         }
-
-        const email = userResult.rows[0].email;
+        if (!email) {
+            return res.status(400).json({ status: 'error', message: 'Email address is required to resend OTP' });
+        }
 
         if (!supabase) {
              return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
         }
 
-        // Use signInWithOtp instead of resend — it always routes through custom SMTP
-        // and doesn't fall back to Supabase's default noreply@mail.app.supabase.io
-        const { error } = await supabase.auth.signInWithOtp({
-            email: email,
-            options: {
-                shouldCreateUser: false // Don't create a new auth user, just send OTP
-            }
+        // Attempt to resend signup verification OTP first
+        let { error } = await supabase.auth.resend({
+            type: 'signup',
+            email: email
         });
 
         if (error) {
-            console.error('Send OTP error (Supabase):', JSON.stringify(error));
-            return res.status(400).json({ status: 'error', message: error.message });
+            // Fallback to signInWithOtp if resend fails
+            const fallback = await supabase.auth.signInWithOtp({
+                email: email,
+                options: { shouldCreateUser: false }
+            });
+            if (fallback.error) {
+                console.error('Send OTP error (Supabase):', JSON.stringify(fallback.error));
+                return res.status(400).json({ status: 'error', message: fallback.error.message || error.message });
+            }
         }
 
         return res.json({

@@ -414,7 +414,7 @@ export function OtpVerificationModal({ isOpen, user, onSuccess, onLogout }) {
     setResending(true);
     Toast.show('Sending verification code...', 'info');
     try {
-      const res = await api.post('/auth/send-otp');
+      const res = await api.post('/auth/send-otp', { email: user?.email });
       Toast.show(res.data?.message || 'Verification code resent to your email.', 'success');
     } catch (err) {
       Toast.show(err.response?.data?.message || 'Failed to resend OTP.', 'error');

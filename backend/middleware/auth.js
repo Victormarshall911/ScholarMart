@@ -41,8 +41,8 @@ const isAdmin = (req, res, next) => {
 
 // Vendor Guard (Admins are also allowed to list items if needed)
 const isVendor = (req, res, next) => {
-    if (!req.user || (req.user.role !== 'vendor' && req.user.role !== 'admin')) {
-        return res.status(403).json({ status: 'error', message: 'Access denied: Vendor role required' });
+    if (!req.user) {
+        return res.status(401).json({ status: 'error', message: 'Authentication required' });
     }
     next();
 };

@@ -11,10 +11,10 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.get('/universities', authController.getUniversities);
 router.get('/campuses', authController.getCampuses);
+router.post('/send-otp', authController.sendOtp);
+router.post('/verify-otp', authController.verifyOtp);
 
 // Authenticated routes
-router.post('/send-otp', authenticate, authController.sendOtp);
-router.post('/verify-otp', authenticate, authController.verifyOtp);
 router.post('/upload-portrait', authenticate, uploadPortrait, authController.uploadPortrait);
 
 module.exports = router;
