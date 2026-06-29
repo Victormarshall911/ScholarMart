@@ -121,6 +121,11 @@ async function loadBuyerCartItems() {
                 return;
             }
 
+            // Use list-style layout for cart items with action buttons
+            list.style.display = 'flex';
+            list.style.flexDirection = 'column';
+            list.style.gap = '10px';
+
             list.innerHTML = products.map(product => {
                 let img = '/uploads/products/placeholder.webp';
                 if (product.images) {
@@ -130,25 +135,37 @@ async function loadBuyerCartItems() {
                     } catch(e) {}
                 }
 
+                // Build WhatsApp link
+                let whatsappHtml = '';
+                if (product.whatsapp_number) {
+                    const waNum = product.whatsapp_number.replace(/^0/, '234');
+                    const waLink = `https://wa.me/${waNum}?text=${encodeURIComponent(`Hi, I'm interested in your "${product.name}" listed on ScholarMart for ₦${parseFloat(product.price).toLocaleString()}.`)}`;
+                    whatsappHtml = `
+                        <a href="${waLink}" target="_blank" class="btn btn-primary cart-action-btn" onclick="event.stopPropagation();">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" style="width: 15px; height: 15px; flex-shrink: 0;">
+                                <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.333 4.982L2 22l5.202-1.362a9.92 9.92 0 004.81 1.233h.005c5.505 0 9.99-4.477 9.99-9.982A9.97 9.97 0 0012.012 2z"/>
+                            </svg>
+                            WhatsApp
+                        </a>
+                    `;
+                }
+
                 return `
-                    <div class="product-card" onclick="openProductDetails(${product.id})">
-                        <div class="product-image-container">
-                            <img src="${img}" class="product-image" alt="${product.name}">
-                            <button class="cart-icon-btn active" 
-                                    onclick="handleCartToggle(event, ${product.id}, true); setTimeout(loadBuyerCartItems, 800);">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                                </svg>
-                            </button>
+                    <div class="cart-item-card" onclick="openProductDetails(${product.id})">
+                        <img src="${img}" class="cart-item-img" alt="${product.name}">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${product.name}</div>
+                            <div class="cart-item-price">₦${parseFloat(product.price).toLocaleString()}</div>
+                            <div class="cart-item-meta">${product.vendor_name} • ${product.campus}</div>
                         </div>
-                        <div class="product-card-body">
-                            <span class="product-card-category">${product.category}</span>
-                            <h4 class="product-card-name">${product.name}</h4>
-                            <div class="product-card-price">₦${parseFloat(product.price).toLocaleString()}</div>
-                            <div class="product-card-footer">
-                                <span style="font-weight: 700;">${product.vendor_name}</span>
-                                <span class="product-card-campus">${product.campus}</span>
-                            </div>
+                        <div class="cart-item-actions" onclick="event.stopPropagation();">
+                            ${whatsappHtml}
+                            <button class="btn btn-outline cart-action-btn cart-action-delete" onclick="event.stopPropagation(); removeCartItem(${product.id});">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 15px; height: 15px; flex-shrink: 0;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                                Remove
+                            </button>
                         </div>
                     </div>
                 `;
@@ -163,6 +180,30 @@ async function loadBuyerCartItems() {
         }
     } catch(e) {
         list.innerHTML = '<p style="color: var(--danger); font-size: 13px; text-align: center; grid-column: span 2;">Failed to load cart items.</p>';
+    }
+}
+
+// Remove a single item from cart and refresh the list
+async function removeCartItem(productId) {
+    const loader = Toast.show('Removing from cart...', 'loading', 1500);
+    try {
+        const response = await fetch(`/api/products/cart/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            cartProductIds = cartProductIds.filter(id => id !== productId);
+            Toast.update(loader, 'Removed from cart!', 'success');
+            loadBuyerCartItems();
+        } else {
+            Toast.update(loader, data.message || 'Failed to remove', 'error');
+        }
+    } catch(err) {
+        Toast.update(loader, 'Connection error.', 'error');
     }
 }
 

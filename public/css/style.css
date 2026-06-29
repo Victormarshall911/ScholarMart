@@ -2385,3 +2385,90 @@ body.admin-mode .admin-only-nav {
     .udm-info-grid { grid-template-columns:1fr; }
     .admin-main-area { padding-bottom: 80px; }
 }
+
+/* ─── Cart Item Cards (Buyer Dashboard) ──────────── */
+.cart-item-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    padding: 12px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+}
+
+.cart-item-card:active {
+    transform: scale(0.98);
+}
+
+.cart-item-img {
+    width: 68px;
+    height: 68px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: var(--background);
+}
+
+.cart-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cart-item-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+    letter-spacing: -0.1px;
+}
+
+.cart-item-price {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    margin-bottom: 2px;
+}
+
+.cart-item-meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cart-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.cart-action-btn {
+    width: auto !important;
+    padding: 7px 12px !important;
+    font-size: 11px !important;
+    border-radius: 10px !important;
+    gap: 5px !important;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.cart-action-delete {
+    border-color: #EF4444 !important;
+    color: #EF4444 !important;
+}
+
+.cart-action-delete:hover {
+    background-color: rgba(239, 68, 68, 0.08) !important;
+}
+

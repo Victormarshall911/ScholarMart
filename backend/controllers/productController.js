@@ -389,7 +389,7 @@ exports.getSavedProducts = async (req, res) => {
         const result = await db.query(
             `SELECT p.id, p.vendor_id, p.name, p.description, p.price, p.category, p.campus,
                     p.image_url, p.status, p.created_at,
-                    u.name as vendor_name, u.email_verified as vendor_email_verified, u.portrait as vendor_portrait
+                    u.name as vendor_name, u.email_verified as vendor_email_verified, u.portrait as vendor_portrait, u.whatsapp_number
              FROM cart_items sp
              JOIN products p ON sp.product_id = p.id
              JOIN users u ON p.vendor_id = u.id
