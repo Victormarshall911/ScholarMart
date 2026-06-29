@@ -4,6 +4,7 @@ import LandingView from './pages/LandingView';
 import Marketplace from './pages/Marketplace';
 import Auth from './pages/Auth';
 import VendorDashboard from './pages/VendorDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import ProductModal from './components/ProductModal';
 import ProductCard from './components/ProductCard';
 import LegalView from './pages/LegalView';
@@ -160,6 +161,7 @@ export default function App() {
           onOpenSupportModal={() => setShowSupportModal(true)}
           onOpenFilterDrawer={() => setShowFilterDrawer(true)}
           onOpenSellModal={handleOpenSellModal}
+          user={user}
         />
 
         <main className="app-content">
@@ -188,12 +190,16 @@ export default function App() {
           ) : activeTab === 'auth' ? (
             <Auth onLoginSuccess={(u) => { setUser(u); setActiveTab('profile'); window.location.hash = '#/dashboard'; }} />
           ) : activeTab === 'profile' ? (
-            <VendorDashboard 
-              user={user} 
-              onLogout={handleLogout} 
-              onOpenSellModal={handleOpenSellModal}
-              onSelectProduct={setSelectedProduct}
-            />
+            user?.role === 'admin' ? (
+              <AdminDashboard user={user} onLogout={handleLogout} />
+            ) : (
+              <VendorDashboard 
+                user={user} 
+                onLogout={handleLogout} 
+                onOpenSellModal={handleOpenSellModal}
+                onSelectProduct={setSelectedProduct}
+              />
+            )
           ) : activeTab === 'terms' ? (
             <LegalView page="terms" />
           ) : activeTab === 'privacy' ? (
