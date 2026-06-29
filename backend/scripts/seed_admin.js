@@ -10,7 +10,7 @@ async function seedAdmin() {
         const check = await db.query('SELECT id FROM users WHERE email = $1', [adminEmail]);
         
         if (check.rowCount === 0) {
-            const passwordHash = await bcrypt.hash('AdminPassword123!', 10);
+            const passwordHash = await bcrypt.hash('AdminPassword098', 10);
             
             await db.query(
                 `INSERT INTO users (
@@ -21,9 +21,15 @@ async function seedAdmin() {
             
             console.log('Admin account created successfully!');
             console.log('Email: admin@scholarmart.com');
-            console.log('Password: AdminPassword123!');
+            console.log('Password: AdminPassword098');
         } else {
-            console.log('Admin account already exists.');
+            // Let's also update the password if the admin user already exists so they can login with the new credentials
+            const passwordHash = await bcrypt.hash('AdminPassword098', 10);
+            await db.query(
+                'UPDATE users SET password_hash = $1 WHERE email = $2',
+                [passwordHash, adminEmail]
+            );
+            console.log('Admin password updated successfully!');
         }
 
         console.log('Finished.');
