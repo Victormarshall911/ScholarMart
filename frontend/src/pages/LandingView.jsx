@@ -18,7 +18,7 @@ export default function LandingView({ user, featuredProducts, onSelectProduct, s
       <div className="hero-card">
         <div style={{ position: 'relative', zIndex: 1 }}>
           <h2 className="hero-title">Buy. Sell. Connect on Campus.</h2>
-          <p className="hero-sub">A trusted marketplace built for COOU students. 🎓</p>
+          <p className="hero-sub">A trusted marketplace built for Nigerian students. 🎓</p>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '20px' }}>
             <button 
               className="btn btn-orange" 
