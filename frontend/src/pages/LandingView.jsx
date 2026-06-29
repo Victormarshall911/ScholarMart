@@ -27,13 +27,15 @@ export default function LandingView({ user, featuredProducts, onSelectProduct, s
             >
               Explore Listings
             </button>
-            <button 
-              className="btn" 
-              style={{ flex: 1, minWidth: '140px', background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: 'white', border: '1.5px solid rgba(255,255,255,0.55)', fontWeight: 700 }} 
-              onClick={() => { window.location.hash = isLoggedIn ? '#/cart' : '#/register'; }}
-            >
-              {isLoggedIn ? 'My Cart 🛒' : 'Join Free →'}
-            </button>
+            {!isLoggedIn && (
+              <button 
+                className="btn" 
+                style={{ flex: 1, minWidth: '140px', background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: 'white', border: '1.5px solid rgba(255,255,255,0.55)', fontWeight: 700 }} 
+                onClick={() => { window.location.hash = '#/register'; }}
+              >
+                Join Free →
+              </button>
+            )}
           </div>
         </div>
       </div>
