@@ -103,6 +103,7 @@ export default function Auth({ onLoginSuccess }) {
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent double-submit
     setError('');
 
     if (regPassword !== regConfirm) {

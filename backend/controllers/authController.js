@@ -43,8 +43,22 @@ exports.register = async (req, res) => {
         }
 
         // Check if user already exists
-        const userCheck = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+        const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userCheck.rowCount > 0) {
+            const existingUser = userCheck.rows[0];
+            if (existingUser.email_verified === false) {
+                // Auto-resume verification: resend OTP and return token so frontend opens OTP modal
+                if (supabase) {
+                    await supabase.auth.resend({ type: 'signup', email }).catch(() => {});
+                }
+                const token = jwt.sign({ id: existingUser.id, role: existingUser.role }, JWT_SECRET, { expiresIn: '7d' });
+                return res.status(200).json({
+                    status: 'success',
+                    message: 'Verification pin resent! Please enter the 6-digit code sent to your email.',
+                    token,
+                    user: existingUser
+                });
+            }
             return res.status(400).json({ status: 'error', message: 'Email already registered' });
         }
 
@@ -73,6 +87,21 @@ exports.register = async (req, res) => {
 
         if (authError) {
             console.error('Supabase signup error (full):', JSON.stringify(authError));
+            if (authError.message && (authError.message.toLowerCase().includes('already registered') || authError.message.toLowerCase().includes('already exists'))) {
+                const checkAgain = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+                if (checkAgain.rowCount > 0 && checkAgain.rows[0].email_verified === false) {
+                    const exUser = checkAgain.rows[0];
+                    await supabase.auth.resend({ type: 'signup', email }).catch(() => {});
+                    const token = jwt.sign({ id: exUser.id, role: exUser.role }, JWT_SECRET, { expiresIn: '7d' });
+                    return res.status(200).json({
+                        status: 'success',
+                        message: 'Verification pin resent! Please enter the 6-digit code sent to your email.',
+                        token,
+                        user: exUser
+                    });
+                }
+                return res.status(400).json({ status: 'error', message: 'Email already registered' });
+            }
             return res.status(400).json({ status: 'error', message: authError.message || 'Failed to register via Supabase.' });
         }
 
