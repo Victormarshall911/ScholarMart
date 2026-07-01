@@ -150,22 +150,21 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
         </div>
       )}
 
-      {/* Premium Profile Header Card */}
       <div 
         className="card" 
         style={{ 
           padding: '24px', 
           borderRadius: '24px', 
-          background: 'linear-gradient(135deg, #090D16 0%, #151e33 100%)', 
+          background: 'var(--gradient-dark-header)', 
           color: 'white',
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid var(--border-white-light)',
           boxShadow: 'var(--shadow-lg)',
           marginBottom: '24px'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--primary-orange)', textTransform: 'uppercase', letterSpacing: '1.5px', background: 'rgba(255,107,0,0.12)', padding: '4px 10px', borderRadius: '20px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--primary-orange)', textTransform: 'uppercase', letterSpacing: '1.5px', background: 'var(--primary-orange-light)', padding: '4px 10px', borderRadius: '20px' }}>
               {user.role === 'vendor' ? 'Verified Campus Seller' : 'Student Buyer'}
             </span>
             <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '12px 0 4px', letterSpacing: '-0.5px' }}>
@@ -175,7 +174,7 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
           </div>
           <button 
             onClick={onLogout}
-            style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#EF4444', padding: '10px', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
+            style={{ background: 'var(--danger-light)', border: '1px solid var(--danger-border)', color: 'var(--danger)', padding: '10px', borderRadius: '14px', cursor: 'pointer', transition: 'all var(--transition-fast)' }}
             title="Sign Out"
             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
@@ -186,29 +185,29 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
 
         {/* Reputation Analytics Rows */}
         {user.role === 'vendor' && (
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border-white-medium)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
               <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Award size={12} /> Level</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-white-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Award size={12} /> Level</div>
                 <div style={{ fontSize: '14px', fontWeight: 800, marginTop: '4px', color: 'var(--primary-orange)' }}>{sellerLevel}</div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={12} /> Trust Score</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-white-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><Activity size={12} /> Trust Score</div>
                 <div style={{ fontSize: '14px', fontWeight: 800, marginTop: '4px', color: 'var(--primary-green)' }}>{ratingScore}%</div>
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><TrendingUp size={12} /> Deals Done</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-white-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}><TrendingUp size={12} /> Deals Done</div>
                 <div style={{ fontSize: '14px', fontWeight: 800, marginTop: '4px' }}>{dealsCount} trades</div>
               </div>
             </div>
 
             {/* Custom linear trust meter */}
             <div style={{ marginTop: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-white-muted)', marginBottom: '6px' }}>
                 <span>Reputation Track</span>
                 <span>{ratingScore} / 100 XP</span>
               </div>
-              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '6px', background: 'var(--bg-white-light)', borderRadius: '3px', overflow: 'hidden' }}>
                 <div style={{ width: `${ratingScore}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary-orange) 0%, var(--primary-green) 100%)', borderRadius: '3px' }}></div>
               </div>
             </div>
@@ -294,18 +293,18 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
                   <button 
                     onClick={(e) => handleDelete(e, p.id)}
                     style={{ 
-                      background: 'rgba(239, 68, 68, 0.08)', 
-                      border: '1px solid rgba(239, 68, 68, 0.15)', 
+                      background: 'var(--danger-light)', 
+                      border: '1px solid var(--danger-border)', 
                       color: 'var(--danger)', 
                       padding: '10px', 
                       borderRadius: '12px', 
                       cursor: 'pointer', 
                       flexShrink: 0,
-                      transition: 'all 0.2s'
+                      transition: 'all var(--transition-fast)'
                     }}
                     title="Delete Listing"
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--danger-border)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--danger-light)'}
                   >
                     <Trash2 size={16} />
                   </button>

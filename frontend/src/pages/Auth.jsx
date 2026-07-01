@@ -162,7 +162,7 @@ export default function Auth({ onLoginSuccess }) {
   return (
     <section id="auth-view" className="view-container active">
       {error && (
-        <div style={{ padding: '12px 16px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #EF4444', color: '#EF4444', borderRadius: '12px', fontSize: '13px', fontWeight: 600, marginBottom: '20px', textAlign: 'center' }}>
+        <div style={{ padding: '12px 16px', background: 'var(--danger-light)', border: '1px solid var(--danger-border)', color: 'var(--danger)', borderRadius: '12px', fontSize: '13px', fontWeight: 600, marginBottom: '20px', textAlign: 'center' }}>
           {error}
         </div>
       )}

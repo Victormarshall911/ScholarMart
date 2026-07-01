@@ -82,8 +82,8 @@ export default function ProductModal({ product, onClose, user }) {
         {/* Gallery/Image Frame */}
         <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', backgroundColor: 'var(--background)', position: 'relative', border: '1px solid var(--border)' }}>
           <img src={imageUrl} alt={product.name} style={{ width: '100%', maxHeight: '340px', objectFit: 'cover', display: 'block' }} />
-          <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'rgba(9, 13, 22, 0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ fontSize: '11px', color: '#fff', fontWeight: 800, letterSpacing: '0.5px' }}>📸 campus inspection ready</span>
+          <div style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--color-badge-dark-bg)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid var(--color-badge-dark-border)', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ fontSize: '11px', color: '#ffffff', fontWeight: 800, letterSpacing: '0.5px' }}>📸 campus inspection ready</span>
           </div>
         </div>
 
@@ -174,7 +174,7 @@ export default function ProductModal({ product, onClose, user }) {
               type="button"
               onClick={handleReport}
               className="btn"
-              style={{ flex: 1, padding: '11px', fontSize: '12px', backgroundColor: 'rgba(239,68,68,0.08)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '11px', fontSize: '12px', backgroundColor: 'var(--danger-light)', color: 'var(--danger)', border: '1px solid var(--danger-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', cursor: 'pointer' }}
             >
               <AlertTriangle size={14} /> Report Listing
             </button>

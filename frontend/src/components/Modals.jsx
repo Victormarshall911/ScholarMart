@@ -69,10 +69,14 @@ export function FilterDrawer({ isOpen, onClose, filters, setFilters, onApply, on
 
   return (
     <div id="filter-drawer-overlay" className="modal-overlay active" onClick={onClose} style={{ display: 'flex' }}>
-      <div className="filter-drawer" onClick={(e) => e.stopPropagation()}>
-        <div className="filter-drawer-header">
-          <h3 className="filter-drawer-title">Filters</h3>
-          <button className="filter-drawer-close" onClick={onClose}>Close</button>
+      <div className="filter-drawer" onClick={(e) => e.stopPropagation()} style={{ borderTopLeftRadius: '24px', borderBottomLeftRadius: '24px' }}>
+        <div className="filter-drawer-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+          <h3 className="filter-drawer-title" style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Filters</h3>
+          <button className="filter-drawer-close" onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', borderRadius: '50%', transition: 'background-color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--surface-hover)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" style={{ width: '20px', height: '20px' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
         
         <div className="form-group autocomplete-container" style={{ position: 'relative' }}>
@@ -215,7 +219,7 @@ export function CreateListingModal({ isOpen, onClose, onSuccess }) {
           </button>
         </div>
 
-        {error && <div style={{ color: '#EF4444', fontSize: '13px', marginBottom: '10px', fontWeight: 600 }}>{error}</div>}
+        {error && <div style={{ color: 'var(--danger)', fontSize: '13px', marginBottom: '10px', fontWeight: 600 }}>{error}</div>}
 
         <form id="product-listing-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -337,7 +341,7 @@ export function TestimonialModal({ isOpen, onClose, onSuccess }) {
           </button>
         </div>
 
-        {error && <div style={{ color: '#EF4444', fontSize: '13px', marginBottom: '10px', fontWeight: 600 }}>{error}</div>}
+        {error && <div style={{ color: 'var(--danger)', fontSize: '13px', marginBottom: '10px', fontWeight: 600 }}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -347,7 +351,7 @@ export function TestimonialModal({ isOpen, onClose, onSuccess }) {
                 <span 
                   key={star} 
                   onClick={() => setRating(star)} 
-                  style={{ fontSize: '28px', cursor: 'pointer', color: star <= rating ? '#F59E0B' : '#CBD5E1' }}
+                  style={{ fontSize: '28px', cursor: 'pointer', color: star <= rating ? 'var(--warning)' : 'var(--border-hover)' }}
                 >
                   ★
                 </span>
@@ -424,8 +428,8 @@ export function OtpVerificationModal({ isOpen, user, onSuccess, onLogout }) {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999, backgroundColor: 'var(--bg-main, #0f172a)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflowY: 'auto' }}>
-      <div style={{ backgroundColor: 'var(--surface, #1e293b)', width: '100%', maxWidth: '440px', padding: '40px 32px', textAlign: 'center', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)', border: '1px solid var(--border, rgba(255,255,255,0.1))' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999, backgroundColor: 'var(--background, #090D16)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflowY: 'auto' }}>
+      <div style={{ backgroundColor: 'var(--surface, #0F1524)', width: '100%', maxWidth: '440px', padding: '40px 32px', textAlign: 'center', borderRadius: '24px', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--border)' }}>
         <div style={{ fontSize: '56px', marginBottom: '16px' }}>🛡️</div>
         <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px' }}>Verify Your Email</h3>
         <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: '1.6' }}>

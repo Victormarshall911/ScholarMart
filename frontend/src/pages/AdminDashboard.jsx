@@ -261,8 +261,8 @@ export default function AdminDashboard({ user, onLogout }) {
               style={{
                 width: '100%', 
                 padding: '12px', 
-                border: '1px solid rgba(239,68,68,0.2)',
-                backgroundColor: 'rgba(239,68,68,0.06)', 
+                border: '1px solid var(--danger-border)',
+                backgroundColor: 'var(--danger-light)', 
                 color: 'var(--danger)',
                 borderRadius: '12px', 
                 cursor: 'pointer', 
@@ -316,9 +316,9 @@ export default function AdminDashboard({ user, onLogout }) {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
                     {[
                       { label: 'Verified Students', value: analytics.totalUsers    || 0, icon: '👥', color: 'var(--primary-green)', bg: 'var(--primary-green-light)' },
-                      { label: 'Active Listings',   value: analytics.totalListings || 0, icon: '🏪', color: '#3b82f6', bg: 'rgba(59,130,246,0.08)' },
+                      { label: 'Active Listings',   value: analytics.totalListings || 0, icon: '🏪', color: 'var(--color-hostels)', bg: 'var(--bg-hostels)' },
                       { label: 'Successful Deals',  value: analytics.totalDeals    || 0, icon: '🤝', color: 'var(--primary-orange)', bg: 'var(--primary-orange-light)' },
-                      { label: 'Pending Reports',   value: analytics.totalReports  || 0, icon: '⚠️', color: 'var(--danger)', bg: 'rgba(239,68,68,0.08)' },
+                      { label: 'Pending Reports',   value: analytics.totalReports  || 0, icon: '⚠️', color: 'var(--danger)', bg: 'var(--danger-light)' },
                     ].map(stat => (
                       <div 
                         key={stat.label} 
@@ -593,7 +593,7 @@ export default function AdminDashboard({ user, onLogout }) {
                                       </button>
                                       <button 
                                         onClick={() => quickStatus(u.id, isSusp ? 'active' : 'suspended')} 
-                                        style={{ padding: '6px 10px', fontSize: '12px', border: 'none', background: isSusp ? 'var(--primary-green)' : 'var(--danger)', color: '#fff', cursor: 'pointer', borderRadius: '8px' }}
+                                        style={{ padding: '6px 10px', fontSize: '12px', border: 'none', background: isSusp ? 'var(--primary-green)' : 'var(--danger)', color: '#ffffff', cursor: 'pointer', borderRadius: '8px' }}
                                         title={isSusp ? "Activate Account" : "Deactivate Account"}
                                       >
                                         {isSusp ? '✓' : '🚫'}
@@ -607,7 +607,7 @@ export default function AdminDashboard({ user, onLogout }) {
                                       </button>
                                       <button 
                                         onClick={() => deleteUser(u)} 
-                                        style={{ padding: '6px 10px', fontSize: '12px', border: 'none', background: 'rgba(239,68,68,0.1)', color: 'var(--danger)', cursor: 'pointer', borderRadius: '8px' }}
+                                        style={{ padding: '6px 10px', fontSize: '12px', border: 'none', background: 'var(--danger-light)', color: 'var(--danger)', cursor: 'pointer', borderRadius: '8px' }}
                                         title="Delete Account"
                                       >
                                         🗑️
@@ -645,7 +645,7 @@ export default function AdminDashboard({ user, onLogout }) {
                                 borderRadius: '8px', 
                                 border: '1px solid var(--border)', 
                                 backgroundColor: p === userPage ? 'var(--primary-green)' : 'var(--surface)', 
-                                color: p === userPage ? '#fff' : 'var(--text-primary)', 
+                                color: p === userPage ? '#ffffff' : 'var(--text-primary)', 
                                 cursor: 'pointer', 
                                 fontWeight: p === userPage ? 800 : 500 
                               }}
@@ -723,7 +723,7 @@ export default function AdminDashboard({ user, onLogout }) {
                             <button 
                               onClick={() => { const isSusp = detailUser.status==='suspended'||detailUser.status==='banned'; quickStatus(detailUser.id, isSusp?'active':'suspended'); setDetailUser(null); }} 
                               className="btn btn-primary" 
-                              style={{ flex: 1, padding: '12px', fontSize: '13px', backgroundColor: (detailUser.status==='suspended'||detailUser.status==='banned')?'var(--primary-green)':'var(--danger)', color: '#fff' }}
+                              style={{ flex: 1, padding: '12px', fontSize: '13px', backgroundColor: (detailUser.status==='suspended'||detailUser.status==='banned')?'var(--primary-green)':'var(--danger)', color: '#ffffff' }}
                             >
                               {(detailUser.status==='suspended'||detailUser.status==='banned') ? '✓ Activate Account' : '🚫 Deactivate Account'}
                             </button>
@@ -799,7 +799,7 @@ export default function AdminDashboard({ user, onLogout }) {
                           <button 
                             onClick={() => moderateProduct(p.id, 'reject')} 
                             className="btn" 
-                            style={{ width: 'auto', padding: '8px 16px', backgroundColor: 'rgba(239,68,68,0.08)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.15)', cursor: 'pointer' }}
+                            style={{ width: 'auto', padding: '8px 16px', backgroundColor: 'var(--danger-light)', color: 'var(--danger)', border: '1px solid var(--danger-border)', cursor: 'pointer' }}
                           >
                             🚫 Ban Listing
                           </button>

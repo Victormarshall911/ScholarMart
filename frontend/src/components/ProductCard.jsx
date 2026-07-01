@@ -45,7 +45,7 @@ export default function ProductCard({ product, onSelect, isSaved, onToggleSave }
             color: isSaved ? 'var(--primary-orange)' : 'var(--text-muted)',
             boxShadow: 'var(--shadow-sm)',
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'all var(--transition-fast)'
           }}
           title={isSaved ? 'Remove from Wishlist' : 'Add to Wishlist'}
         >

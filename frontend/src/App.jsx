@@ -235,7 +235,7 @@ export default function App() {
                     const whatsappLink = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${message}`;
 
                     return (
-                      <div key={p.id} style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--surface)', borderRadius: '16px', padding: '12px', border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                      <div key={p.id} style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--surface)', borderRadius: '16px', padding: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)' }}>
                         <ProductCard 
                           product={p} 
                           onSelect={setSelectedProduct}
@@ -248,7 +248,7 @@ export default function App() {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="btn"
-                            style={{ width: '100%', backgroundColor: '#25D366', color: '#fff', fontSize: '14px', fontWeight: 800, padding: '12px', borderRadius: '12px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)' }}
+                            style={{ width: '100%', backgroundColor: 'var(--color-whatsapp)', color: '#fff', fontSize: '14px', fontWeight: 800, padding: '12px', borderRadius: '12px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px var(--color-whatsapp-glow)' }}
                           >
                             💬 Chat WhatsApp
                           </a>
@@ -258,7 +258,7 @@ export default function App() {
                               handleToggleSave(p);
                             }}
                             className="btn"
-                            style={{ width: '100%', backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.3)', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                            style={{ width: '100%', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                             title="Remove from cart"
                           >
                             🗑️ Remove Item

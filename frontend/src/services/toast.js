@@ -40,30 +40,30 @@ class ToastNotification {
     toast.id = toastId;
     toast.className = `toast toast-${type}`;
     
-    let bgColor = '#1F2937';
-    let textColor = '#FFFFFF';
-    let progressColor = '#4B5563';
+    let bgColor = 'var(--toast-bg-dark)';
+    let textColor = 'var(--toast-text-dark)';
+    let progressColor = 'var(--toast-progress-dark)';
     let icon = '';
 
     if (type === 'success') {
-      bgColor = '#FFFFFF';
-      textColor = '#1F2937';
-      progressColor = '#22C55E';
-      icon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="#22C55E"/></svg>`;
+      bgColor = 'var(--toast-bg-light)';
+      textColor = 'var(--toast-text-light)';
+      progressColor = 'var(--success)';
+      icon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="var(--success)"/></svg>`;
     } else if (type === 'error') {
-      bgColor = '#FFFFFF';
-      textColor = '#1F2937';
-      progressColor = '#EF4444';
-      icon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM15 11H5V9H15V11Z" fill="#EF4444"/></svg>`;
+      bgColor = 'var(--toast-bg-light)';
+      textColor = 'var(--toast-text-light)';
+      progressColor = 'var(--danger)';
+      icon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM15 11H5V9H15V11Z" fill="var(--danger)"/></svg>`;
     } else if (type === 'warning') {
-      bgColor = '#FFFFFF';
-      textColor = '#1F2937';
-      progressColor = '#F59E0B';
-      icon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="#F59E0B"/></svg>`;
+      bgColor = 'var(--toast-bg-light)';
+      textColor = 'var(--toast-text-light)';
+      progressColor = 'var(--warning)';
+      icon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z" fill="var(--warning)"/></svg>`;
     } else if (type === 'loading') {
-      bgColor = '#1F2937';
-      textColor = '#FFFFFF';
-      progressColor = '#00A86B';
+      bgColor = 'var(--toast-bg-dark)';
+      textColor = 'var(--toast-text-dark)';
+      progressColor = 'var(--primary-green)';
       icon = `<div class="toast-spinner"></div>`;
     }
 
@@ -75,14 +75,14 @@ class ToastNotification {
       color: textColor,
       padding: '12px 16px',
       borderRadius: '16px',
-      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      boxShadow: 'var(--shadow-md)',
       fontSize: '14px',
       fontWeight: '500',
       opacity: '0',
       transform: 'translateY(-20px)',
       transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
       pointerEvents: 'auto',
-      border: '1px solid #E5E7EB',
+      border: '1px solid var(--toast-border-light)',
       overflow: 'hidden',
       position: 'relative'
     });
@@ -132,9 +132,9 @@ if (typeof window !== 'undefined' && !document.getElementById('toast-spinner-sty
     .toast-spinner {
       width: 20px;
       height: 20px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: 2px solid var(--border-white-medium);
       border-radius: 50%;
-      border-top-color: #00A86B;
+      border-top-color: var(--primary-green);
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin {

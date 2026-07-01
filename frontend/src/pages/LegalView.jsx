@@ -178,7 +178,7 @@ export default function LegalView({ page = 'terms' }) {
       ) : (
         <>
           {/* Header */}
-          <div className="legal-header" style={{ background: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)' }}>
+          <div className="legal-header" style={{ background: 'var(--gradient-legal-header)' }}>
             <span className="legal-header-icon">🔒</span>
             <h1>Privacy Policy</h1>
             <span className="legal-header-date">Last Updated: June 2026</span>
