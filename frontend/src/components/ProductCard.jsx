@@ -32,7 +32,7 @@ export default function ProductCard({ product, onSelect, isSaved, onToggleSave }
           }}
           title={isSaved ? 'Remove from Cart' : 'Add to Cart'}
         >
-          <ShoppingCart size={18} fill={isSaved ? 'var(--primary-green)' : 'none'} color={isSaved ? 'var(--primary-green)' : 'currentColor'} />
+          <ShoppingCart size={14} fill={isSaved ? 'var(--primary-green)' : 'none'} color={isSaved ? 'var(--primary-green)' : 'currentColor'} />
         </button>
       </div>
       <div className="product-card-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -41,16 +41,15 @@ export default function ProductCard({ product, onSelect, isSaved, onToggleSave }
           <div className="product-card-name">{product.name}</div>
           <div className="product-card-price">₦{Number(product.price).toLocaleString()}</div>
         </div>
-        <div>
-          <div className="product-card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', maxWidth: '65%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ marginTop: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', maxWidth: '65%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{vendorName}</span>
-              <span title={badge.label} style={{ fontSize: '12px' }}>{badge.emoji}</span>
+              <span title={badge.label} style={{ fontSize: '10px' }}>{badge.emoji}</span>
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>{campusName}</span>
-          </div>
-          <div style={{ fontSize: '11px', color: avgRating > 0 ? 'var(--primary-orange)' : 'var(--text-muted)', marginTop: '4px', fontWeight: 600 }}>
-            {avgRating > 0 ? `★ ${avgRating.toFixed(1)} (${product.vendor?.total_ratings || 1})` : 'No ratings yet'}
+            <span style={{ fontSize: '10px', fontWeight: 600, color: avgRating > 0 ? 'var(--primary-orange)' : 'var(--text-muted)' }}>
+              {avgRating > 0 ? `★ ${avgRating.toFixed(1)}` : ''}
+            </span>
           </div>
         </div>
       </div>

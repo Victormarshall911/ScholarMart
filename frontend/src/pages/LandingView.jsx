@@ -46,80 +46,56 @@ export default function LandingView({ user, featuredProducts, onSelectProduct, s
       </div>
       <div className="categories-grid">
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Electronics')}>
-          <div className="category-icon-box">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #E0F2FE, #DBEAFE)', fontSize: '24px' }}>
+            💻
           </div>
           <span className="category-grid-label">Electronics</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Fashion & Clothing')}>
-          <div className="category-icon-box" style={{ color: '#ff6b00', backgroundColor: 'rgba(255,107,0,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 2L3 5v4h3v11h12V9h3V5l-3-3H6z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 2l3 3m6-3l-3 3" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #FFF1F2, #FFE4E6)', fontSize: '24px' }}>
+            👗
           </div>
           <span className="category-grid-label">Fashion</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Books & Academic Materials')}>
-          <div className="category-icon-box" style={{ color: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', fontSize: '24px' }}>
+            📚
           </div>
           <span className="category-grid-label">Books</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Hostel Essentials')}>
-          <div className="category-icon-box" style={{ color: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3.75-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.75A1.5 1.5 0 0110.5 15.75h3a1.5 1.5 0 011.5 1.5V21" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', fontSize: '24px' }}>
+            🏠
           </div>
           <span className="category-grid-label">Hostels</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Gadgets')}>
-          <div className="category-icon-box" style={{ color: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.5 1.5H13.5M10.5 22.5H13.5M12 5.25a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM12 9v3l1.5 1.5" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #F5F3FF, #EDE9FE)', fontSize: '24px' }}>
+            📱
           </div>
           <span className="category-grid-label">Gadgets</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Creative & Handmade')}>
-          <div className="category-icon-box" style={{ color: '#ec4899', backgroundColor: 'rgba(236,72,153,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3a9 9 0 000 18h1.168a1.5 1.5 0 001.272-.705l.394-.63a1.5 1.5 0 011.272-.705h2.144A1.5 1.5 0 0019.5 18a9 9 0 00-7.5-15z" />
-              <circle cx="7.5" cy="10.5" r="1" fill="currentColor" />
-              <circle cx="11.5" cy="7.5" r="1" fill="currentColor" />
-              <circle cx="15.5" cy="10.5" r="1" fill="currentColor" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)', fontSize: '24px' }}>
+            🎨
           </div>
           <span className="category-grid-label">Creative</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Beauty & Personal Care')}>
-          <div className="category-icon-box" style={{ color: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3h6v3H9V3zm-2.25 6h10.5a1.5 1.5 0 011.5 1.5v9A2.25 2.25 0 0116.5 21.75H7.5A2.25 2.25 0 015.25 19.5v-9A1.5 1.5 0 016.75 9z" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', fontSize: '24px' }}>
+            💄
           </div>
           <span className="category-grid-label">Beauty</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Sports & Fitness')}>
-          <div className="category-icon-box" style={{ color: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-              <path d="M6 12A6 6 0 0 1 18 12" stroke="currentColor" strokeWidth="2"/>
-              <path d="M12 6A6 6 0 0 0 12 18" stroke="currentColor" strokeWidth="2"/>
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #ECFEFF, #CFFAFE)', fontSize: '24px' }}>
+            ⚽
           </div>
           <span className="category-grid-label">Sports</span>
         </div>
         <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Others')}>
-          <div className="category-icon-box" style={{ color: '#64748b', backgroundColor: 'rgba(100,116,139,0.08)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-            </svg>
+          <div className="category-icon-box" style={{ background: 'linear-gradient(135deg, #F8FAFC, #F1F5F9)', fontSize: '24px' }}>
+            📦
           </div>
           <span className="category-grid-label">Others</span>
         </div>
