@@ -74,8 +74,30 @@ export default function Marketplace({ onSelectProduct, savedIds, onToggleSave, s
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-          Loading marketplace deals...
+        <div className="products-grid" id="marketplace-products-skeleton">
+          {[...Array(6)].map((_, idx) => (
+            <div key={idx} className="premium-product-card card-vertical" style={{ pointerEvents: 'none', border: '1px solid var(--border)' }}>
+              <div className="card-image-wrapper shimmer" style={{ aspectRatio: '4 / 3.4' }}></div>
+              <div className="card-details-wrapper" style={{ padding: '10px 12px 12px 12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div className="shimmer" style={{ height: '10px', width: '35%', borderRadius: '4px' }}></div>
+                  <div className="shimmer" style={{ height: '12px', width: '25%', borderRadius: '4px' }}></div>
+                </div>
+                <div className="shimmer" style={{ height: '14px', width: '85%', borderRadius: '4px', marginBottom: '8px' }}></div>
+                <div className="shimmer" style={{ height: '16px', width: '45%', borderRadius: '4px', marginBottom: '12px' }}></div>
+                <div style={{ borderTop: '1px dashed var(--border)', paddingTop: '8px', marginTop: 'auto' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div className="shimmer" style={{ height: '10px', width: '40%', borderRadius: '4px' }}></div>
+                    <div className="shimmer" style={{ height: '10px', width: '30%', borderRadius: '4px' }}></div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div className="shimmer" style={{ height: '8px', width: '35%', borderRadius: '4px' }}></div>
+                    <div className="shimmer" style={{ height: '8px', width: '45%', borderRadius: '4px' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : filteredProducts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px', backgroundColor: 'var(--surface)', borderRadius: '16px', border: '1px dashed var(--border)' }}>

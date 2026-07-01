@@ -228,41 +228,52 @@ export default function App() {
                   <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Tap the bookmark icon on any product in the marketplace to save it here.</p>
                 </div>
               ) : (
-                <div className="products-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                <div className="products-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '16px' }}>
                   {savedProducts.map(p => {
                     const whatsappNumber = p.vendor_whatsapp || p.vendor?.whatsapp || '2348000000000';
                     const message = encodeURIComponent(`Hi, I'm interested in buying "${p.name}" listed on ScholarMart for ₦${Number(p.price).toLocaleString()}. Is it still available?`);
                     const whatsappLink = `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${message}`;
 
                     return (
-                      <div key={p.id} style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--surface)', borderRadius: '16px', padding: '12px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)' }}>
+                      <div key={p.id} className="premium-product-card" style={{ display: 'flex', flexDirection: 'column' }}>
                         <ProductCard 
                           product={p} 
                           onSelect={setSelectedProduct}
                           isSaved={true}
                           onToggleSave={handleToggleSave}
+                          onDelete={(e) => {
+                            e.stopPropagation();
+                            handleToggleSave(p);
+                          }}
+                          variant="wishlist"
                         />
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed var(--border)' }}>
+                        <div style={{ padding: '0 12px 12px 12px', marginTop: '-4px' }}>
                           <a 
                             href={whatsappLink} 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="btn"
-                            style={{ width: '100%', backgroundColor: 'var(--color-whatsapp)', color: '#fff', fontSize: '14px', fontWeight: 800, padding: '12px', borderRadius: '12px', textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px var(--color-whatsapp-glow)' }}
+                            style={{ 
+                              width: '100%', 
+                              backgroundColor: 'var(--color-whatsapp)', 
+                              color: '#fff', 
+                              fontSize: '12px', 
+                              fontWeight: 800, 
+                              padding: '10px', 
+                              borderRadius: '10px', 
+                              textAlign: 'center', 
+                              textDecoration: 'none', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              gap: '6px', 
+                              boxShadow: '0 4px 10px var(--color-whatsapp-glow)',
+                              border: 'none',
+                              cursor: 'pointer'
+                            }}
                           >
                             💬 Chat WhatsApp
                           </a>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleSave(p);
-                            }}
-                            className="btn"
-                            style={{ width: '100%', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '10px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                            title="Remove from cart"
-                          >
-                            🗑️ Remove Item
-                          </button>
                         </div>
                       </div>
                     );

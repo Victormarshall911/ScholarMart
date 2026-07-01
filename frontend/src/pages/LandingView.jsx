@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
+import CategoryCard from '../components/CategoryCard';
+import SellerCard from '../components/SellerCard';
 import api from '../services/api';
 
 export default function LandingView({ user, featuredProducts, onSelectProduct, savedIds, onToggleSave, onSelectCategoryFilter, onOpenTestimonialModal, onOpenSupportModal }) {
@@ -45,84 +47,15 @@ export default function LandingView({ user, featuredProducts, onSelectProduct, s
         <h3 className="section-title">Popular Categories</h3>
       </div>
       <div className="categories-grid">
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Electronics')}>
-          <div className="category-icon-box">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Electronics</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Fashion & Clothing')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-fashion)', backgroundColor: 'var(--bg-fashion)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 2L3 5v4h3v11h12V9h3V5l-3-3H6z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 2l3 3m6-3l-3 3" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Fashion</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Books & Academic Materials')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-books)', backgroundColor: 'var(--bg-books)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Books</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Hostel Essentials')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-hostels)', backgroundColor: 'var(--bg-hostels)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3.75-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.75A1.5 1.5 0 0110.5 15.75h3a1.5 1.5 0 011.5 1.5V21" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Hostels</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Gadgets')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-gadgets)', backgroundColor: 'var(--bg-gadgets)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.5 1.5H13.5M10.5 22.5H13.5M12 5.25a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM12 9v3l1.5 1.5" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Gadgets</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Creative & Handmade')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-creative)', backgroundColor: 'var(--bg-creative)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3a9 9 0 000 18h1.168a1.5 1.5 0 001.272-.705l.394-.63a1.5 1.5 0 011.272-.705h2.144A1.5 1.5 0 0019.5 18a9 9 0 00-7.5-15z" />
-              <circle cx="7.5" cy="10.5" r="1" fill="currentColor" />
-              <circle cx="11.5" cy="7.5" r="1" fill="currentColor" />
-              <circle cx="15.5" cy="10.5" r="1" fill="currentColor" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Creative</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Beauty & Personal Care')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-beauty)', backgroundColor: 'var(--bg-beauty)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3h6v3H9V3zm-2.25 6h10.5a1.5 1.5 0 011.5 1.5v9A2.25 2.25 0 0116.5 21.75H7.5A2.25 2.25 0 015.25 19.5v-9A1.5 1.5 0 016.75 9z" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Beauty</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Sports & Fitness')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-sports)', backgroundColor: 'var(--bg-sports)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-              <path d="M6 12A6 6 0 0 1 18 12" stroke="currentColor" strokeWidth="2"/>
-              <path d="M12 6A6 6 0 0 0 12 18" stroke="currentColor" strokeWidth="2"/>
-            </svg>
-          </div>
-          <span className="category-grid-label">Sports</span>
-        </div>
-        <div className="category-grid-item" onClick={() => onSelectCategoryFilter('Others')}>
-          <div className="category-icon-box" style={{ color: 'var(--color-others)', backgroundColor: 'var(--bg-others)' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ width: '22px', height: '22px' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-            </svg>
-          </div>
-          <span className="category-grid-label">Others</span>
-        </div>
+        <CategoryCard name="Electronics" label="Electronics" iconName="Tv" colorClass="electronics" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Fashion & Clothing" label="Fashion" iconName="Shirt" colorClass="fashion" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Books & Academic Materials" label="Books" iconName="BookOpen" colorClass="books" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Hostel Essentials" label="Hostels" iconName="Home" colorClass="hostels" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Gadgets" label="Gadgets" iconName="Smartphone" colorClass="gadgets" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Creative & Handmade" label="Creative" iconName="Palette" colorClass="creative" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Beauty & Personal Care" label="Beauty" iconName="Sparkles" colorClass="beauty" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Sports & Fitness" label="Sports" iconName="Dumbbell" colorClass="sports" onSelect={onSelectCategoryFilter} />
+        <CategoryCard name="Others" label="Others" iconName="MoreHorizontal" colorClass="others" onSelect={onSelectCategoryFilter} />
       </div>
 
       {/* Featured Listings */}
@@ -182,41 +115,28 @@ export default function LandingView({ user, featuredProducts, onSelectProduct, s
         <div id="testimonials-feed" className="testimonials-scroll">
           {testimonials.length > 0 ? (
             testimonials.map((t, idx) => (
-              <div key={t.id || idx} className="card" style={{ minWidth: '260px', flexShrink: 0, padding: '14px', borderRadius: '16px', background: 'var(--surface)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: idx % 2 === 0 ? 'var(--primary-green-light)' : 'var(--primary-orange-light)', color: idx % 2 === 0 ? 'var(--primary-green)' : 'var(--primary-orange)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
-                    {(t.user_name || 'Student').slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 700 }}>{t.user_name || 'Student'}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{t.campus ? `COOU ${t.campus}` : 'COOU Campus'} • {'⭐'.repeat(t.rating || 5)}</div>
-                  </div>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-primary)', lineHeight: 1.5 }}>"{t.message}"</p>
-              </div>
+              <SellerCard key={t.id || idx} seller={t} index={idx} />
             ))
           ) : (
             <>
-              <div className="card" style={{ minWidth: '260px', flexShrink: 0, padding: '14px', borderRadius: '16px', background: 'var(--surface)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-green-light)', color: 'var(--primary-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>CO</div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 700 }}>Chinedu O.</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>COOU Igbariam • ⭐⭐⭐⭐⭐</div>
-                  </div>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-primary)', lineHeight: 1.5 }}>"Got my engineering textbooks for half the bookstore price. Safe meetup at the faculty gate!"</p>
-              </div>
-              <div className="card" style={{ minWidth: '260px', flexShrink: 0, padding: '14px', borderRadius: '16px', background: 'var(--surface)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-orange-light)', color: 'var(--primary-orange)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>AM</div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 700 }}>Amaka M.</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>COOU Uli • ⭐⭐⭐⭐⭐</div>
-                  </div>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-primary)', lineHeight: 1.5 }}>"Sold my old mattress in 3 hours after posting. WhatsApp link makes connecting so smooth."</p>
-              </div>
+              <SellerCard 
+                seller={{
+                  user_name: 'Chinedu O.',
+                  campus: 'Igbariam',
+                  rating: 5,
+                  message: 'Got my engineering textbooks for half the bookstore price. Safe meetup at the faculty gate!'
+                }} 
+                index={0} 
+              />
+              <SellerCard 
+                seller={{
+                  user_name: 'Amaka M.',
+                  campus: 'Uli',
+                  rating: 5,
+                  message: 'Sold my old mattress in 3 hours after posting. WhatsApp link makes connecting so smooth.'
+                }} 
+                index={1} 
+              />
             </>
           )}
         </div>

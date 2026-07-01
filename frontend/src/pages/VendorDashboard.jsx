@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlusCircle, Trash2, ShieldAlert, LogOut, Package, Award, Activity, TrendingUp } from 'lucide-react';
 import api from '../services/api';
 import Toast from '../services/toast';
+import ProductCard from '../components/ProductCard';
 
 export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSelectProduct }) {
   const [myProducts, setMyProducts] = useState([]);
@@ -265,50 +266,13 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {myProducts.map(p => (
-                <div 
-                  key={p.id} 
-                  className="card card-clickable" 
-                  onClick={() => onSelectProduct(p)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '16px', 
-                    padding: '14px', 
-                    marginBottom: 0,
-                    borderRadius: '16px',
-                    border: '1px solid var(--border)',
-                    boxShadow: 'var(--shadow-sm)'
-                  }}
-                >
-                  <img 
-                    src={p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200'} 
-                    alt={p.name} 
-                    style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }}
-                  />
-                  <div style={{ flexGrow: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--primary-orange)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{p.category}</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: '2px 0' }}>{p.name}</div>
-                    <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary-green)' }}>₦{Number(p.price).toLocaleString()}</div>
-                  </div>
-                  <button 
-                    onClick={(e) => handleDelete(e, p.id)}
-                    style={{ 
-                      background: 'var(--danger-light)', 
-                      border: '1px solid var(--danger-border)', 
-                      color: 'var(--danger)', 
-                      padding: '10px', 
-                      borderRadius: '12px', 
-                      cursor: 'pointer', 
-                      flexShrink: 0,
-                      transition: 'all var(--transition-fast)'
-                    }}
-                    title="Delete Listing"
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--danger-border)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--danger-light)'}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                <ProductCard 
+                  key={p.id}
+                  product={p}
+                  variant="horizontal"
+                  onSelect={onSelectProduct}
+                  onDelete={(e) => handleDelete(e, p.id)}
+                />
               ))}
             </div>
           )}
