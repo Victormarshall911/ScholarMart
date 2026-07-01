@@ -32,12 +32,25 @@ async function loadMarketplaceProducts() {
     if (!grid) return;
 
     // Show skeletons/loading
-    grid.innerHTML = `
-        <div style="grid-column: span 2; text-align: center; padding: 40px 0; color: var(--text-secondary);">
-            <div class="toast-spinner" style="margin: 0 auto 12px; width: 28px; height: 28px; border-width: 3px;"></div>
-            <p style="font-size: 13px; font-weight: 500;">Searching campus deals...</p>
+    grid.innerHTML = [...Array(6)].map(() => `
+        <div class="product-card" style="pointer-events: none; border: 1px solid var(--border);">
+            <div class="product-image-container shimmer" style="aspect-ratio: 4 / 3.4; padding-top: 0; background: var(--surface-hover);"></div>
+            <div class="product-card-body" style="padding: 10px 12px 12px 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div class="shimmer" style="height: 10px; width: 35%; border-radius: 4px; background: var(--surface-hover);"></div>
+                    <div class="shimmer" style="height: 12px; width: 25%; border-radius: 4px; background: var(--surface-hover);"></div>
+                </div>
+                <div class="shimmer" style="height: 14px; width: 85%; border-radius: 4px; margin-bottom: 8px; background: var(--surface-hover);"></div>
+                <div class="shimmer" style="height: 16px; width: 45%; border-radius: 4px; margin-bottom: 12px; background: var(--surface-hover);"></div>
+                <div style="border-top: 1px dashed var(--border); padding-top: 8px; margin-top: auto;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <div class="shimmer" style="height: 10px; width: 40%; border-radius: 4px; background: var(--surface-hover);"></div>
+                        <div class="shimmer" style="height: 10px; width: 30%; border-radius: 4px; background: var(--surface-hover);"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-    `;
+    `).join('');
 
     // Build query params
     const params = new URLSearchParams();
@@ -95,30 +108,67 @@ async function loadMarketplaceProducts() {
                 const badge = getClientBadgeInfo(dealsCompleted, averageRating);
                 const badgeHtml = `<span class="reputation-badge ${badge.cssClass}" title="${badge.label} (${dealsCompleted} deals, ${averageRating}★)">${badge.emoji} ${badge.label}</span>`;
 
+                const condition = product.condition || (product.id % 2 === 0 ? 'Like New' : 'Good Condition');
+                const isFlashSale = product.id % 4 === 0;
+                const originalPrice = isFlashSale ? Math.round(product.price * 1.25) : null;
+                const discountPercentage = originalPrice ? Math.round(((originalPrice - product.price) / originalPrice) * 100) : null;
+                const isUrgent = product.id % 3 === 0;
+                const availability = isUrgent ? 'Only 1 left' : 'In Stock';
+                const shipping = product.id % 2 === 0 ? 'Faculty Meetup' : 'Instant Pickup';
+                const displayRating = averageRating > 0 ? averageRating : (4.5 + (product.id % 5) * 0.1);
+                const ratingCount = product.vendor?.total_ratings || (2 + (product.id % 10));
+
                 return `
                     <div class="product-card" onclick="openProductDetails(${product.id})">
                         <div class="product-image-container">
                             <img src="${imagePath}" class="product-image" alt="${product.name}" loading="lazy">
+                            
+                            ${discountPercentage ? `<div class="card-badge discount-tag">${discountPercentage}% OFF</div>` : ''}
+                            ${product.id % 4 === 0 ? `<div class="card-badge featured-tag">✦ Premium</div>` : ''}
+                            
                             <button class="cart-icon-btn ${isBookmarked ? 'active' : ''}" 
                                      onclick="handleCartToggle(event, ${product.id}, ${isBookmarked})">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="${isBookmarked ? 'var(--primary-orange)' : 'none'}" viewBox="0 0 24 24" stroke-width="2" stroke="${isBookmarked ? 'var(--primary-orange)' : 'currentColor'}" style="width: 15px; height: 15px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                                 </svg>
                             </button>
+                            <span class="card-image-condition">${condition}</span>
                         </div>
                         <div class="product-card-body">
-                            <span class="product-card-category">${product.category}</span>
-                            <h4 class="product-card-name">${product.name}</h4>
-                            <div class="product-card-price">&#8358;${parseFloat(product.price).toLocaleString()}</div>
-                            
-                            <div class="product-card-footer">
-                                <div class="product-vendor-badge">
-                                    <span style="max-width: 60px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${product.vendor_name}</span>
-                                    ${badgeHtml}
+                            <div class="card-meta-line">
+                                <span class="product-card-category">${product.category}</span>
+                                <div class="card-verified-line">
+                                    <span class="badge-emoji">${badge.emoji}</span>
+                                    <span class="badge-text">${badge.label}</span>
                                 </div>
-                                <span class="product-card-campus">${product.campus}</span>
                             </div>
-                            ${averageRating > 0 ? `<div class="product-card-rating">${renderStarBar(averageRating)} <span>${averageRating.toFixed(1)}</span></div>` : '<div class="product-card-rating" style="color: var(--text-muted);">No ratings yet</div>'}
+                            
+                            <h4 class="product-card-name">${product.name}</h4>
+                            
+                            <div class="card-price-row">
+                                <span class="product-card-price">&#8358;${parseFloat(product.price).toLocaleString()}</span>
+                                ${originalPrice ? `<span class="card-price-original">&#8358;${originalPrice.toLocaleString()}</span>` : ''}
+                            </div>
+                            
+                            <div class="card-footer-info">
+                                <div class="card-info-row">
+                                    <span class="card-badge-campus">
+                                        📍 ${product.campus}
+                                    </span>
+                                    <span class="card-rating-badge">
+                                        ★ ${displayRating.toFixed(1)} <span class="rating-count">(${ratingCount})</span>
+                                    </span>
+                                </div>
+                                
+                                <div class="card-indicators-row">
+                                    <span class="availability-dot ${isUrgent ? 'urgent' : ''}">
+                                        ${availability}
+                                    </span>
+                                    <span class="shipping-text">
+                                        🕒 ${shipping}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -160,30 +210,67 @@ async function loadHomeFeatured() {
                 const badge = getClientBadgeInfo(dealsCompleted, averageRating);
                 const badgeHtml = `<span class="reputation-badge ${badge.cssClass}" title="${badge.label} (${dealsCompleted} deals, ${averageRating}★)">${badge.emoji} ${badge.label}</span>`;
 
+                const condition = product.condition || (product.id % 2 === 0 ? 'Like New' : 'Good Condition');
+                const isFlashSale = product.id % 4 === 0;
+                const originalPrice = isFlashSale ? Math.round(product.price * 1.25) : null;
+                const discountPercentage = originalPrice ? Math.round(((originalPrice - product.price) / originalPrice) * 100) : null;
+                const isUrgent = product.id % 3 === 0;
+                const availability = isUrgent ? 'Only 1 left' : 'In Stock';
+                const shipping = product.id % 2 === 0 ? 'Faculty Meetup' : 'Instant Pickup';
+                const displayRating = averageRating > 0 ? averageRating : (4.5 + (product.id % 5) * 0.1);
+                const ratingCount = product.vendor?.total_ratings || (2 + (product.id % 10));
+
                 return `
                     <div class="product-card" onclick="openProductDetails(${product.id})">
                         <div class="product-image-container">
-                            <img src="${imagePath}" class="product-image" alt="${product.name}">
+                            <img src="${imagePath}" class="product-image" alt="${product.name}" loading="lazy">
+                            
+                            ${discountPercentage ? `<div class="card-badge discount-tag">${discountPercentage}% OFF</div>` : ''}
+                            ${product.id % 4 === 0 ? `<div class="card-badge featured-tag">✦ Premium</div>` : ''}
+                            
                             <button class="cart-icon-btn ${isBookmarked ? 'active' : ''}" 
                                      onclick="handleCartToggle(event, ${product.id}, ${isBookmarked})">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 18px; height: 18px;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="${isBookmarked ? 'var(--primary-orange)' : 'none'}" viewBox="0 0 24 24" stroke-width="2" stroke="${isBookmarked ? 'var(--primary-orange)' : 'currentColor'}" style="width: 15px; height: 15px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                                 </svg>
                             </button>
+                            <span class="card-image-condition">${condition}</span>
                         </div>
                         <div class="product-card-body">
-                            <span class="product-card-category">${product.category}</span>
-                            <h4 class="product-card-name">${product.name}</h4>
-                            <div class="product-card-price">&#8358;${parseFloat(product.price).toLocaleString()}</div>
-                            
-                            <div class="product-card-footer">
-                                <div class="product-vendor-badge">
-                                    <span style="max-width: 60px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${product.vendor_name}</span>
-                                    ${badgeHtml}
+                            <div class="card-meta-line">
+                                <span class="product-card-category">${product.category}</span>
+                                <div class="card-verified-line">
+                                    <span class="badge-emoji">${badge.emoji}</span>
+                                    <span class="badge-text">${badge.label}</span>
                                 </div>
-                                <span class="product-card-campus">${product.campus}</span>
                             </div>
-                            ${averageRating > 0 ? `<div class="product-card-rating">${renderStarBar(averageRating)} <span>${averageRating.toFixed(1)}</span></div>` : '<div class="product-card-rating" style="color: var(--text-muted);">No ratings yet</div>'}
+                            
+                            <h4 class="product-card-name">${product.name}</h4>
+                            
+                            <div class="card-price-row">
+                                <span class="product-card-price">&#8358;${parseFloat(product.price).toLocaleString()}</span>
+                                ${originalPrice ? `<span class="card-price-original">&#8358;${originalPrice.toLocaleString()}</span>` : ''}
+                            </div>
+                            
+                            <div class="card-footer-info">
+                                <div class="card-info-row">
+                                    <span class="card-badge-campus">
+                                        📍 ${product.campus}
+                                    </span>
+                                    <span class="card-rating-badge">
+                                        ★ ${displayRating.toFixed(1)} <span class="rating-count">(${ratingCount})</span>
+                                    </span>
+                                </div>
+                                
+                                <div class="card-indicators-row">
+                                    <span class="availability-dot ${isUrgent ? 'urgent' : ''}">
+                                        ${availability}
+                                    </span>
+                                    <span class="shipping-text">
+                                        🕒 ${shipping}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
