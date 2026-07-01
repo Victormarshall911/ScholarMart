@@ -170,7 +170,7 @@ export default function LegalView({ page = 'terms' }) {
           <div className="legal-section">
             <div className="legal-section-title">12. Contact</div>
             <div className="legal-contact-box">
-              <div className="legal-contact-item">📧 contact@scholarmart.com</div>
+              <div className="legal-contact-item">📧 mail.scholarmart@gmail.com</div>
               <div className="legal-contact-item">📱 WhatsApp: 07014109517</div>
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function LegalView({ page = 'terms' }) {
                 <li>Object to processing</li>
                 <li>Withdraw consent at any time</li>
               </ul>
-              <p>To exercise these rights, contact us at <strong>privacy@scholarmart.com</strong>. We will respond within 30 days.</p>
+              <p>To exercise these rights, contact us at <strong>mail.scholarmart@gmail.com</strong>. We will respond within 30 days.</p>
             </div>
           </div>
 
@@ -290,7 +290,7 @@ export default function LegalView({ page = 'terms' }) {
               <p>ScholarMart is the data controller for your personal data. Contact us at:</p>
             </div>
             <div className="legal-contact-box">
-              <div className="legal-contact-item">📧 privacy@scholarmart.com</div>
+              <div className="legal-contact-item">📧 mail.scholarmart@gmail.com</div>
               <div className="legal-contact-item">📱 WhatsApp: 07014109517</div>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function LegalView({ page = 'terms' }) {
               <p>For questions or requests:</p>
             </div>
             <div className="legal-contact-box">
-              <div className="legal-contact-item">📧 privacy@scholarmart.com</div>
+              <div className="legal-contact-item">📧 mail.scholarmart@gmail.com</div>
               <div className="legal-contact-item">📱 WhatsApp: 07014109517</div>
             </div>
           </div>
