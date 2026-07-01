@@ -141,22 +141,36 @@ async function loadAdminModeration() {
             if (reported.length === 0) {
                 list.innerHTML = `
                     <div style="text-align: center; padding: 24px; color: var(--text-secondary); font-size: 13px;">
-                        No active reported or flagged product listings.
+                        No active pending verification or flagged product listings.
                     </div>
                 `;
                 return;
             }
 
             list.innerHTML = reported.map(p => {
+                const statusBadge = p.status === 'pending'
+                    ? `<span class="badge badge-pending" style="font-size: 9px; padding: 2px 8px; font-weight: 700; border-radius: 99px;">PENDING VERIFICATION</span>`
+                    : `<span class="badge badge-rejected" style="font-size: 9px; padding: 2px 8px; font-weight: 700; border-radius: 99px;">REPORTED / FLAGGED</span>`;
                 return `
-                    <div class="card" style="padding: 12px; font-size:13px; margin-bottom: 10px;">
-                        <strong>Product:</strong> ${p.name} (ID: ${p.id})<br>
-                        <strong>Price:</strong> ₦${parseFloat(p.price).toLocaleString()}<br>
-                        <strong>Vendor:</strong> ${p.vendor.name} (${p.vendor.email})<br>
-                        <strong>Description:</strong> <span style="color:var(--text-secondary);">${p.description || 'None'}</span>
+                    <div class="card" style="padding: 14px; font-size:13px; margin-bottom: 12px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <strong>Product:</strong> <span>${p.name} (ID: ${p.id})</span>
+                        </div>
+                        <div style="margin-bottom: 6px;">
+                            <strong>Status:</strong> ${statusBadge}
+                        </div>
+                        <div style="margin-bottom: 4px;">
+                            <strong>Price:</strong> ₦${parseFloat(p.price).toLocaleString()}
+                        </div>
+                        <div style="margin-bottom: 4px;">
+                            <strong>Vendor:</strong> ${p.vendor.name} (${p.vendor.email})
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>Description:</strong> <span style="color:var(--text-secondary);">${p.description || 'None'}</span>
+                        </div>
                         <div style="display: flex; gap: 8px; margin-top: 10px;">
-                            <button class="btn btn-primary btn-sm" onclick="moderateProductListing(${p.id}, 'approve')" style="padding: 6px 12px; width:auto;">Clear Flags (Approve)</button>
-                            <button class="btn btn-secondary btn-sm" onclick="moderateProductListing(${p.id}, 'reject')" style="padding: 6px 12px; width:auto; background-color: #FEE2E2; color:#DC2626;">Ban/Remove Listing</button>
+                            <button class="btn btn-primary btn-sm" onclick="moderateProductListing(${p.id}, 'approve')" style="padding: 6px 12px; width:auto; border-radius: var(--radius-sm);">Approve & Publish</button>
+                            <button class="btn btn-secondary btn-sm" onclick="moderateProductListing(${p.id}, 'reject')" style="padding: 6px 12px; width:auto; background-color: #FEE2E2; color:#DC2626; border-radius: var(--radius-sm);">Reject/Remove Listing</button>
                         </div>
                     </div>
                 `;

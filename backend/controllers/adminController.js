@@ -86,7 +86,7 @@ exports.getReportedProducts = async (req, res) => {
             SELECT p.*, u.name as vendor_name, u.email as vendor_email
             FROM products p
             JOIN users u ON p.vendor_id = u.id
-            WHERE p.status = 'reported'
+            WHERE p.status = 'reported' OR p.status = 'pending'
             ORDER BY p.created_at DESC
         `;
 

@@ -14,7 +14,7 @@ exports.listProducts = async (req, res) => {
                    p.university, p.image_url, p.status, p.created_at,
                    u.name as vendor_name, u.role as vendor_role, u.portrait as vendor_portrait,
                    u.deals_completed as vendor_deals_completed, u.average_rating as vendor_average_rating,
-                   u.email_verified as vendor_email_verified
+                   u.total_ratings as vendor_total_ratings, u.email_verified as vendor_email_verified
             FROM products p
             JOIN users u ON p.vendor_id = u.id
             WHERE p.status = 'active'
@@ -58,6 +58,7 @@ exports.listProducts = async (req, res) => {
         const enrichedProducts = products.map(p => {
             const dealsCompleted = parseInt(p.vendor_deals_completed, 10) || 0;
             const avgRating = parseFloat(p.vendor_average_rating) || 0;
+            const totalRatings = parseInt(p.vendor_total_ratings, 10) || 0;
             const badge = getBadgeInfo(dealsCompleted, avgRating);
             // Normalize image_url into an images array for frontend compatibility
             const images = p.image_url ? [p.image_url] : ['/uploads/products/placeholder.webp'];
@@ -70,6 +71,7 @@ exports.listProducts = async (req, res) => {
                     email_verified: p.vendor_email_verified || false,
                     deals_completed: dealsCompleted,
                     average_rating: avgRating,
+                    total_ratings: totalRatings,
                     badge,
                     responseTime: 'Typically replies in 2 hours'
                 }
@@ -98,7 +100,8 @@ exports.getProductDetails = async (req, res) => {
                    p.university, p.image_url, p.status, p.created_at,
                    u.name as vendor_name, u.email as vendor_email, u.whatsapp_number as vendor_whatsapp,
                    u.portrait as vendor_portrait, u.deals_completed as vendor_deals_completed,
-                   u.average_rating as vendor_average_rating, u.email_verified as vendor_email_verified
+                   u.average_rating as vendor_average_rating, u.total_ratings as vendor_total_ratings,
+                   u.email_verified as vendor_email_verified
             FROM products p
             JOIN users u ON p.vendor_id = u.id
             WHERE p.id = $1 AND p.status != 'deleted'
@@ -130,6 +133,7 @@ exports.getProductDetails = async (req, res) => {
 
         const dealsCompleted = parseInt(product.vendor_deals_completed, 10) || 0;
         const avgRating = parseFloat(product.vendor_average_rating) || 0;
+        const totalRatings = parseInt(product.vendor_total_ratings, 10) || 0;
         const badge = getBadgeInfo(dealsCompleted, avgRating);
 
         return res.json({
@@ -153,6 +157,7 @@ exports.getProductDetails = async (req, res) => {
                     email_verified: product.vendor_email_verified || false,
                     deals_completed: dealsCompleted,
                     average_rating: avgRating,
+                    total_ratings: totalRatings,
                     badge,
                     portrait: product.vendor_portrait || null,
                     responseTime: 'Typically replies in 2 hours',
@@ -238,7 +243,7 @@ exports.createProduct = async (req, res) => {
             campus,
             vendorId,
             imageUrl,
-            'active'
+            'pending'
         ]);
 
         return res.status(201).json({
@@ -291,7 +296,7 @@ exports.updateProduct = async (req, res) => {
 
         const updateSql = `
             UPDATE products 
-            SET name = $1, description = $2, price = $3, category = $4, campus = $5, image_url = $6
+            SET name = $1, description = $2, price = $3, category = $4, campus = $5, image_url = $6, status = 'pending'
             WHERE id = $7 RETURNING *
         `;
 
@@ -303,7 +308,7 @@ exports.updateProduct = async (req, res) => {
 
         return res.json({
             status: 'success',
-            message: 'Product listing updated successfully',
+            message: 'Product listing updated successfully! Admin will verify the changes before publishing.',
             product: result.rows[0]
         });
     } catch (error) {

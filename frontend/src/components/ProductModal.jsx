@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, MessageCircle, Share2, Star, AlertTriangle, ShieldCheck, MapPin, Layers } from 'lucide-react';
 import Toast from '../services/toast';
+import api from '../services/api';
 
 export default function ProductModal({ product, onClose, user }) {
   if (!product) return null;
@@ -14,7 +15,8 @@ export default function ProductModal({ product, onClose, user }) {
   const vendorName = product.vendor_name || product.vendor?.name || 'Verified Student Vendor';
   const dealsCompleted = product.vendor?.deals_completed || 0;
   const avgRating = product.vendor?.average_rating ? Number(product.vendor.average_rating).toFixed(1) : null;
-  const reputationScore = product.vendor?.reputation_score || (dealsCompleted > 5 ? 85 : 70);
+  const totalRatings = product.vendor?.total_ratings || 0;
+  const reputationScore = totalRatings > 0 ? Math.round((parseFloat(product.vendor?.average_rating || 0) / 5) * 100) : null;
 
   // Generate a mock condition score if not detailed, e.g. Used -> 8.2/10, Brand New -> 10/10
   const conditionScore = product.condition === 'Used' ? '8.5/10 (Excellent)' : '10/10 (Brand New)';
@@ -36,8 +38,30 @@ export default function ProductModal({ product, onClose, user }) {
     }
   };
 
-  const handleRate = () => {
-    Toast.show('Please complete a verified deal via WhatsApp before rating vendors!', 'info');
+  const handleRate = async () => {
+    const ratingStr = window.prompt("Enter rating for this seller (1 to 5 stars):", "5");
+    if (ratingStr === null) return;
+    const ratingVal = parseInt(ratingStr, 10);
+    if (isNaN(ratingVal) || ratingVal < 1 || ratingVal > 5) {
+      Toast.show("Invalid rating. Please enter a number between 1 and 5.", "error");
+      return;
+    }
+    const reviewVal = window.prompt("Enter a short review for this seller (optional):", "");
+    if (reviewVal === null) return;
+
+    try {
+      const response = await api.post(`/vendors/${product.vendor_id || product.vendor?.id}/rate`, {
+        rating: ratingVal,
+        review: reviewVal
+      });
+      if (response.data.status === 'success') {
+        Toast.show("Thank you! Rating submitted successfully.", "success");
+      } else {
+        Toast.show(response.data.message || "Failed to submit rating", "error");
+      }
+    } catch (err) {
+      Toast.show(err.response?.data?.message || "Failed to submit rating", "error");
+    }
   };
 
   const handleReport = () => {
@@ -122,7 +146,7 @@ export default function ProductModal({ product, onClose, user }) {
             </span>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-            Reputation Score: <strong style={{ color: 'var(--primary-green)' }}>{reputationScore}% Trust</strong> • Typically replies in 2 hours • <strong>{dealsCompleted}</strong> deals completed on campus.
+            Trust Score: <strong style={{ color: 'var(--primary-green)' }}>{reputationScore !== null ? `${reputationScore}% Trust` : 'No score yet'}</strong> • Typically replies in 2 hours • <strong>{dealsCompleted}</strong> deals completed on campus.
           </p>
         </div>
 

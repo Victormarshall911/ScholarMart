@@ -69,7 +69,44 @@ exports.register = async (req, res) => {
         }
 
         if (!supabase) {
-            return res.status(500).json({ status: 'error', message: 'Supabase is not configured on the server.' });
+            console.log('Registering user in fallback database...');
+            const passwordHash = await bcrypt.hash(password, 10);
+            const mockOtp = '123456';
+            const mockExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+            const result = await db.query(
+                `INSERT INTO users (
+                    name, email, whatsapp_number, university, campus, password_hash, role, email_verified, email_otp, email_otp_expires
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, false, $8, $9) RETURNING *`,
+                [
+                    name, email.trim().toLowerCase(), whatsappNumber || null, university || 'COOU', campus, passwordHash, userRole, mockOtp, mockExpires
+                ]
+            );
+
+            const newUser = result.rows[0];
+            const badge = getBadgeInfo(0, 0);
+            const token = jwt.sign({ id: newUser.id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
+
+            return res.status(201).json({
+                status: 'success',
+                message: `Welcome! A verification code has been sent to ${email} (Fallback mode).`,
+                token,
+                user: {
+                    id: newUser.id,
+                    name: newUser.name,
+                    email: newUser.email,
+                    role: newUser.role,
+                    email_verified: false,
+                    campus: newUser.campus,
+                    university: newUser.university,
+                    whatsapp_number: newUser.whatsapp_number,
+                    portrait: newUser.portrait || null,
+                    deals_completed: 0,
+                    average_rating: 0,
+                    total_ratings: 0,
+                    badge
+                }
+            });
         }
 
         // Supabase Auth Signup
@@ -256,16 +293,37 @@ exports.login = async (req, res) => {
 exports.sendOtp = async (req, res) => {
     try {
         let email = req.body?.email;
-        if (!email && req.user?.id) {
-            const userResult = await db.query('SELECT email FROM users WHERE id = $1', [req.user.id]);
-            if (userResult.rowCount > 0) email = userResult.rows[0].email;
+        if (!email) {
+            let userId = null;
+            if (req.user?.id) {
+                userId = req.user.id;
+            } else {
+                const authHeader = req.headers.authorization;
+                if (authHeader && authHeader.startsWith('Bearer ')) {
+                    const token = authHeader.substring(7);
+                    try {
+                        const decoded = jwt.verify(token, JWT_SECRET);
+                        userId = decoded.id;
+                    } catch(e) {}
+                }
+            }
+            if (userId) {
+                const userResult = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
+                if (userResult.rowCount > 0) email = userResult.rows[0].email;
+            }
         }
         if (!email) {
             return res.status(400).json({ status: 'error', message: 'Email address is required to resend OTP' });
         }
 
         if (!supabase) {
-             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
+             const mockOtp = '123456';
+             const mockExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+             await db.query('UPDATE users SET email_otp = $1, email_otp_expires = $2 WHERE email = $3', [mockOtp, mockExpires, email.trim().toLowerCase()]);
+             return res.json({
+                 status: 'success',
+                 message: `A new mock verification code has been sent to ${email} (Fallback mode).`
+             });
         }
 
         // Attempt to resend signup verification OTP first
@@ -307,6 +365,18 @@ exports.verifyOtp = async (req, res) => {
 
         if (req.user) {
             userId = req.user.id;
+        } else {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                try {
+                    const decoded = jwt.verify(token, JWT_SECRET);
+                    userId = decoded.id;
+                } catch(e) {}
+            }
+        }
+
+        if (userId) {
             const result = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
             if (result.rowCount > 0) emailToVerify = result.rows[0].email;
         } else if (providedEmail) {
@@ -319,7 +389,25 @@ exports.verifyOtp = async (req, res) => {
         }
 
         if (!supabase) {
-             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
+            // Local DB fallback OTP verification
+            const userCheck = await db.query(
+                'SELECT id, email_otp, email_otp_expires FROM users WHERE email = $1',
+                [emailToVerify.trim().toLowerCase()]
+            );
+            if (userCheck.rowCount === 0) {
+                return res.status(404).json({ status: 'error', message: 'User not found' });
+            }
+            const user = userCheck.rows[0];
+            if (!user.email_otp || user.email_otp !== otp) {
+                return res.status(400).json({ status: 'error', message: 'Invalid verification code' });
+            }
+            // Update email verification status in DB
+            await db.query('UPDATE users SET email_verified = true, email_otp = null, email_otp_expires = null WHERE id = $1', [user.id]);
+            return res.json({
+                status: 'success',
+                message: 'Email verified successfully! ✅',
+                email_verified: true
+            });
         }
 
         // Try 'signup' type first (for initial registration OTPs)
@@ -368,7 +456,17 @@ exports.forgotPassword = async (req, res) => {
         if (!email) return res.status(400).json({ status: 'error', message: 'Email is required' });
 
         if (!supabase) {
-             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
+             const mockOtp = '123456';
+             const mockExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+             const check = await db.query('SELECT id FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+             if (check.rowCount === 0) {
+                 return res.status(404).json({ status: 'error', message: 'User not found' });
+             }
+             await db.query('UPDATE users SET email_otp = $1, email_otp_expires = $2 WHERE email = $3', [mockOtp, mockExpires, email.trim().toLowerCase()]);
+             return res.json({
+                 status: 'success',
+                 message: 'A mock password reset pin has been sent to your email.'
+             });
         }
 
         // Supabase sends an OTP pin if configured, or a magic link.
@@ -401,7 +499,20 @@ exports.resetPassword = async (req, res) => {
         }
 
         if (!supabase) {
-             return res.status(500).json({ status: 'error', message: 'Supabase is not configured' });
+             const check = await db.query('SELECT id, email_otp FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+             if (check.rowCount === 0) {
+                 return res.status(404).json({ status: 'error', message: 'User not found' });
+             }
+             const user = check.rows[0];
+             if (!user.email_otp || user.email_otp !== otp) {
+                 return res.status(400).json({ status: 'error', message: 'Invalid or expired reset pin' });
+             }
+             const passwordHash = await bcrypt.hash(newPassword, 10);
+             await db.query('UPDATE users SET password_hash = $1, email_otp = null, email_otp_expires = null WHERE id = $2', [passwordHash, user.id]);
+             return res.json({
+                 status: 'success',
+                 message: 'Password has been reset successfully! You can now log in.'
+             });
         }
 
         // Verify the recovery OTP

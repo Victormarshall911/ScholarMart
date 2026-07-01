@@ -35,7 +35,7 @@ router.post('/', authenticate, async (req, res) => {
         const result = await db.query(
             `INSERT INTO testimonials (user_id, user_name, campus, university, message, rating, status)
              VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [userId, userName, campus, university, message.trim(), parseInt(rating, 10), 'approved']
+            [userId, userName, campus, university, message.trim(), parseInt(rating, 10), 'pending']
         );
         res.status(201).json({
             status: 'success',

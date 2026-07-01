@@ -83,7 +83,7 @@ export default function VendorDashboard({ user, onLogout, onOpenSellModal, onSel
 
   // Calculate Vendor Trust Metrics
   const dealsCount = user.deals_completed || 0;
-  const ratingScore = user.reputation_score || (dealsCount > 5 ? 85 : 70);
+  const ratingScore = (user.total_ratings || 0) > 0 ? Math.round((parseFloat(user.average_rating || 0) / 5) * 100) : 0;
   
   let sellerLevel = "New Seller 🟢";
   let ratingLabel = "Active Profile";

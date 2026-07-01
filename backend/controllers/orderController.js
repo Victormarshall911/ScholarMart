@@ -23,8 +23,8 @@ exports.markAsSold = async (req, res) => {
 
         const product = prodResult.rows[0];
 
-        if (product.vendor_id !== vendorId) {
-            return res.status(403).json({ status: 'error', message: 'Only the product vendor can mark items as sold' });
+        if (product.vendor_id !== vendorId && req.user.role !== 'admin') {
+            return res.status(403).json({ status: 'error', message: 'Only the product vendor or admin can mark items as sold' });
         }
 
         const productPrice = parseFloat(product.price);
@@ -33,7 +33,7 @@ exports.markAsSold = async (req, res) => {
         const dealResult = await db.query(
             `INSERT INTO deals (buyer_id, product_id, vendor_id, amount, status)
              VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-            [buyerId || null, productId, vendorId, productPrice, 'pending_confirmation']
+            [buyerId || null, productId, product.vendor_id, productPrice, 'pending_confirmation']
         );
 
         const dealId = dealResult.rows[0].id;

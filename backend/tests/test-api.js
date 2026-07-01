@@ -25,7 +25,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 function startServer() {
     return new Promise((resolve, reject) => {
         // Clear previous local JSON store to avoid duplicate user registration conflicts
-        const dbStorePath = path.join(__dirname, 'data', 'db_store.json');
+        const dbStorePath = path.join(__dirname, '..', 'data', 'db_store.json');
         if (fs.existsSync(dbStorePath)) {
             try {
                 fs.unlinkSync(dbStorePath);
@@ -130,7 +130,7 @@ async function runTests() {
         assertEqual(otpReqData.status, 'success', 'OTP successfully requested');
 
         // Read OTP from JSON Store (simulate receiving the email)
-        const dbStorePath = path.join(__dirname, 'data', 'db_store.json');
+        const dbStorePath = path.join(__dirname, '..', 'data', 'db_store.json');
         let otpCode = '123456'; // Default mock guess
         if (fs.existsSync(dbStorePath)) {
             const dbData = JSON.parse(fs.readFileSync(dbStorePath, 'utf8'));
@@ -152,6 +152,7 @@ async function runTests() {
             body: JSON.stringify({ otp: otpCode })
         });
         const verifyData = await verifyRes.json();
+        console.log('   verifyData:', verifyData);
         assertEqual(verifyRes.status, 200, 'OTP verify returns status 200 OK');
         assertEqual(verifyData.status, 'success', 'Email verification status successfully approved');
         assertEqual(verifyData.email_verified, true, 'Email verified is set to true');
@@ -178,15 +179,7 @@ async function runTests() {
         
         testProductId = prodData.productId;
 
-        // Test 6: Search & Catalog Filter
-        console.log('\nTest 6: Retrieve & Filter Products...');
-        const catRes = await fetch(`${BASE_URL}/api/products?category=Hostel+Essentials&campus=Uli+Campus`);
-        const catData = await catRes.json();
-        assertEqual(catRes.status, 200, 'Retrieve products returns status 200 OK');
-        assertEqual(catData.products.length > 0, true, 'Mattress is visible in filtered listings');
-        assertEqual(catData.products[0].vendor.name, 'Test Student Vendor', 'Vendor is associated with product');
-
-        // Login as admin to perform deal confirmation / ratings and admin reports
+        // Login as admin to perform product approval
         const adminLoginRes = await fetch(`${BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -194,6 +187,27 @@ async function runTests() {
         });
         const adminLoginData = await adminLoginRes.json();
         adminToken = adminLoginData.token;
+
+        // Approve the product to make it active/visible
+        console.log('   Admin approves the product...');
+        const approveRes = await fetch(`${BASE_URL}/api/admin/moderation/${testProductId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: 'approve' })
+        });
+        const approveData = await approveRes.json();
+        assertEqual(approveRes.status, 200, 'Approve product returns 200 OK');
+
+        // Test 6: Search & Catalog Filter
+        console.log('\nTest 6: Retrieve & Filter Products...');
+        const catRes = await fetch(`${BASE_URL}/api/products?category=Hostel+Essentials&campus=Uli+Campus`);
+        const catData = await catRes.json();
+        assertEqual(catRes.status, 200, 'Retrieve products returns status 200 OK');
+        assertEqual(catData.products.length > 0, true, 'Mattress is visible in filtered listings');
+        assertEqual(catData.products[0].vendor.name, 'Test Student Vendor', 'Vendor is associated with product');
 
         // Test 7: Vendor marks product as sold (Creates Deal)
         console.log('\nTest 7: Mark Product as Sold (Create Deal)...');
@@ -329,6 +343,17 @@ async function runTests() {
         const cartProdData = await cartProdRes.json();
         assertEqual(cartProdRes.status, 201, 'Create cart test product returns 201');
         const cartProductId = cartProdData.productId;
+
+        // Approve the cart test product
+        console.log('   Admin approves the cart test product...');
+        await fetch(`${BASE_URL}/api/admin/moderation/${cartProductId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: 'approve' })
+        });
 
         const cartEmptyRes = await fetch(`${BASE_URL}/api/products/cart`, {
             headers: { 'Authorization': `Bearer ${testToken}` }

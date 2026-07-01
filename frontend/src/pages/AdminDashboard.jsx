@@ -757,13 +757,13 @@ export default function AdminDashboard({ user, onLogout }) {
                 return (
                   <div className="card" style={{ padding: '24px', borderRadius: '20px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
                     <h3 style={{ fontSize: '15px', fontWeight: 800, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
-                      <span>🏪</span> Active Moderation Queue ({reportedListings.length} Flagged)
+                      <span>🏪</span> Active Moderation Queue ({reportedListings.length} Pending/Flagged)
                     </h3>
                     {reportedListings.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-secondary)' }}>
                         <div style={{ fontSize: '40px', marginBottom: '12px' }}>✅</div>
                         <h4 style={{ color: 'var(--text-primary)', fontWeight: 800, marginBottom: '4px' }}>All Clear!</h4>
-                        <p style={{ fontSize: '13px' }}>There are no flagged or reported listings pending moderation.</p>
+                        <p style={{ fontSize: '13px' }}>There are no pending verification or flagged listings.</p>
                       </div>
                     ) : reportedListings.map(p => (
                       <div 
@@ -781,6 +781,11 @@ export default function AdminDashboard({ user, onLogout }) {
                           <div>
                             <span style={{ fontWeight: 800, fontSize: '15px', color: 'var(--text-primary)' }}>{p.name}</span>
                             <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '8px' }}>#{p.id}</span>
+                            {p.status === 'pending' ? (
+                              <span className="badge badge-pending" style={{ marginLeft: '10px', fontSize: '9px', padding: '2px 8px', background: '#FEF3C7', color: '#D97706', borderRadius: '10px', fontWeight: 'bold' }}>PENDING VERIFICATION</span>
+                            ) : (
+                              <span className="badge badge-rejected" style={{ marginLeft: '10px', fontSize: '9px', padding: '2px 8px', background: '#FEE2E2', color: '#DC2626', borderRadius: '10px', fontWeight: 'bold' }}>REPORTED</span>
+                            )}
                           </div>
                           <div style={{ fontWeight: 800, color: 'var(--primary-green)', fontSize: '15px' }}>₦{Number(p.price).toLocaleString()}</div>
                         </div>

@@ -115,8 +115,8 @@ async function loadMarketplaceProducts() {
                 const isUrgent = product.id % 3 === 0;
                 const availability = isUrgent ? 'Only 1 left' : 'In Stock';
                 const shipping = product.id % 2 === 0 ? 'Faculty Meetup' : 'Instant Pickup';
-                const displayRating = averageRating > 0 ? averageRating : (4.5 + (product.id % 5) * 0.1);
-                const ratingCount = product.vendor?.total_ratings || (2 + (product.id % 10));
+                const displayRating = averageRating > 0 ? averageRating : 0;
+                const ratingCount = product.vendor ? (product.vendor.total_ratings || 0) : 0;
 
                 return `
                     <div class="product-card" onclick="openProductDetails(${product.id})">
@@ -217,8 +217,8 @@ async function loadHomeFeatured() {
                 const isUrgent = product.id % 3 === 0;
                 const availability = isUrgent ? 'Only 1 left' : 'In Stock';
                 const shipping = product.id % 2 === 0 ? 'Faculty Meetup' : 'Instant Pickup';
-                const displayRating = averageRating > 0 ? averageRating : (4.5 + (product.id % 5) * 0.1);
-                const ratingCount = product.vendor?.total_ratings || (2 + (product.id % 10));
+                const displayRating = averageRating > 0 ? averageRating : 0;
+                const ratingCount = product.vendor ? (product.vendor.total_ratings || 0) : 0;
 
                 return `
                     <div class="product-card" onclick="openProductDetails(${product.id})">
@@ -398,7 +398,10 @@ async function renderProductDetails(productId) {
 
             const respTag = document.getElementById('details-vendor-response');
             if (respTag) {
-                respTag.innerHTML = `Typically replies in 2 hours • <b>${dealsCompleted}</b> deals completed • <b>${averageRating ? averageRating.toFixed(1) + '★' : 'No ratings yet'}</b>`;
+                const totalRatings = p.vendor ? (p.vendor.total_ratings || 0) : 0;
+                const reputationScore = totalRatings > 0 ? Math.round((averageRating / 5) * 100) : null;
+                const trustScoreHtml = reputationScore !== null ? ` • <b>${reputationScore}% Trust Score</b>` : ` • <b>No trust score yet</b>`;
+                respTag.innerHTML = `Typically replies in 2 hours • <b>${dealsCompleted}</b> deals completed • <b>${averageRating ? averageRating.toFixed(1) + '★' : 'No ratings yet'}</b>${trustScoreHtml}`;
             }
 
 

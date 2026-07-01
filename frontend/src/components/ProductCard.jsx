@@ -41,8 +41,8 @@ export default function ProductCard({
   const shipping = product.id % 2 === 0 ? 'Faculty Meetup' : 'Instant Pickup';
   
   // Safe rating display helper
-  const displayRating = avgRating > 0 ? avgRating : (4.5 + (product.id % 5) * 0.1);
-  const ratingCount = product.vendor?.total_ratings || (2 + (product.id % 10));
+  const displayRating = avgRating > 0 ? avgRating : 0;
+  const ratingCount = product.vendor?.total_ratings || 0;
 
   const handleCardClick = (e) => {
     if (onSelect) {
